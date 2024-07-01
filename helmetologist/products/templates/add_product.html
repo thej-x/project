@@ -1,0 +1,161 @@
+{% extends "adminbase.html" %}
+{% load static %}
+{% block title %}Add Products{% endblock %}
+
+{% block extra_styles %}
+<!-- Custom style CSS -->
+<style>
+    .preview-container {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    .preview-container img {
+        max-width: 150px;
+        max-height: 150px;
+        margin: 10px;
+        cursor: pointer;
+    }
+    .modal-img {
+        width: 100%;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4>Add New Product</h4>
+                </div>
+                <div class="card-body">
+                    <div id="addProductsFormContainer">
+                        <form id="addProductsForm" action="{% url 'upload_images' %}" method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="product_name">Product Name</label>
+                                <input type="text" class="form-control" id="product_name" name="product_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="price">Price</label>
+                                <input type="text" class="form-control" id="price" name="price" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="thumbnail">Thumbnail</label>
+                                <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="description">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="category">Category</label>
+                                <select class="form-control" id="category" name="category" required>
+                                    {% for category in Categories %}
+                                    <option value="{{ category.id }}">{{ category.cat_name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="colour_variant_name">Colour Variant Name</label>
+                                <input type="text" class="form-control" id="colour_variant_name" name="colour_variant_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="colour_variants">Colour Variant Images</label>
+                                <input type="file" class="form-control" id="colour_variants" name="colour_variants" accept="image/*" multiple required>
+                            </div>
+                            <div id="image-preview-container" class="preview-container"></div>
+                            <div class="form-group">
+                                <label for="variant_stock">Stock</label>
+                                <input type="number" class="form-control" id="variant_stock" name="variant_stock" required>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="btn btn-secondary" id="cancelAddProduct">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Modal -->
+<div class="modal" id="cropModal" tabindex="1" role="dialog"  aria-hidden="true">
+  <div class="modal-dialog " role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="cropModalLabel">Crop Image</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="img-container">
+          <img id="imageToCrop" class="modal-img" src="">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" id="cropButton">Crop</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{% static 'adminassets/bundles/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'adminassets/js/page/datatables.js' %}"></script>
+<script src="{% static 'adminassets/js/scripts.js' %}"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<script>
+    document.getElementById('cancelAddProduct').addEventListener('click', function() {
+        window.location.href = '/products'; // Adjust the URL as needed
+    });
+
+    let currentCropper;
+    let currentImageElement;
+
+    document.getElementById('colour_variants').addEventListener('change', function(event) {
+        const files = event.target.files;
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        imagePreviewContainer.innerHTML = ''; // Clear previous images
+
+        Array.from(files).forEach(file => {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.createElement('img');
+                img.src = e.target.result;
+                img.dataset.file = file.name;
+                imagePreviewContainer.appendChild(img);
+                img.addEventListener('click', function() {
+                    currentImageElement = img;
+                    $('#imageToCrop').attr('src', e.target.result);
+                    $('#cropModal').modal('show');
+                    if (currentCropper) {
+                        currentCropper.destroy();
+                    }
+                    currentCropper = new Cropper(document.getElementById('imageToCrop'), {
+                        aspectRatio: 1,
+                        viewMode: 1,
+                    });
+                });
+            };
+            reader.readAsDataURL(file);
+        });
+    });
+
+    document.getElementById('cropButton').addEventListener('click', function() {
+        const canvas = currentCropper.getCroppedCanvas();
+        currentImageElement.src = canvas.toDataURL();
+        $('#cropModal').modal('hide');
+    });
+</script>
+{% endblock %}

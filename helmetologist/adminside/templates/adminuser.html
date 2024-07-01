@@ -1,0 +1,142 @@
+{% extends "adminbase.html" %}
+
+{% block title %} Admin-user view {% endblock %}
+
+
+<!-- this block coustome styles eg : -->
+{% block extra_styles %}
+
+<style>
+  .status-active {
+      color: green;
+      font-weight: bold;
+  }
+  .status-inactive {
+      color: red;
+      font-weight: bold;
+  }
+</style>
+
+{% endblock %}
+<!-- end styles -->
+
+{% block nav_links %}
+<!-- <li class="dropdown">
+  <a href="{% url 'admindashboard' %}" class="nav-link"><i data-feather="monitor"></i><span>Dashboard</span></a>
+</li> -->
+
+{% endblock %}
+
+<!-- main content start -->
+{% block content %}
+{% load static %}   
+      <!-- Main Content -->
+      <section class="section">
+        <div class="section-body">
+        <div class="row">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-header">
+                <h4>Table of user details</h4>
+              </div>
+              <div class="card-body">
+                <div class="table-responsive">
+                  <table class="table table-striped table-hover" id="save-stage" style="width:100%;">
+                    <thead>
+                      <tr>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for user in users %}
+                      <tr data-user-id="{{ user.id }}">
+                        <td>{{ user.first_name }}</td>
+                        <td>{{ user.last_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td class="user-status {% if user.is_active %}status-active{% else %}status-inactive{% endif %}">{{ user.is_active|yesno:"Active,Inactive" }}</td>
+                        <td>
+                          {% if user.is_active %}
+                          <button class="block-user btn btn-danger">Block</button>
+                          {% else %}
+                          <button class="unblock-user btn btn-success">Unblock</button>
+                          {% endif %}
+                        </td>
+                      </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+      
+                  </div>
+                </div>
+              </div>
+            </div>
+         </div>
+        </div>
+      </section>
+
+{% endblock %}
+<!-- main content start -->
+
+
+{% block scripts %}
+
+<script src="{% static 'adminassets/js/app.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/jquery-ui/jquery-ui.min.js' %}"></script>
+<script src="{% static 'adminassets/js/page/datatables.js' %}"></script>
+<script src="{% static 'adminassets/js/scripts.js' %}"></script>
+<script src="{% static 'adminassets/js/custom.js' %}"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('.block-user').click(function() {
+      var userId = $(this).closest('tr').data('user-id');
+      $.ajax({
+        url: '{% url "block_user" user_id=0 %}'.replace('0', userId),
+        type: 'POST',
+        data: {
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+          if (response.success) {
+            var row = $('tr[data-user-id="' + userId + '"]');
+            row.find('.user-status').text('Inactive').removeClass('status-active').addClass('status-inactive');
+            row.find('.block-user').removeClass('btn-danger block-user').addClass('btn-success unblock-user').text('Unblock');
+          } else {
+            alert(response.message);
+          }
+        }
+      });
+    });
+
+     $(document).on('click', '.unblock-user', function() {
+      var userId = $(this).closest('tr').data('user-id');
+      $.ajax({
+        url: '{% url "unblock_user" user_id=0 %}'.replace('0', userId),
+        type: 'POST',
+        data: {
+          'csrfmiddlewaretoken': '{{ csrf_token }}'
+        },
+        success: function(response) {
+          if (response.success) {
+            var row = $('tr[data-user-id="' + userId + '"]');
+            row.find('.user-status').text('Active').removeClass('status-inactive').addClass('status-active');
+            row.find('.unblock-user').removeClass('btn-success unblock-user').addClass('btn-danger block-user').text('Block');
+          } else {
+            alert(response.message);
+          }
+        }
+      });
+    });
+  });
+</script>
+
+{% endblock %}
+
