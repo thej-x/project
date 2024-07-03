@@ -32,14 +32,16 @@ class Products(models.Model):
     def __str__(self):
         return self.name
     
-class colour_product(models.Model):
+class Colour_product(models.Model):
     product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='colour_variants')
     color_name = models.CharField(max_length=50)
-
-    img1 = models.ImageField(upload_to="products/", null=True)
-    img2 = models.ImageField(upload_to="products/", null=True)
-    img3 = models.ImageField(upload_to="products/", null=True)
     is_listed = models.BooleanField(default=True)
-    
     def __str__(self):
         return f"{self.color_name} ({self.product.name})"
+
+class Colour_image(models.Model):
+    colour_product = models.ForeignKey(Colour_product, on_delete=models.CASCADE, related_name='colour_variants')
+    img = models.ImageField(upload_to="products/", null=True)
+    
+    def __str__(self):
+        return f"{self.colour_product.product}"   
