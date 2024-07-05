@@ -199,4 +199,4 @@ LOGIN_URL = 'loginpage'
 LOGOUT_URL = 'logout'
 LOGIN_REDIRECT_URL ='index'
 
-
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024

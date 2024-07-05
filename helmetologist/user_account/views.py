@@ -23,7 +23,7 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import logout as auth_logout
 from .models import UserData
 from category.models import Category
-from products.models import Products
+from products.models import Products,Colour_product,Colour_image
 from django.contrib.auth import get_user_model
 
 
@@ -31,8 +31,20 @@ from django.contrib.auth import get_user_model
 
 def index(request):
     Categories = Category.objects.all()
+    products = Products.objects.all().prefetch_related('colour_variants__images')
+    
+    return render(request,'index.html',
+                    {
+                    'Categories': Categories,
+                    'Products':products,
+                    }
+                  )
+
+def base(request):
+    Categories = Category.objects.all()
     products = Products.objects.all()
-    return render(request,'index.html',{'Categories': Categories,'Products':products})
+    return render(request,'base.html',{'Categories': Categories,'Products':products})
+
 
 def signuppage(request):
     if request.method == 'POST':

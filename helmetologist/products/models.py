@@ -2,6 +2,7 @@ from django.db import models
 from PIL import Image
 from django.utils.text import slugify
 from category.models import Category
+from django.core.validators import MaxValueValidator
 
 # Create your models here.
 class Products(models.Model):
@@ -35,13 +36,14 @@ class Products(models.Model):
 class Colour_product(models.Model):
     product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='colour_variants')
     color_name = models.CharField(max_length=50)
+    quantity = models.PositiveIntegerField(validators=[MaxValueValidator(9999)],null=True)
     is_listed = models.BooleanField(default=True)
     def __str__(self):
         return f"{self.color_name} ({self.product.name})"
 
 class Colour_image(models.Model):
-    colour_product = models.ForeignKey(Colour_product, on_delete=models.CASCADE, related_name='colour_variants')
+    colour_product = models.ForeignKey(Colour_product, on_delete=models.CASCADE, related_name='images')
     img = models.ImageField(upload_to="products/", null=True)
     
     def __str__(self):
-        return f"{self.colour_product.product}"   
+        return f"{self.colour_product.product}"

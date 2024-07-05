@@ -33,57 +33,7 @@
                 </div>
                 <div class="card-body">
                     <div id="addProductsFormContainer">
-                        <!-- <form id="addProductsForm" action="{% url 'add_products' %}" method="post" enctype="multipart/form-data">
-                            {% csrf_token %}
-                            <div class="form-group">
-                                <label for="product_name">Product Name</label>
-                                <input type="text" class="form-control" id="product_name" name="product_name" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="price">Price</label>
-                                <input type="text" class="form-control" id="price" name="price" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="thumbnail">Thumbnail</label>
-                                <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*" required>
-                            </div>
-                            <div class="form-group">
-                                <label for="description">Description</label>
-                                <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label for="category">Category</label>
-                                <select class="form-control" id="category" name="category" required>
-                                    {% for category in Categories %}
-                                    <option value="{{ category.id }}">{{ category.cat_name }}</option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-
-
-                            <div class="form-group">
-                                <label for="colour_variant_name">Colour Variant Name</label>
-                                <input type="text" class="form-control" id="colour_variant_name" name="colour_variant_name" required>
-                            </div>
-                            <div class="form-group">
-                                <label>Variant Images</label>
-                                <input type="file" id="variantImages" name="variant_images" class="file-upload-default" multiple>
-                                <div class="input-group col-xs-12">
-                                  <input type="text" class="form-control file-upload-info" disabled placeholder="Upload Images">
-                                  <span class="input-group-append">
-                                    <button class="file-upload-browse btn btn-primary" type="button"
-                                      onclick="document.getElementById('variantImages').click();">Upload</button>
-                                  </span>
-                                </div>
-                                <div class="uploaded-images mt-3" id="uploadedImages"></div>
-                              </div>
-                            <div id="image-preview-container" class="preview-container"></div>
-                            <div class="form-group">
-                                <button type="button" class="btn btn-secondary" id="cancelAddProduct">Cancel</button>
-                                <button type="submit" class="btn btn-primary">Submit</button>
-                            </div>
-                        </form> -->
+                       
                         <form id="addProductsForm" action="{% url 'add_products' %}" method="post" enctype="multipart/form-data">
                             {% csrf_token %}
                             <div class="form-group">
@@ -92,7 +42,7 @@
                             </div>
                             <div class="form-group">
                                 <label for="price">Price</label>
-                                <input type="text" class="form-control" id="price" name="price" required>
+                                <input type="number" class="form-control" id="price" name="price" required>
                             </div>
                             <div class="form-group">
                                 <label for="thumbnail">Thumbnail</label>
@@ -102,6 +52,7 @@
                                 <label for="description">Description</label>
                                 <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
                             </div>
+                         
                             <div class="form-group">
                                 <label for="category">Category</label>
                                 <select class="form-control" id="category" name="category" required>
@@ -115,6 +66,10 @@
                                 <label for="colour_variant_name">Colour Variant Name</label>
                                 <input type="text" class="form-control" id="colour_variant_name" name="colour_variant_name" required>
                             </div>
+                            <div class="form-group">
+                              <label for="quantity">Quantity</label>
+                              <input type="number" class="form-control" id="quantity" name="quantity" min="0" required>
+                          </div>
                             <div class="form-group">
                                 <label>Variant Images</label>
                                 <input type="file" id="variantImages" name="variant_images" class="file-upload-default" multiple>
@@ -144,7 +99,7 @@
         <!-- Cropper Modal -->
         <div class="modal fade" id="cropperModal_2" tabindex="1" role="dialog" aria-labelledby="cropperModalLabel"
           aria-hidden="true">
-          <div class="modal-dialog modal-xl" role="document">
+          <div class="modal-dialog modal-md" role="document">
             <div class="modal-content">
               <div class="modal-header">
                 <h5 class="modal-title" id="cropperModalLabel">Crop Image</h5>
@@ -213,8 +168,8 @@
       
         $('#cropButt').on('click', function () {
           const canvas = cropper.getCroppedCanvas({
-            width: 200,
-            height: 200,
+            width: 1600,  // Increase resolution
+            height: 1920, // Increase resolution
           });
       
           canvas.toBlob(function (blob) {
@@ -224,7 +179,7 @@
             $('#variantImages').val('');
       
             handleCroppedImage(croppedFile);
-          }, 'image/png');
+          }, 'image/png',1);
         });
       
         function handleCroppedImage(file) {
@@ -279,102 +234,5 @@
       });
       
 </script>
-  <!-- <script>
-    $(document).ready(function () {
-      let cropper;
-      let base64Images = [];
-
-      $('#variantImages').on('change', function (event) {
-        const files = event.target.files;
-        const reader = new FileReader();
-
-        reader.onload = function (e) {
-          if (cropper) {
-            cropper.destroy();
-          }
-
-          $('#cropperImage').attr('src', e.target.result);
-          $('#cropperModal_2').modal('show');
-        };
-
-        reader.readAsDataURL(files[0]);
-      });
-
-      $('#cropperModal_2').on('shown.bs.modal', function () {
-        cropper = new Cropper(document.getElementById('cropperImage'), {
-          aspectRatio: 1,
-          viewMode: 2,
-          background: false,
-          zoomable: false,
-        });
-      });
-
-      $('#cropButt').on('click', function () {
-        const canvas = cropper.getCroppedCanvas({
-          width: 200,
-          height: 200,
-        });
-
-        canvas.toBlob(function (blob) {
-          const croppedFile = new File([blob], 'variant-image.png', { type: 'image/png' });
-
-          $('#cropperModal_2').modal('hide');
-          $('#variantImages').val('');
-
-          handleCroppedImage(croppedFile);
-        }, 'image/png');
-      });
-
-      function handleCroppedImage(file) {
-        const uploadedImagesContainer = document.getElementById('uploadedImages');
-        const imgContainer = document.createElement('div');
-        imgContainer.classList.add('position-relative');
-        const croppedImg = new Image();
-        croppedImg.src = URL.createObjectURL(file);
-        croppedImg.classList.add('img-thumbnail');
-
-        const removeIcon = document.createElement('span');
-        removeIcon.classList.add('remove-icon', 'mdi', 'mdi-close-circle-outline');
-        removeIcon.setAttribute('title', 'Remove image');
-
-        // Store the base64 string
-        const reader = new FileReader();
-        reader.onloadend = function () {
-          const base64String = reader.result;
-
-          // Store base64 string in the container
-          imgContainer.dataset.base64 = base64String;
-
-          // Append the base64 string to the array and synchronize the hidden input
-          base64Images.push(base64String);
-          synchronizeHiddenInput();
-        };
-        reader.readAsDataURL(file);
-
-        removeIcon.addEventListener('click', function () {
-          // Remove base64 string from the array
-          const base64ToRemove = imgContainer.dataset.base64;
-          base64Images = base64Images.filter(base64 => base64 !== base64ToRemove);
-          synchronizeHiddenInput();
-
-          imgContainer.remove();
-        });
-
-        imgContainer.appendChild(croppedImg);
-        imgContainer.appendChild(removeIcon);
-        uploadedImagesContainer.appendChild(imgContainer);
-      }
-
-      function synchronizeHiddenInput() {
-        const hiddenInput = document.getElementById('croppedImages');
-        hiddenInput.value = base64Images.join('###'); // Unique delimiter to separate base64 strings
-      }
-
-      console.log(base64Images,'thsi is our images')
-    });
-
-
-
-   
-  </script> -->
+  
 {% endblock %}

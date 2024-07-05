@@ -2,6 +2,7 @@ from django.shortcuts import render,redirect
 from .models import Products,Colour_product,Colour_image,Category
 from django.http import HttpResponse,JsonResponse
 from django.shortcuts import get_object_or_404
+from django.contrib import messages
 from django.views.decorators.cache import never_cache
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.core.files.base import ContentFile
@@ -43,6 +44,7 @@ def unlist_product(request,products_id):
 
 
 def add_products(request):
+    
     if request.method == 'POST':
         product_name = request.POST.get('product_name')
         price = request.POST.get('price')
@@ -52,6 +54,22 @@ def add_products(request):
         colour_variant_name = request.POST.get('colour_variant_name')
         quantity = request.POST.get('quantity')
         
+        # Validate required fields
+        if not all([product_name, price, description, category_id, thumbnail, colour_variant_name, quantity]):
+            return HttpResponse("All fields are required", status=400)
+        try:
+            quantity = int(quantity)
+            if quantity <= 0:
+                raise ValueError
+        except ValueError:
+            messages.error(request, "Invalid quantity")
+            
+        # Fetch the category instance
+        try:
+            category = Category.objects.get(id=category_id)
+        except Category.DoesNotExist:
+            messages.error(request, "Category does not exist")
+                 
         # Fetch the category instance
         try:
             category = Category.objects.get(id=category_id)
@@ -127,18 +145,26 @@ def add_variant(request, products_id):
     
     return render(request, 'add_variant.html',{'product': product})
         
-def product_view(request, product_slug,product_id):
+def edit_product(request,product_id):
+
+    # try:    
+        product = Products.objects.get(id=product_id)     
+
+        if request.Method == 'POST':
+            name = request.POST.get('name')
+            price = request.POST.get('price')
+            
+        
+        
+def product_view(request, product_slug):
     product = get_object_or_404(Products, slug = product_slug)
-    colour_product = Colour_product.objects.get(id = product_id)
-    color_images = Colour_image.objects.filter(colour_product=colour_product)
-    products = Products.objects.get(id = colour_product.product.id)
-    item = Colour_product.objects.filter(product=colour_product.product.id, is_listed=True)
+    colour_product = product.colour_variants.filter(product=product)
+    
+    
+    
     context = {
         'product': product,
         'Colour_product': colour_product,
-        'color_images': color_images,
-        'Item': item,
-        'Products': products,
         }
     return render(request, 'product.html',context )
 

@@ -88,6 +88,18 @@
                             <!--End Wishlist-->
                             <!--Setting Dropdown-->
                             <div class="user-link iconset"><i class="icon an an-user-2"></i><span class="tooltip-label">Account</span></div>
+                            
+                            
+                            <!--End Setting Dropdown-->
+                            <!--Minicart Drawer-->
+                            <div class="header-cart iconset">
+                                <a href="#" class="site-header__cart btn-minicart" data-bs-toggle="modal" data-bs-target="#minicart-drawer">
+                                    <i class="icon an an-cart-l"></i><span class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">2</span><span class="tooltip-label">Cart</span>
+                                </a>
+                            </div>
+                            <!--End Minicart Drawer-->
+                            <!--Setting Dropdown-->
+                            <div class="user-link iconset"><i class="icon an an-user-2"></i><span class="tooltip-label">Account</span></div>
                             <div id="userLinks">
                                 <ul class="user-links">
                                     {% if user.is_authenticated %}
@@ -100,16 +112,6 @@
                                     
                                 </ul>
                             </div>
-                            <!--End Setting Dropdown-->
-                            <!--Minicart Drawer-->
-                            <div class="header-cart iconset">
-                                <a href="#" class="site-header__cart btn-minicart" data-bs-toggle="modal" data-bs-target="#minicart-drawer">
-                                    <i class="icon an an-cart-l"></i><span class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">2</span><span class="tooltip-label">Cart</span>
-                                </a>
-                            </div>
-                            <!--End Minicart Drawer-->
-                            <!--Setting Dropdown-->
-                            
                             <!--End Setting Dropdown-->
                         </div>
                         <!--End Right Action-->
@@ -236,13 +238,18 @@
                                                 <!-- start product image -->
                                                 <div class="product-image">
                                                     <!-- start product image -->
+                                                    {% with product.colour_variants.first.images.first as primary_image %}
                                                     <a href="{% url 'product' product.slug %}" class="product-img">
                                                         <!-- image -->
-                                                        <img class="primary blur-up lazyload" src="{{ product.thumbnail.url }}" alt="{{ product.name }}" title="">
+                                                        <img class="primary blur-up lazyload" src="{{ primary_image.img.url }}" alt="{{ product.name }}" title="">
                                                         <!-- End image -->
+                                                         {%endwith%}
+
+                                                         {% with product.colour_variants.first.images.last as hover_image %}
                                                         <!-- Hover image -->
-                                                        <img class="hover blur-up lazyload" src="{{ product.thumbnail.url }}" alt="{{ product.name }}" title="">
+                                                        <img class="hover blur-up lazyload" src="{{ hover_image.img.url }}" alt="{{ product.name }}" title="">
                                                         <!-- End hover image -->
+                                                        {%endwith%} 
                                                     </a>
                                                     <!-- end product image -->
                                             
