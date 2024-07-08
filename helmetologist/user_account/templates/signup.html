@@ -4,7 +4,6 @@
 {% load static %}
 
 {% block extra_styles %}
-
 <style>
     .password-container {
         position: relative;
@@ -17,254 +16,211 @@
         cursor: pointer;
     }
 </style>
-
 {% endblock %}
 
 {% block nav_links %}
-
 <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
-
 {% endblock %}
-   
 
-{% block content %}   
-
-            <!--Body Container-->
-            <div id="page-content">
-                <!--Collection Banner-->
-                <div class="collection-header">
-                    <div class="collection-hero">
-                        <div class="collection-hero__image"></div>
-                        <div class="collection-hero__title-wrapper container">
-                            <h1 class="collection-hero__title">Create An Account</h1>
-                            <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="index.html" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">Create An Account</span></div>
-                        </div>
-                    </div>
-                </div>
-                <!--End Collection Banner-->
-
-                <!--Container-->
-                <div class="container">
-                    <!--Main Content-->
-                    <div class="row">
-                        <div class="col-12 col-sm-12 col-md-12 col-lg-12 box mt-2 mt-lg-5">    
-                            <h3 class="h4 text-uppercase mb-3">Personal Information</h3>
-                            {% csrf_token %}
-                            <form id="signupForm" method="post" action="" accept-charset="UTF-8" class="customer-form" novalidate> 
-                                {% csrf_token %}
-                                <div class="row">
-                                    <div class="col-12 col-sm-12 col-md-6 col-lg-6">
-                                        <div class="form-group">
-                                            <label for="CustomerFirstName" class="d-none">First Name <span class="required">*</span></label>
-                                            <input id="CustomerFirstName" type="text" name="firstname" placeholder="First Name" required />
-                                            <div class="invalid-feedback">First name is required and cannot contain spaces.</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-sm-12 col-md-6 col-lg-6">
-                                        <div class="form-group">
-                                            <label for="CustomerLastName" class="d-none">Last Name <span class="required">*</span></label>
-                                            <input id="CustomerLastName" type="text" name="lastname" placeholder="Last Name" required />                       
-                                            <div class="invalid-feedback">Last name is required and cannot contain spaces.</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
-                                        <div class="form-group">
-                                            <label for="CustomerEmail" class="d-none">Email Address <span class="required">*</span></label>
-                                            <input id="CustomerEmail" type="email" name="email" placeholder="Email" required />                         
-                                            <div class="invalid-feedback">A valid email address is required.</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <h3 class="h4 text-uppercase mb-3">Login Information</h3>
-                                <div class="row">
-                                    <div class="col-12 col-sm-12 col-md-6 col-lg-6">
-                                        <div class="form-group password-container">
-            
-                                            <label for="CustomerPassword" class="d-none">Password <span class="required">*</span></label>
-                                            <input id="CustomerPassword" type="password" name="password1" placeholder="Password" required minlength="8" />
-                                            <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('CustomerPassword')"></i>
-                                            <div class="invalid-feedback">Password is required and must be at least 8 characters long.</div>
-                                        </div>
-                                    </div>
-                                    <div class="col-12 col-sm-12 col-md-6 col-lg-6">
-                                        <div class="form-group password-container">
-                                            <label for="CustomerConfirmPassword" class="d-none">Confirm Password <span class="required">*</span></label>
-                                            <input id="CustomerConfirmPassword" type="password" name="password2" placeholder="Confirm Password" required />
-                                            <i class="fas fa-eye toggle-password" onclick="togglePasswordVisibility('CustomerConfirmPassword')"></i>
-                                            <div class="invalid-feedback">Passwords must match.</div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <!-- Modal Structure -->
-                                     <div class="modal fade" id="messageModal" tabindex="-1" role="dialog" aria-labelledby="messageModalLabel" aria-hidden="true">
-                                        <div class="modal-dialog" role="document">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title" id="messageModalLabel">Alert</h5>
-                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                                        <span aria-hidden="true">&times;</span>
-                                                    </button>
-                                                </div>
-                                                <div class="modal-body">
-                                                    {% if messages %}
-                                                        {% for message in messages %}
-                                                            <p>{{ message }}</p>
-                                                        {% endfor %}
-                                                    {% endif %}
-                                                </div>
-                                                <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div> 
-                                    <div class="text-left col-12 col-sm-12 col-md-6 col-lg-6">
-                                        <input type="submit" class="btn rounded mb-3" value="Submit">
-                                    </div>
-                                    <div class="text-right col-12 col-sm-12 col-md-6 col-lg-6">
-                                        <a href="{% url 'login' %}"><i class="align-middle icon an an-an-double-left me-2"></i>Back To Login</a>
-                                    </div>
-                                </div>
-                            </form>                       
-                        </div>
-                    </div>
-                    <!--End Main Content-->
-                </div>
-                <!--End Container-->
+{% block content %}
+<!--Body Container-->
+<div id="page-content">
+    <!--Collection Banner-->
+    <div class="collection-header">
+        <div class="collection-hero">
+            <div class="collection-hero__image"></div>
+            <div class="collection-hero__title-wrapper container">
+                <h1 class="collection-hero__title">Create An Account</h1>
+                <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="index.html" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">Create An Account</span></div>
             </div>
-            <!--End Body Container-->
-{% endblock %}            
+        </div>
+    </div>
+    <!--End Collection Banner-->
 
-        
+    <!--Container-->
+    <div class="container">
+        <!--Main Content-->
+        <div class="row">
+            <div class="col-12 col-sm-12 col-md-12 col-lg-12 box mt-2 mt-lg-5">
+                <h3 class="h4 text-uppercase mb-3">Personal Information</h3>
+                <form id="signupForm" method="post" action="{% url 'signup' %}" accept-charset="UTF-8" class="customer-form" novalidate>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                <label for="CustomerUsertName" class="d-none">User Name <span class="required">*</span></label>
+                                <input id="CustomerUsertName" type="text" name="username" placeholder="User Name" required />
+                                <div class="invalid-feedback">Username is required and cannot contain spaces.</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-6">
+                            <div class="form-group">
+                                <label for="CustomerFirstName" class="d-none">First Name <span class="required">*</span></label>
+                                <input id="CustomerFirstName" type="text" name="firstname" placeholder="First Name" required />
+                                <div class="invalid-feedback">First name is required and cannot contain spaces.</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-6">
+                            <div class="form-group">
+                                <label for="CustomerLastName" class="d-none">Last Name <span class="required">*</span></label>
+                                <input id="CustomerLastName" type="text" name="lastname" placeholder="Last Name" required />
+                                <div class="invalid-feedback">Last name is required and cannot contain spaces.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+                            <div class="form-group">
+                                <label for="CustomerEmail" class="d-none">Email Address <span class="required">*</span></label>
+                                <input id="CustomerEmail" type="email" name="email" placeholder="Email" required />
+                                <div class="invalid-feedback">A valid email address is required.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <h3 class="h4 text-uppercase mb-3">Login Information</h3>
+                    <div class="row">
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-6">
+                            <div class="form-group password-container">
+                                <label for="CustomerPassword" class="d-none">Password <span class="required">*</span></label>
+                                <input id="CustomerPassword" type="password" name="password1" placeholder="Password" required minlength="8" />
+                                <div class="invalid-feedback">Password is required and must be at least 8 characters long.</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-12 col-md-6 col-lg-6">
+                            <div class="form-group password-container">
+                                <label for="CustomerConfirmPassword" class="d-none">Confirm Password <span class="required">*</span></label>
+                                <input id="CustomerConfirmPassword" type="password" name="password2" placeholder="Confirm Password" required />
+                                <div class="invalid-feedback">Passwords must match.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="text-left col-12 col-sm-12 col-md-6 col-lg-6">
+                            <input type="submit" class="btn rounded mb-3" value="Submit">
+                        </div>
+                        <div class="text-right col-12 col-sm-12 col-md-6 col-lg-6">
+                            <a href="{% url 'login' %}"><i class="align-middle icon an an-an-double-left me-2"></i>Back To Login</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!--End Main Content-->
+    </div>
+    <!--End Container-->
+</div>
+<!--End Body Container-->
+{% endblock %}
 
-{% block scripts %}        
-                <!-- JavaScript to trigger the modal if there are messages -->
-            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+{% block scripts %}
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            <!-- jQuery -->
-            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-          
-            <!-- Bootstrap JS -->
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Show SweetAlert with messages
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if messages %}
+            let messages = [
+                {% for message in messages %}
+                    "{{ message }}"{% if not forloop.last %},{% endif %}
+                {% endfor %}
+            ];
 
-            <script>
-                // Toggle password visibility
-                function togglePasswordVisibility(id) {
-                    var passwordField = document.getElementById(id);
-                    var toggleIcon = passwordField.nextElementSibling;
-        
-                    if (passwordField.type === "password") {
-                        passwordField.type = "text";
-                        toggleIcon.classList.remove("fa-eye");
-                        toggleIcon.classList.add("fa-eye-slash");
-                    } else {
-                        passwordField.type = "password";
-                        toggleIcon.classList.remove("fa-eye-slash");
-                        toggleIcon.classList.add("fa-eye");
-                    }
-                }
-        
-                // Show SweetAlert with messages
-                document.addEventListener('DOMContentLoaded', function() {
-                    {% if messages %}
-                        let messages = [
-                            {% for message in messages %}
-                                "{{ message }}"{% if not forloop.last %},{% endif %}
-                            {% endfor %}
-                        ];
-        
-                        // Display SweetAlert for each message
-                        messages.forEach(function(message) {
-                            Swal.fire({
-                                title: 'Alert',
-                                text: message,
-                                icon: 'danger   ',
-                                confirmButtonText: 'Close'
-                            });
-                        });
-                    {% endif %}
+            // Display SweetAlert for each message
+            messages.forEach(function(message) {
+                Swal.fire({
+                    title: 'Alert',
+                    text: message,
+                    icon: 'warning',
+                    confirmButtonText: 'Close'
                 });
-        
-                // Frontend form validation
-                document.getElementById('signupForm').addEventListener('submit', function(event) {
-                    event.preventDefault();
-                    event.stopPropagation();
-        
-                    let form = this;
-                    let isValid = true;
-                    let messages = [];
-        
-                    // Validate firstname
-                    let firstname = form.firstname.value.trim();
-                    if (!firstname || firstname.includes(' ')) {
-                        isValid = false;
-                        messages.push('First name is required and cannot contain spaces.');
-                        form.firstname.classList.add('is-invalid');
-                    } else {
-                        form.firstname.classList.remove('is-invalid');
-                    }
-        
-                    // Validate lastname
-                    let lastname = form.lastname.value.trim();
-                    if (!lastname || lastname.includes(' ')) {
-                        isValid = false;
-                        messages.push('Last name is required and cannot contain spaces.');
-                        form.lastname.classList.add('is-invalid');
-                    } else {
-                        form.lastname.classList.remove('is-invalid');
-                    }
-        
-                    // Validate email
-                    let email = form.email.value.trim();
-                    if (!email || email.includes(' ') || !/^\S+@\S+\.\S+$/.test(email)) {
-                        isValid = false;
-                        messages.push('A valid email address is required.');
-                        form.email.classList.add('is-invalid');
-                    } else {
-                        form.email.classList.remove('is-invalid');
-                    }
-        
-                    // Validate password
-                    let password1 = form.password1.value;
-                    if (!password1 || password1.includes(' ') || password1.length < 8) {
-                        isValid = false;
-                        messages.push('Password is required and must be at least 8 characters long.');
-                        form.password1.classList.add('is-invalid');
-                    } else {
-                        form.password1.classList.remove('is-invalid');
-                    }
-        
-                    // Validate confirm password
-                    let password2 = form.password2.value;
-                    if (password1 !== password2) {
-                        isValid = false;
-                        messages.push('Passwords must match.');
-                        form.password2.classList.add('is-invalid');
-                    } else {
-                        form.password2.classList.remove('is-invalid');
-                    }
-        
-                    if (isValid) {
-                        form.submit();
-                    } else {
-                        messages.forEach(function(message) {
-                            Swal.fire({
-                                title: 'Alert',
-                                text: message,
-                                icon: 'info',
-                                confirmButtonText: 'Close'
-                            });
-                        });
-                    }
-                });
-            </script>
-            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script>
-{% endblock %}            
+            });
+        {% endif %}
+    });
 
-   
+    // Frontend form validation
+    document.getElementById('signupForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        event.stopPropagation();
+
+        let form = this;
+        let isValid = true;
+        let messages = [];
+
+        // Validate username
+        let username = form.username.value.trim();
+        if (!username || username.includes(' ')) {
+            isValid = false;
+            messages.push('Username is required and cannot contain spaces.');
+            form.username.classList.add('is-invalid');
+        } else {
+            form.username.classList.remove('is-invalid');
+        }
+
+        // Validate firstname
+        let firstname = form.firstname.value.trim();
+        if (!firstname || firstname.includes(' ')) {
+            isValid = false;
+            messages.push('First name is required and cannot contain spaces.');
+            form.firstname.classList.add('is-invalid');
+        } else {
+            form.firstname.classList.remove('is-invalid');
+        }
+
+        // Validate lastname
+        let lastname = form.lastname.value.trim();
+        if (!lastname || lastname.includes(' ')) {
+            isValid = false;
+            messages.push('Last name is required and cannot contain spaces.');
+            form.lastname.classList.add('is-invalid');
+        } else {
+            form.lastname.classList.remove('is-invalid');
+        }
+
+        // Validate email
+        let email = form.email.value.trim();
+        if (!email || email.includes(' ') || !/^\S+@\S+\.\S+$/.test(email)) {
+            isValid = false;
+            messages.push('A valid email address is required.');
+            form.email.classList.add('is-invalid');
+        } else {
+            form.email.classList.remove('is-invalid');
+        }
+
+        // Validate password
+        let password1 = form.password1.value;
+        if (!password1 || password1.includes(' ') || password1.length < 8) {
+            isValid = false;
+            messages.push('Password is required and must be at least 8 characters long.');
+            form.password1.classList.add('is-invalid');
+        } else {
+            form.password1.classList.remove('is-invalid');
+        }
+
+        // Validate confirm password
+        let password2 = form.password2.value;
+        if (password1 !== password2) {
+            isValid = false;
+            messages.push('Passwords must match.');
+            form.password2.classList.add('is-invalid');
+        } else {
+            form.password2.classList.remove('is-invalid');
+        }
+
+        if (isValid) {
+            form.submit();
+        } else {
+            messages.forEach(function(message) {
+                Swal.fire({
+                    title: 'Alert',
+                    text: message,
+                    icon: 'warning',
+                    confirmButtonText: 'Close'
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -81,7 +81,7 @@
                                 <div id="userLinks">
                                     <ul class="user-links">
                                         {% if user.is_authenticated %}
-                                        <li><a href="{% url 'useraccount' %}">My account</a></li>
+                                        <li><a href="{% url 'useraccount' user.id %}">My account</a></li>
                                         <li><a href="{% url 'userlogout' %}">Logout</a></li>
                                         {% else %}
                                         <li><a href="{% url 'login' %}">Login</a></li>
@@ -488,7 +488,18 @@
             <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
             <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
             <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-          
+            <!-- Include jQuery -->
+            <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <!-- Add fade-out effect to alerts -->
+            <script>
+                $(document).ready(function() {
+                    setTimeout(function() {
+                        $(".alert").fadeOut("slow", function() {
+                            $(this).remove();
+                        });
+                    }, 5000); // 5000 milliseconds = 5 seconds
+                });
+            </script>
             <script>
    
             </script>

@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %} User login{% endblock %}
+{% load static %}
+
+{% block extra_styles %}
+
+
+{% endblock %}
+
+{% block nav_links %}
+<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+{% endblock %}
+
+
+{% block content %}  
+
+            <!--Body Container-->
+            <div id="page-content">
+                <!--Collection Banner-->
+                <div class="collection-header">
+                    <div class="collection-hero">
+                        <div class="collection-hero__image"></div>
+                        <div class="collection-hero__title-wrapper container">
+                            <h1 class="collection-hero__title">My Account</h1>
+                            <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="{% url 'index' %}" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">My Account</span></div>
+                        </div>
+                    </div>
+                </div>
+                <!--End Collection Banner-->
+
+                <!--Container-->
+                <div class="container pt-2">
+                    <!--Main Content-->
+                    <div class="dashboard-upper-info">
+                        <div class="row align-items-center g-0">
+                            <div class="col-xl-3 col-lg-3 col-sm-6">
+                                <div class="d-single-info">
+                                    <p class="user-name">Hello <span class="fw-600">optimal</span></p>
+                                    <p>(not optimal? <a class="link-underline fw-600" href="{% url 'userlogout' %}">Log Out</a>)</p>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-lg-4 col-sm-6">
+                                <div class="d-single-info">
+                                    <p>Need Assistance? Customer service at.</p>
+                                    <p><a href="mailto:admin@example.com">helmetologist@example.com</a></p>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-3 col-sm-6">
+                                <div class="d-single-info">
+                                    <p>E-mail them at </p>
+                                    <p><a href="mailto:support@example.com">{{user.email}}</a></p>
+                                </div>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-sm-6">
+                                <div class="d-single-info text-lg-center">
+                                    <a class="link-underline fw-600 view-cart" href="cart-style1.html"><i class="icon an an-sq-bag me-2"></i>View Cart</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4 mb-lg-5 pb-lg-5">
+                        <div class="col-xl-3 col-lg-2 col-md-12 mb-4 mb-lg-0">
+                         <!-- Nav tabs -->
+                         <ul class="nav flex-column bg-light h-100 dashboard-list" role="tablist">
+                            <li><a class="nav-link "  href="{% url 'useraccount' user.id %}">Dashboard</a></li>
+                            <li><a class="nav-link "  href="{% url 'orders' user.id %}">Orders</a></li>
+                            <li><a class="nav-link"  href="#{% url 'order_tracking' user.id %}">Orders tracking</a></li>
+                            <li><a class="nav-link active"  href="{% url 'add_address'%}">Addresses</a></li>
+                            <li><a class="nav-link "  href="{% url 'user_details' user.id %}">Account details</a></li>
+                            <li><a class="nav-link" href="{% url 'userlogout' %}">logout</a></li>
+                        </ul>
+                        <!-- End Nav tabs -->
+                        </div>
+
+                        <div class="col-xl-9 col-lg-10 col-md-12">
+                            <!-- Tab panes -->
+                            <div class="tab-content dashboard-content">
+                               
+
+                               
+
+                                <!-- Address -->
+                                <div id="address" class="tab-pane fade active show">
+                                    <h3>Addresses</h3>
+                                    <p class="xs-fon-13 margin-10px-bottom">The following addresses will be used on the checkout page by default.</p>
+                                    <div class="row">
+                                        {% for address in Addresses %}
+                                        <div class="col-12 col-sm-6 mb-4">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h5 class="card-title billing-address">Shipping address</h5>
+                                                    <a class="card-link link-underline view" href="#" data-toggle="modal" data-target="#editAddressModal" 
+                                                        data-id="{{ address.id }}" 
+                                                        data-name="{{ address.name }}" 
+                                                        data-house_no="{{ address.house_no }}" 
+                                                        data-city="{{ address.city }}" 
+                                                        data-state="{{ address.state }}" 
+                                                        data-country="{{ address.country }}" 
+                                                        data-pincode="{{ address.pincode }}" 
+                                                        data-phone="{{ address.phone }}">Edit</a>
+                                                    <a class="card-link link-underline view" href="#" data-toggle="modal" data-target="#deleteConfirmationModal" data-url="{% url 'delete_address' address.id %}">Delete</a>
+                                                    <p class="card-text">
+                                                        <strong>{{ address.name }}</strong><br>
+                                                        {{ address.house_no }},<br>
+                                                        {{ address.city }},{{ address.state }},<br>
+                                                        {{ address.country }}<br>
+                                                        Pincode: {{ address.pincode }}<br>
+                                                        Phone: {{ address.phone }}
+                                                    </p>
+                                                </div>
+                                               
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                            <div class="accordion add-address mt-3" id="address1">
+                                                <button class="collapsed btn btn--small rounded" type="button" data-bs-toggle="collapse" data-bs-target="#shipping" aria-expanded="false" aria-controls="shipping">Add Address</button>
+                                                <div id="shipping" class="accordion-collapse collapse" data-bs-parent="#address">
+                                                    <form class="address-from mt-3" method="post" action="{% url 'add_address' %}">
+                                                    {% csrf_token %}
+                                                    <fieldset>
+                                                        <h2 class="login-title mb-3">Shipping details</h2>
+                                                        <div class="row">
+                                                            <div class="form-group col-md-6 col-lg-12 col-xl-12">
+                                                                <label for="input-firstname1" class="d-none"> Name <span class="required-f">*</span></label>
+                                                                <input name="firstname" placeholder=" Name" value="" id="input-firstname1" type="text">
+                                                            </div>
+                                                        
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                                <label for="input-email1" class="d-none">Email <span class="required-f">*</span></label>
+                                                                <input name="email" placeholder="Email" value="" id="input-email1" type="email" required>
+                                                            </div>
+                                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                                <label for="input-telephone1" class="d-none">Phone number <span class="required-f">*</span></label>
+                                                                <input name="phone" placeholder="phone" value="" id="input-phone" type="tel">
+                                                            </div>
+                                                        </div>
+                                                        
+                                                        <div class="form-group">
+                                                            <label for="input-house-no" class="d-none">House No. <span class="required-f">*</span></label>
+                                                            <input name="house_no" placeholder="House No." value="" id="input-house-no" type="text">
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                                <label for="input-city" class="d-none">City <span class="required-f">*</span></label>
+                                                                <input name="city" placeholder="City" value="" id="input-city" type="text">
+                                                            </div>
+                                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                                <label for="input-state" class="d-none">State <span class="required-f">*</span></label>
+                                                                <input name="state" placeholder="State" value="" id="input-state" type="text">
+                                                            </div>
+                                                        </div>
+                                                        <div class="row">
+                                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                                <label for="input-country" class="d-none">Country <span class="required-f">*</span></label>
+                                                                <input name="country" placeholder="Country" value="" id="input-country" type="text">
+                                                            </div>
+                                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                                <label for="input-pincode" class="d-none">Pincode <span class="required-f">*</span></label>
+                                                                <input name="pincode" placeholder="Pincode" value="" id="input-pincode" type="text">
+                                                            </div>
+                                                        </div>
+                                                        <div class="form-group">
+                                                            <button type="submit" class="btn rounded mb-3">Submit</button>
+                                                        </div>
+                                                        <br>
+                                                        {% if messages %}
+                                                        {% for message in messages %}
+                                                            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                                                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
+                                                                <div>
+                                                                    {{ message }}
+                                                                </div>
+                                                            </div>
+                                                        {% endfor %}
+                                                    {% endif %} 
+                                                    </fieldset>
+                                                </form>
+
+                                                </div>
+                                             
+                                            </div>
+                                            </div>
+                                        </div>
+                                    
+                                    </div>
+                                </div>
+                                <!-- End Address -->
+                                 
+                                <!-- confiramtion modal -->
+                                <div class="modal fade" id="deleteConfirmationModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmationModalLabel" aria-hidden="true">
+                                    <div class="modal-dialog" role="document">
+                                      <div class="modal-content">
+                                        <div class="modal-header">
+                                          <h5 class="modal-title" id="deleteConfirmationModalLabel">Confirm Deletion</h5>
+                                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                          </button>
+                                        </div>
+                                        <div class="modal-body">
+                                          Are you sure you want to delete this address?
+                                        </div>
+                                        <div class="modal-footer">
+                                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                                          <a id="confirmDeleteButton" class="btn btn-danger" href="#">Delete</a>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  
+<!-- Edit Modal HTML -->
+<div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="editAddressForm" method="post" action="{% url 'edit_address' address.id %}">
+            {% csrf_token %}
+            <input type="hidden" name="address_id" id="editAddressId">
+            <div class="form-group">
+              <label for="edit-name">Name</label>
+              <input type="text" class="form-control" value="{{ address.firstname }}" id="editName" name="name" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-house-no">House No.</label>
+              <input type="text" class="form-control" value="{{ address.house_no }}" id="editHouseNo" name="house_no" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-city">City</label>
+              <input type="text" class="form-control" value="{{ address.city }}" id="editCity" name="city" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-state">State</label>
+              <input type="text" class="form-control" value="{{ address.state }}" id="editState" name="state" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-country">Country</label>
+              <input type="text" class="form-control" value="{{ address.country }}" id="editCountry" name="country" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-pincode">Pincode</label>
+              <input type="text" class="form-control" value="{{ address.pincode }}" id="editPincode" name="pincode" required>
+            </div>
+            <div class="form-group">
+              <label for="edit-phone">Phone</label>
+              <input type="tel" class="form-control" value="{{ address.phone }}" id="editPhone" name="phone" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+                               
+                            </div>
+                            <!-- End Tab panes -->
+                        </div>
+                    </div>
+                    <!--End Main Content-->
+                </div>
+                <!--End Container-->
+            </div>
+            <!--End Body Container-->
+
+            {% endblock %}
+
+         
+            {% block scripts %}
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+            <script>
+                $('#deleteConfirmationModal').on('show.bs.modal', function (event) {
+                  var button = $(event.relatedTarget); // Button that triggered the modal
+                  var url = button.data('url'); // Extract info from data-* attributes
+                  var modal = $(this);
+                  modal.find('#confirmDeleteButton').attr('href', url);
+                });
+              </script>
+                <script>
+                    document.querySelector('.address-form').addEventListener('submit', function(event) {
+                        let formIsValid = true;
+                        
+                        const firstname = document.getElementById('input-firstname1');
+                        const email = document.getElementById('input-email1');
+                        const phone = document.getElementById('input-phone');
+                        const houseNo = document.getElementById('input-house-no');
+                        const city = document.getElementById('input-city');
+                        const state = document.getElementById('input-state');
+                        const country = document.getElementById('input-country');
+                        const pincode = document.getElementById('input-pincode');
+                    
+                        // Example: Check if phone number is valid
+                        const phonePattern = /^[0-9]{10}$/;
+                        if (!phonePattern.test(phone.value)) {
+                            formIsValid = false;
+                            alert('Please enter a valid 10-digit phone number.');
+                        }
+                    
+                        // Example: Check if pincode is valid
+                        const pincodePattern = /^[0-9]{6}$/;
+                        if (!pincodePattern.test(pincode.value)) {
+                            formIsValid = false;
+                            alert('Please enter a valid 6-digit pincode.');
+                        }
+                    
+                        // Prevent form submission if validation fails
+                        if (!formIsValid) {
+                            event.preventDefault();
+                        }
+                    });
+                    </script>
+                    <script>
+                        $('#editAddressModal').on('show.bs.modal', function (event) {
+                          var button = $(event.relatedTarget); // Button that triggered the modal
+                          var modal = $(this);
+                      
+                          // Populate the modal with the data attributes from the button
+                          modal.find('#editAddressId').val(button.data('id'));
+                          modal.find('#editName').val(button.data('name'));
+                          modal.find('#editHouseNo').val(button.data('house_no'));
+                          modal.find('#editCity').val(button.data('city'));
+                          modal.find('#editState').val(button.data('state'));
+                          modal.find('#editCountry').val(button.data('country'));
+                          modal.find('#editPincode').val(button.data('pincode'));
+                          modal.find('#editPhone').val(button.data('phone'));
+                        });
+                      </script>
+            {% endblock %}
