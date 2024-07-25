@@ -1,5 +1,6 @@
 from django.contrib import admin
-from .models import Products,Colour_product,Colour_image# Register your models here.
+from .models import Products,ProductImage
 admin.site.register(Products)
-admin.site.register(Colour_product)
-admin.site.register(Colour_image)
+admin.site.register(ProductImage)
+
+

@@ -7,7 +7,7 @@ from user_account.models import User
 from django.http import JsonResponse
 from django.views.decorators.http import require_POST
 
-
+from django.contrib.auth import logout as auth_logout
 
 
 def is_superuser(user):
@@ -61,6 +61,7 @@ def block_user(request, user_id):
     except User.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'User not found'})
 
+
 @login_required(login_url='/adminlogin/')
 @user_passes_test(is_superuser)
 @require_POST
@@ -72,4 +73,9 @@ def unblock_user(request, user_id):
         return JsonResponse({'success': True})
     except User.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'User not found'})    
-    
+
+
+@never_cache 
+def adminlogout(request):
+    auth_logout(request)
+    return render(request,'adminlogin.html')

@@ -10,4 +10,5 @@ urlpatterns = [
     path('adminuser/', views.adminuser,name='adminuser'),
      path('block_user/<int:user_id>/', views.block_user, name='block_user'),
     path('unblock_user/<int:user_id>/', views.unblock_user, name='unblock_user'),
+    path('adminlogout/',views.adminlogout,name='adminlogout')
 ]

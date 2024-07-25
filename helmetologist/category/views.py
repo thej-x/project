@@ -1,6 +1,8 @@
 from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import get_object_or_404
 from .models import Category
+from products.models import Products
+
 from django.contrib import messages
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
@@ -68,11 +70,16 @@ def add_category(request):
 
 def unlist_category(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
-    
+    products = Products.objects.filter(category=category)
     if request.method == 'POST':
         category.is_listed = not category.is_listed  # Toggle the is_listed flag
         category.save()
+        for product in products:
+            product.is_listed=not product.is_listed
+            product.save()
+            
         return redirect('admincategory') 
+    
     
     return render(request, 'admincategory.html', {'category': category})
 

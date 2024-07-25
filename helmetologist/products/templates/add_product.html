@@ -43,7 +43,7 @@
                             <div class="form-group">
                                 <label for="price">Price</label>
                                 <input type="number" class="form-control" id="price" name="price" required>
-                            </div>
+                            </div>  
                             <div class="form-group">
                                 <label for="thumbnail">Thumbnail</label>
                                 <input type="file" class="form-control" id="thumbnail" name="thumbnail" accept="image/*" required>
@@ -52,6 +52,11 @@
                                 <label for="description">Description</label>
                                 <textarea class="form-control" id="description" name="description" rows="3" required></textarea>
                             </div>
+
+                            <div class="form-group">
+                              <label for="details">Details</label>
+                              <textarea class="form-control" id="details" name="details" rows="3" required></textarea>
+                          </div>
                          
                             <div class="form-group">
                                 <label for="category">Category</label>
@@ -63,31 +68,42 @@
                             </div>
                         
                             <div class="form-group">
-                                <label for="colour_variant_name">Colour Variant Name</label>
-                                <input type="text" class="form-control" id="colour_variant_name" name="colour_variant_name" required>
-                            </div>
-                            <div class="form-group">
                               <label for="quantity">Quantity</label>
                               <input type="number" class="form-control" id="quantity" name="quantity" min="0" required>
                           </div>
-                            <div class="form-group">
-                                <label>Variant Images</label>
-                                <input type="file" id="variantImages" name="variant_images" class="file-upload-default" multiple>
-                                <div class="input-group col-xs-12">
-                                    <input type="text" class="form-control file-upload-info" disabled placeholder="Upload Images">
-                                    <span class="input-group-append">
-                                        <button class="file-upload-browse btn btn-primary" type="button" onclick="document.getElementById('variantImages').click();">Upload</button>
-                                    </span>
-                                </div>
-                                <div class="uploaded-images mt-3" id="uploadedImages"></div>
+                          <div class="form-group">
+                            <label>Product Images</label>
+                            <input type="file" id="variantImages" name="variant_images" class="file-upload-default" multiple>
+                            <div class="input-group col-xs-12">
+                                <input type="text" class="form-control file-upload-info" disabled placeholder="Upload Images">
+                                <span class="input-group-append">
+                                    <button class="file-upload-browse btn btn-primary" type="button" onclick="document.getElementById('variantImages').click();">Upload</button>
+                                </span>
                             </div>
+                            <div class="uploaded-images mt-3" id="uploadedImages"></div>
+                            <input type="hidden" id="croppedImages" name="cropped_images">
+                        </div>
+                        
                             <div id="image-preview-container" class="preview-container"></div>
                             <div class="form-group">
                                 <input type="hidden" id="croppedImages" name="croppedImages" value="">
-                                <button type="button" class="btn btn-secondary" id="cancelAddProduct">Cancel</button>
+                               <a href="{% url 'adminproducts' %}"> <button type="button" class="btn btn-secondary" id="cancelAddProduct">Cancel</button></a>
                                 <button type="submit" class="btn btn-primary">Submit</button>
                             </div>
                         </form>
+                        {% if messages %}
+                        <div class="messages text-center text-capitalize font-weight-bold">
+                      {% for message in messages %}
+                      {% if message.tags == 'error' %}
+                      <h5 class="text-danger">! {{ message }}</h5>
+                      {% elif message.tags == 'success' %}
+                      <h5 class="text-success">! {{ message }}</h5>
+                      {% else %}
+                      <h5>! {{ message }}</h5>
+                      {% endif %}
+                      {% endfor %}
+                      </div>
+                      {% endif %}
                     </div>
                 </div>
             </div>
@@ -95,30 +111,30 @@
     </div>
 </section>
 
-      <!-- modal -->
-        <!-- Cropper Modal -->
-        <div class="modal fade" id="cropperModal_2" tabindex="1" role="dialog" aria-labelledby="cropperModalLabel"
-          aria-hidden="true">
-          <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content">
-              <div class="modal-header">
-                <h5 class="modal-title" id="cropperModalLabel">Crop Image</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+     
+       <!-- Cropper Modal -->
+<div class="modal fade" id="cropperModal_2" tabindex="-1" role="dialog" aria-labelledby="cropperModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-md" role="document">
+      <div class="modal-content">
+          <div class="modal-header">
+              <h5 class="modal-title" id="cropperModalLabel">Crop Image</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                   <span aria-hidden="true">&times;</span>
-                </button>
-              </div>
-              <div class="modal-body">
-                <div class="img-container">
-                  <img id="cropperImage" src="" alt="Crop Image">
-                </div>
-              </div>
-              <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="cropButt">Crop Image</button>
-              </div>
-            </div>
+              </button>
           </div>
-        </div>
+          <div class="modal-body">
+              <div class="img-container">
+                  <img id="cropperImage" src="" alt="Crop Image">
+              </div>
+          </div>
+          <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+              <button type="button" class="btn btn-primary" id="cropButt">Crop Image</button>
+          </div>
+      </div>
+  </div>
+</div>
+
 
 {% endblock %}
 
@@ -137,102 +153,102 @@
   <!-- variant cropping -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.12/cropper.min.js"></script>
 <script>
-    $(document).ready(function () {
-        let cropper;
-        let base64Images = [];
-      
-        $('#variantImages').on('change', function (event) {
-          const files = event.target.files;
-          const reader = new FileReader();
-      
-          reader.onload = function (e) {
+  $(document).ready(function () {
+    let cropper;
+    let base64Images = [];
+
+    $('#variantImages').on('change', function (event) {
+        const files = event.target.files;
+        const reader = new FileReader();
+
+        reader.onload = function (e) {
             if (cropper) {
-              cropper.destroy();
+                cropper.destroy();
             }
-      
+
             $('#cropperImage').attr('src', e.target.result);
             $('#cropperModal_2').modal('show');
-          };
-      
-          reader.readAsDataURL(files[0]);
-        });
-      
-        $('#cropperModal_2').on('shown.bs.modal', function () {
-          cropper = new Cropper(document.getElementById('cropperImage'), {
+        };
+
+        reader.readAsDataURL(files[0]);
+    });
+
+    $('#cropperModal_2').on('shown.bs.modal', function () {
+        cropper = new Cropper(document.getElementById('cropperImage'), {
             aspectRatio: 1,
             viewMode: 2,
             background: false,
             zoomable: false,
-          });
         });
-      
-        $('#cropButt').on('click', function () {
-          const canvas = cropper.getCroppedCanvas({
+    });
+
+    $('#cropButt').on('click', function () {
+        const canvas = cropper.getCroppedCanvas({
             width: 1600,  // Increase resolution
             height: 1920, // Increase resolution
-          });
-      
-          canvas.toBlob(function (blob) {
+        });
+
+        canvas.toBlob(function (blob) {
             const croppedFile = new File([blob], 'variant-image.png', { type: 'image/png' });
-      
+
             $('#cropperModal_2').modal('hide');
             $('#variantImages').val('');
-      
+
             handleCroppedImage(croppedFile);
-          }, 'image/png',1);
-        });
-      
-        function handleCroppedImage(file) {
-          const uploadedImagesContainer = document.getElementById('uploadedImages');
-          const imgContainer = document.createElement('div');
-          imgContainer.classList.add('position-relative');
-          const croppedImg = new Image();
-          croppedImg.src = URL.createObjectURL(file);
-          croppedImg.classList.add('img-thumbnail');
-      
-          const removeIcon = document.createElement('span');
-          removeIcon.classList.add('remove-icon', 'mdi', 'mdi-close-circle-outline');
-          removeIcon.setAttribute('title', 'Remove image');
-      
-          // Store the base64 string
-          const reader = new FileReader();
-          reader.onloadend = function () {
+        }, 'image/png', 1);
+    });
+
+    function handleCroppedImage(file) {
+        const uploadedImagesContainer = document.getElementById('uploadedImages');
+        const imgContainer = document.createElement('div');
+        imgContainer.classList.add('position-relative');
+        const croppedImg = new Image();
+        croppedImg.src = URL.createObjectURL(file);
+        croppedImg.classList.add('img-thumbnail');
+
+        const removeIcon = document.createElement('span');
+        removeIcon.classList.add('remove-icon', 'mdi', 'mdi-close-circle-outline');
+        removeIcon.setAttribute('title', 'Remove image');
+
+        // Store the base64 string
+        const reader = new FileReader();
+        reader.onloadend = function () {
             const base64String = reader.result;
-      
+
             // Store base64 string in the container
             imgContainer.dataset.base64 = base64String;
-      
+
             // Append the base64 string to the array and synchronize the hidden input
             base64Images.push(base64String);
             synchronizeHiddenInput();
-          };
-          reader.readAsDataURL(file);
-      
-          removeIcon.addEventListener('click', function () {
+        };
+        reader.readAsDataURL(file);
+
+        removeIcon.addEventListener('click', function () {
             // Remove base64 string from the array
             const base64ToRemove = imgContainer.dataset.base64;
             base64Images = base64Images.filter(base64 => base64 !== base64ToRemove);
             synchronizeHiddenInput();
-      
+
             imgContainer.remove();
-          });
-      
-          imgContainer.appendChild(croppedImg);
-          imgContainer.appendChild(removeIcon);
-          uploadedImagesContainer.appendChild(imgContainer);
-        }
-      
-        function synchronizeHiddenInput() {
-          const hiddenInput = document.getElementById('croppedImages');
-          hiddenInput.value = base64Images.join('###'); // Unique delimiter to separate base64 strings
-        }
-      
-        // Synchronize the hidden input before form submission
-        $('#addProductsForm').on('submit', function () {
-          synchronizeHiddenInput();
         });
-      });
-      
+
+        imgContainer.appendChild(croppedImg);
+        imgContainer.appendChild(removeIcon);
+        uploadedImagesContainer.appendChild(imgContainer);
+    }
+
+    function synchronizeHiddenInput() {
+        const hiddenInput = document.getElementById('croppedImages');
+        hiddenInput.value = base64Images.join('###'); // Unique delimiter to separate base64 strings
+    }
+
+    // Synchronize the hidden input before form submission
+    $('#addProductsForm').on('submit', function () {
+        synchronizeHiddenInput();
+    });
+});
+
 </script>
   
 {% endblock %}

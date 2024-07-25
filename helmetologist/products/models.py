@@ -10,12 +10,15 @@ class Products(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     thumbnail = models.ImageField(upload_to="products/", null=True)
     description = models.TextField()
+    details = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
+    quantity = quantity = models.PositiveIntegerField(default=1)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_listed = models.BooleanField(default=True)
     slug = models.SlugField(unique=False, blank=True)
+    
     
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -33,17 +36,10 @@ class Products(models.Model):
     def __str__(self):
         return self.name
     
-class Colour_product(models.Model):
-    product = models.ForeignKey(Products, on_delete=models.CASCADE, related_name='colour_variants')
-    color_name = models.CharField(max_length=50)
-    quantity = models.PositiveIntegerField(validators=[MaxValueValidator(9999)],null=True)
-    is_listed = models.BooleanField(default=True)
-    def __str__(self):
-        return f"{self.color_name} ({self.product.name})"
-
-class Colour_image(models.Model):
-    colour_product = models.ForeignKey(Colour_product, on_delete=models.CASCADE, related_name='images')
-    img = models.ImageField(upload_to="products/", null=True)
+class ProductImage(models.Model):
+    product = models.ForeignKey(Products, related_name='images', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to='products/')
+    created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"{self.colour_product.product}"
+        return self.product.name

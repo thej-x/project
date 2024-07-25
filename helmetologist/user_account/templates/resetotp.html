@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %} otp verification{% endblock %}
+{% load static %}
+
+{% block extra_styles %}
+
+
+
+{% endblock %}
+
+{% block nav_links %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+{% endblock %}
+   
+
+{% block content %}   
+
+            <!--Body Container-->
+            <div id="page-content">   
+                <!--Collection Banner-->
+                <div class="collection-header">
+                    <div class="collection-hero">
+                        <div class="collection-hero__image"></div>
+                        <div class="collection-hero__title-wrapper container">
+                            <h1 class="collection-hero__title">Forgot Your Password</h1>
+                            <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="index.html" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">Forgot Your Password</span></div>
+                        </div>
+                    </div>
+                </div>
+                <!--End Collection Banner-->
+
+                <!--Container-->
+                <div class="container">
+                    <!--Main Content-->
+                    <div class="row">
+                        <div class="box col-12 col-sm-12 col-md-8 col-lg-6 offset-md-2 offset-lg-3">
+                            <form id="otp-form" accept-charset="UTF-8" class="customer-form mt-2 mt-lg-5">
+                                {% csrf_token %}
+                                <h3 class="h4 text-uppercase mb-2">OTP Verification</h3>
+                                <p>Please enter the OTP sent to your email address.</p>
+                                <div class="row">
+                                    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+                                        <div class="form-group">
+                                            <label for="OTP" class="d-none">Enter OTP <span class="required">*</span></label>
+                                            <input type="text" name="otp" id="OTP" placeholder="Enter OTP" required />
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+                                        <div id="timer" class="text-danger"></div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="text-left col-12 col-sm-12 col-md-12 col-lg-12">
+                                        <div class="d-flex align-items-center">
+                                            <input type="submit" class="btn rounded me-2" value="Verify OTP">
+                                            <button type="button" id="resend-otp" class="btn btn-secondary" style="display:none;">Resend OTP</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                            </form>
+                        </div>
+                    </div>
+                    
+                    <!--End Main Content-->
+                </div>
+                <!--End Container-->
+            </div>
+            <!--End Body Container-->
+{% endblock %}
+
+         
+{% block scripts %}
+
+                <!-- JavaScript to trigger the modal if there are messages -->
+            <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+            <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+          
+            <script>
+                document.addEventListener('DOMContentLoaded', (event) => {
+                    let timerElement = document.getElementById('timer');
+                    let resendButton = document.getElementById('resend-otp');
+                    let timeLeft = 120; // 2 minutes in seconds
+                
+                    let timerInterval = setInterval(() => {
+                        if (timeLeft <= 0) {
+                            clearInterval(timerInterval);
+                            timerElement.innerText = "OTP expired. Please resend OTP.";
+                            resendButton.style.display = 'inline-block';
+                        } else {
+                            let minutes = Math.floor(timeLeft / 60);  // Correct calculation for minutes
+                            let seconds = timeLeft % 60;
+                            timerElement.innerText = `Time left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                            timeLeft--;
+                        }
+                    }, 1000);
+                
+                    resendButton.addEventListener('click', () => {
+                        fetch("{% url 'resend_otp' %}", {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            }
+                        }).then(response => response.json()).then(data => {
+                            if (data.success) {
+                                timeLeft = 120; // Reset timer
+                                resendButton.style.display = 'none';
+                                timerInterval = setInterval(() => {
+                                    if (timeLeft <= 0) {
+                                        clearInterval(timerInterval);
+                                        timerElement.innerText = "OTP expired. Please resend OTP.";
+                                        resendButton.style.display = 'inline-block';
+                                    } else {
+                                        let minutes = Math.floor(timeLeft / 60);  // Correct calculation for minutes
+                                        let seconds = timeLeft % 60;
+                                        timerElement.innerText = `Time left: ${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
+                                        timeLeft--;
+                                    }
+                                }, 1000);
+                            } else {
+                                alert('Failed to resend OTP. Please try again.');
+                            }
+                        }).catch(error => {
+                            console.error('Error:', error);
+                        });
+                    });
+                
+                    document.getElementById('otp-form').addEventListener('submit', function(e) {
+                        e.preventDefault();
+                
+                        let formData = new FormData(this);
+                        fetch("{% url 'verifyotp' %}", {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            }
+                        }).then(response => response.json()).then(data => {
+                            if (data.success) {
+                                window.location.href = data.redirect_url;  // Redirect to resetpassword.html
+                            } else {
+                                alert(data.message);
+                            }
+                        }).catch(error => {
+                            console.error('Error:', error);
+                        });
+                    });
+                });
+                
+                </script>
+                
+{% endblock %}

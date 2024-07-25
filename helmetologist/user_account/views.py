@@ -1,10 +1,12 @@
 from django.shortcuts import render
 from django.shortcuts import redirect,render
 from django.contrib.auth.models import User
-from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth import authenticate,login,update_session_auth_hash
 from django.contrib import messages
 from django.views.decorators.cache import never_cache
 import re
+from django.urls import reverse  # Import reverse here
+from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.decorators import login_required
@@ -23,22 +25,30 @@ from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import logout as auth_logout
 from .models import Address
 from category.models import Category
-from products.models import Products,Colour_product,Colour_image
+from products.models import Products
 from django.contrib.auth import get_user_model
-
+from cart.models import *
 
 # Create your views here.
 
 def index(request):
-    Categories = Category.objects.all()
-    products = Products.objects.all().prefetch_related('colour_variants__images')
-    
-    return render(request,'index.html',
-                    {
-                    'Categories': Categories,
-                    'Products':products,
-                    }
-                  )
+    categories = Category.objects.all()
+    products = Products.objects.all()[:8]
+
+    if request.user.is_authenticated:
+        user = request.user
+        user_cart, created = Cart.objects.get_or_create(user=user)
+        cart_items = user_cart.cartproducts_set.count() 
+        cart_products = user_cart.cartproducts_set.all()
+    else:
+        cart_items = 0
+        cart_products = []
+
+    return render(request, 'index.html', {
+        'Categories': categories,
+        'Products': products,
+        'cart_count': cart_items
+    })
 
 def base(request):
     Categories = Category.objects.all()
@@ -89,7 +99,7 @@ def signuppage(request):
         if not re.match(r"^[A-Za-z0-9\.\+_-]+@[A-Za-z0-9\._-]+\.[a-zA-Z]*$", email):
             messages.error(request, "Invalid email")
             return redirect('signup')
-        if len(pass1) < 8:
+        if len(pass1) < 6:
             messages.error(request, "Password must be at least 8 characters long")
             return redirect('signup')
         if User.objects.filter(email=email).exists():
@@ -189,6 +199,13 @@ def resend_otp(request):
 
     return JsonResponse({'success': True, 'message': 'OTP resent successfully.'}, status=200)
 
+
+
+
+
+
+
+
 @never_cache
 def loginpage(request):
     if request.method == 'POST':
@@ -211,6 +228,133 @@ def loginpage(request):
 
     return render(request, 'login.html')
 
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            messages.error(request, "Email is incorrect. Please enter a valid email.")
+            return JsonResponse({'success': False, 'message': 'Email is incorrect. Please enter a valid email.'}, status=400)
+
+        # Generate OTP and save to user profile
+        otp = pyotp.TOTP(pyotp.random_base32()).now()
+        print(otp)
+        user.profile.otp = otp
+        user.profile.otp_created_at = timezone.now()
+        user.profile.save()
+
+        # Send OTP via email
+        subject = "Your OTP Code"
+        message = f"Your OTP code is {otp}. It is valid for 2 minutes."
+        # Replace 'your-email@example.com' with your actual email address
+        send_mail(subject, message, 'your-email@example.com', [user.email], fail_silently=False)
+
+        # Store user ID in session for OTP verification
+        request.session['otp_user_id'] = user.id
+
+        return render(request, 'resetotp.html')  # Redirect to OTP verification page
+
+    return render(request, 'forgotpassword.html')
+
+def verify_otp(request):
+    if request.method == 'POST':
+        try:
+            otp_entered = request.POST.get('otp')
+            user_id = request.session.get('otp_user_id')
+
+            if not user_id:
+                return JsonResponse({'success': False, 'message': 'User session expired. Please try again.'}, status=400)
+
+            user = User.objects.get(pk=user_id)
+
+            if user.profile.otp == otp_entered and user.profile.otp_created_at + timezone.timedelta(minutes=2) >= timezone.now():
+                # Clear OTP fields
+                user.profile.otp = None
+                user.profile.otp_created_at = None
+                user.profile.save()
+
+                # Clear session
+                del request.session['otp_user_id']
+
+                # Redirect to reset password page
+                request.session['reset_user_id'] = user.id
+                return JsonResponse({'success': True, 'redirect_url': reverse('resetpassword')})
+
+            else:
+                messages.error(request, "Invalid OTP. Please enter the correct OTP.")
+                return JsonResponse({'success': False, 'message': 'Invalid OTP. Please enter the correct OTP.'}, status=400)
+
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'User not found. Please try again.'}, status=400)
+
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=400)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=405)
+
+
+def resend_otp(request):
+    if request.method == 'POST':
+        user_id = request.session.get('otp_user_id')
+
+        if not user_id:
+            return JsonResponse({'success': False, 'message': 'User session expired. Please try again.'}, status=400)
+
+        try:
+            user = User.objects.get(pk=user_id)
+        except User.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'User not found. Please try again.'}, status=400)
+
+        # Generate new OTP and send via email
+        otp = pyotp.TOTP(pyotp.random_base32()).now()
+        user.profile.otp = otp
+        user.profile.otp_created_at = timezone.now()
+        user.profile.save()
+
+        # Send OTP via email
+        subject = "Your OTP Code"
+        message = f"Your OTP code is {otp}. It is valid for 2 minutes."
+        send_mail(subject, message, 'your-email@example.com', [user.email], fail_silently=False)
+
+        return JsonResponse({'success': True, 'message': 'OTP resent successfully. Please check your email.'}, status=200)
+
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'}, status=400)
+
+
+def reset_password(request):
+    if request.method == 'POST':
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+
+        if len(password1) < 6:
+            messages.error(request, "Password must be at least 6 characters long")
+            return redirect('resetpassword')
+        if password1 != password2:
+            messages.error(request, "New passwords do not match.")
+            return redirect('resetpassword')
+        
+        user_id = request.session.get('reset_user_id')
+        if not user_id:
+            messages.error(request, "Session expired or invalid.")
+            return redirect('resetpassword')
+
+        try:
+            user = User.objects.get(id=user_id)
+        except User.DoesNotExist:
+            messages.error(request, "User does not exist.")
+            return redirect('resetpassword')
+        
+        user.set_password(password1)
+        user.save()
+        messages.success(request, "Password changed successfully.")
+        return redirect('login')
+    
+    return render(request, 'resetpassword.html')
+
+
+
 def logout(request):
     auth_logout(request)
     return redirect("index")
@@ -229,40 +373,35 @@ def add_address(request):
         country = request.POST.get("country", "").strip()
         pincode = request.POST.get("pincode", "").strip()
         
-        # Validate that all fields are provided
-        # if not all([name, phone, email, house_no, city, state, country, pincode]):
-        #     messages.error(request, "Please provide all fields.")
-        #     return redirect('add_address')
+        if not all([name, phone, email, house_no, city, state, country, pincode]):
+            messages.error(request, "Please provide all fields.")
+            return redirect('view_address')
         
-        # Validate state
-        # indian_state = [
-        #     "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh",
-        #     "Assam", "Bihar", "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu",
-        #     "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand",
-        #     "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
-        #     "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana",
-        #     "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
-        # ]
-        # if state.casefold() not in [state_name.casefold() for state_name in indian_state]:
-        #     messages.error(request, "Please provide a valid state.")
-        #     return redirect('add_address')
+        indian_state = [
+            "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh",
+            "Assam", "Bihar", "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu",
+            "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand",
+            "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
+            "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana",
+            "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+        ]
+        if state.casefold() not in [state_name.casefold() for state_name in indian_state]:
+            messages.error(request, "Please provide a valid state.")
+            return redirect('view_address')
             
-        # Validate pincode
-        # if not re.match(r'^[1-9][0-9]{5}$', pincode):
-        #     messages.error(request, "Invalid pincode format. Please enter a valid Indian pincode.")
-        #     return redirect('add_address')
+        if not re.match(r'^[1-9][0-9]{5}$', pincode):
+            messages.error(request, "Invalid pincode format. Please enter a valid Indian pincode.")
+            return redirect('view_address')
         
-        # Validate email format
-        # if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
-        #     messages.error(request, "Invalid email format.")
-        #     return redirect('add_address')
+        if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
+            messages.error(request, "Invalid email format.")
+            return redirect('view_address')
         
-        # Validate phone number (assuming 10 digits for Indian phone numbers)
-        # if not re.match(r'^\d{10}$', phone):
-        #     messages.error(request, "Invalid phone number. Please enter a 10-digit phone number.")
-        #     return redirect('view_address')
+        if not re.match(r'^\d{10}$', phone):
+            messages.error(request, "Invalid phone number. Please enter a 10-digit phone number.")
+            return redirect('view_address')
 
-        # Create the address object
+        
         address_obj = Address.objects.create(
             user=user,
             name=name,
@@ -276,58 +415,115 @@ def add_address(request):
         )
         address_obj.save()
         messages.success(request, "Address added successfully")
+        return redirect('view_address')
+
+    return render(request, 'address.html')   
+ 
+@never_cache
+@login_required(login_url="login")
+def view_address(request):
     user = request.user
-    address = Address.objects.filter(user = user, is_delete=False)
-    
+    addresses = Address.objects.filter(user=user, is_delete=False)
+
     context = {
-        'user' : user,
-        'Addresses':address,
-        
+        'user': user,
+        'Addresses': addresses,
     }
+    return render(request, 'address.html', context)
 
-    return render(request, 'address.html',context)    
 
+@never_cache
+@login_required(login_url="login")
 def delete_address(request, add_id):
         user = request.user
-        address = Address.objects.get(pk=add_id)
+        address = Address.objects.get(pk=add_id,user=user)
         address.is_delete = True
         address.delete()
-        return redirect('add_address')
+        messages.success(request, 'Address deleted successfully')
+        return redirect('view_address')
     
-
-def edit_address(request,address_id):
-    address = Address.objects.get(pk=address_id)
+@never_cache
+@login_required(login_url="login")
+def edit_address(request, address_id):
+    address = get_object_or_404(Address, pk=address_id)
     
     if request.method == "POST":
-        name = request.POST.get("firstname", "").strip()
-        email = request.POST.get("email", "").strip()
-        phone = request.POST.get("phone", "").strip()
+        name = request.POST.get("name", "").strip()    
         house_no = request.POST.get("house_no", "").strip()
         city = request.POST.get("city", "").strip()
         state = request.POST.get("state", "").strip()
         country = request.POST.get("country", "").strip()
         pincode = request.POST.get("pincode", "").strip()
+        phone = request.POST.get("phone", "").strip()
         
-        address.name = name
-        address.email = email
-        address.phone = phone 
-        address.house_no = house_no
-        address.city = city
-        address.state = state
-        address.country = country
-        address.pincode = pincode
+        # Validate inputs
+        errors = []
+        if not name and len(name)<3:
+            errors.append("Name is required.")
+        if not house_no:
+            errors.append("House No. is required.")
+        if not city and len(city)<3:
+            errors.append("City is required.")
+        if not state and len(state)<3 :
+            errors.append("State is required.")
+        if not country and len(country)<3:
+            errors.append("Country is required.")
+        if not pincode:
+            errors.append("Pincode is required.")
+        if not phone:
+            errors.append("Phone is required.")
+        elif not phone.isdigit():
+            errors.append("Phone number should only contain digits.")
+        elif len(phone) < 10:
+            errors.append("Phone number should be at least 10 digits long.")
+        
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+        
 
-        address.save()
+    
+        indian_state = [
+            "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh",
+            "Assam", "Bihar", "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu",
+            "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand",
+            "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya",
+            "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana",
+            "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal",
+        ]
+        if state.casefold() not in [state_name.casefold() for state_name in indian_state]:
+            messages.error(request, "Please provide a valid state.")
+            return redirect('view_address')
+            
         
-        messages.success(request,'Adress updates sucessfully')
-        return redirect('add_address')
+        if not re.match(r'^[1-9][0-9]{5}$', pincode):
+            messages.error(request, "Invalid pincode format. Please enter a valid Indian pincode.")
+            return redirect('view_address')
+        
+        if not re.match(r'^\d{10}$', phone):
+            messages.error(request, "Invalid phone number. Please enter a 10-digit phone number.")
+            return redirect('view_address')
+        else:
+            address.name = name
+            address.house_no = house_no
+            address.city = city
+            address.state = state
+            address.country = country
+            address.pincode = pincode
+            address.phone = phone
+            
+            address.save()
+            
+            messages.success(request, 'Address updated successfully')
+            return redirect('view_address')  
     
     context = {
         'address': address
     }
-    return render(request, 'add_address.html', context)
+    return render(request, 'address.html', context)
         
-@login_required
+@never_cache
+@login_required(login_url="login")
 def useraccount(request,user_id):
     user = User.objects.get(id = user_id )
     address = Address.objects.filter(user=user)
@@ -338,7 +534,9 @@ def useraccount(request,user_id):
      
     return render(request, 'useraccount.html',context)
 
-@login_required
+
+@never_cache
+@login_required(login_url="login")
 def orders(request,user_id):
     user = User.objects.get(id = user_id )
     
@@ -348,7 +546,8 @@ def orders(request,user_id):
      
     return render(request, 'orders.html',context)
 
-@login_required
+@never_cache
+@login_required(login_url="login")
 def order_tracking(request,user_id):
     user = User.objects.get(id = user_id )
     
@@ -358,7 +557,8 @@ def order_tracking(request,user_id):
      
     return render(request, 'orders.html',context)
 
-@login_required
+@never_cache
+@login_required(login_url="login")
 def user_details(request, user_id):
     user = User.objects.get(id=user_id)
     
@@ -369,7 +569,7 @@ def user_details(request, user_id):
         
         password = request.POST.get('password')
         
-        # Validation
+        
         if not uname:
             messages.error(request, "Username field is required.")
         if not fname:
@@ -394,3 +594,136 @@ def user_details(request, user_id):
     }
     
     return render(request, 'userdetails.html', context)
+
+@never_cache
+@login_required(login_url="login")
+def change_password(request):
+    
+    user = request.user
+    if request.method == 'POST':
+        old_password = request.POST.get('old_password')
+        new_password1  = request.POST.get('new_password1')
+        new_password2  = request.POST.get('new_password2')
+        
+        
+        if len(new_password1) < 6:
+            messages.error(request, "Password must be at least 6 characters long")
+            return redirect('change_password')
+        if new_password1 != new_password2:
+            messages.error(request, "New passwords do not match.")
+            return redirect('change_password')
+        
+        user = authenticate(request,username=request.user.username, password=old_password)
+        if user is not None:
+            user.set_password(new_password1)
+            user.save()
+            update_session_auth_hash(request, user)  
+            messages.success(request, "Password changed successfully.")
+            return redirect('change_password')
+        else:
+            messages.error(request, "Old password is incorrect.")
+            return redirect('change_password')
+        
+    return render(request,'changepassword.html')
+
+
+@never_cache
+@login_required(login_url="login")
+def shop(request):
+    try:
+        # Get all products and order them by 'id' (or another field)
+        products = (
+            Products.objects
+            .select_related("product")
+            .filter(is_listed=True)
+            .order_by('product__id')  # Ensure this matches the distinct field
+            .distinct('product__id')
+        )
+
+        page_number = request.GET.get('page')
+        paginator = Paginator(products, 9)  # Show 9 products per page
+        page_obj = paginator.get_page(page_number)
+
+        category = Category.objects.filter(is_listed=True)
+        
+        
+        return render(
+            request,
+            "shop.html",
+            {"page_obj": page_obj, "categories": category, },
+        )
+    except Exception as e:
+        return render(request, "shop.html", {"error": str(e)})
+
+from django.db.models import OuterRef, Subquery, F,Q
+ 
+def  filtered(request):
+    try:
+        select_category = []
+        sort = request.GET.get('option')
+        page_number = request.GET.get('page')
+        
+        
+        ordering = 'product__price'
+        
+        if request.method == "GET":
+            if sort:
+                ordering = 'product__price' if sort == 'L' else '-product__price'
+                
+            select_category = request.GET.getlist('category')
+            products = Products.objects.filter(is_listed = True)
+
+            if select_category :
+                products = products.filter(
+                    Q(product__catagory__in=select_category) 
+                    
+                )
+
+            if select_category :
+                products = products.filter(
+                    Q(product__catagory__in=select_category) 
+                    
+                )
+
+            for category_id in select_category:
+                select_category.append(int(category_id))
+ 
+            subquery = Products.objects.filter(
+                product_id=OuterRef('product_id')
+            ).order_by(ordering).values('id')[:1]
+
+            products = products.filter(id__in=Subquery(subquery)).order_by(ordering)
+            paginator = Paginator(products, 9) 
+            page_obj = paginator.get_page(page_number)
+            categories = Category.objects.filter(is_listed=True)
+            
+
+            context = {
+                "page_obj": page_obj,
+                "categories": categories,
+                "selected_categories": select_category,
+                "sort": sort,
+            }
+
+            return render(request, "shop.html", context)
+        else:
+            return redirect('shop')
+
+
+
+    except Exception as e:
+        
+        return redirect('shop')    
+
+def wishlist(request):
+    
+
+    
+    
+    
+    context={
+        
+    }
+    return render(request,'wishlist.html',context)
+
+

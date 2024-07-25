@@ -70,7 +70,7 @@
                                 <div id="userLinks">
                                     <ul class="user-links">
                                         {% if user.is_authenticated %}
-                                        <li><a href="{% url 'useraccount' %}">My account</a></li>
+                                        <li><a href="{% url 'useraccount' user.id %}">My account</a></li>
                                         <li><a href="{% url 'userlogout' %}">Logout</a></li>
                                         {% else %}
                                         <li><a href="{% url 'login' %}">Login</a></li>
@@ -82,8 +82,8 @@
                                 <!--End Setting Dropdown-->
                                 <!--Minicart Drawer-->
                                 <div class="header-cart iconset">
-                                    <a href="cart-style1.html" class="site-header__cart btn-minicart" data-bs-toggle="modal" data-bs-target="#minicart-drawer">
-                                        <i class="icon an an-sq-bag"></i><span class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">2</span><span class="tooltip-label">Cart</span>
+                                    <a href="{% url 'cart_show' %}" class="site-header__cart btn-minicart"  >
+                                        <i class="icon an an-sq-bag"><span class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{cart_count}}</span><span class="tooltip-label">Cart</span></i>
                                     </a>
                                 </div>
                                 <!--End Minicart Drawer-->
@@ -306,37 +306,49 @@
                             <div class="col-lg-6 col-md-6 col-sm-12 col-12">
                                 
                                 <div class="product-details-img product-horizontal-style clearfix mb-3 mb-md-0">
-                                    {% if Colour_product %}
-                                    <div class="zoompro-wrap product-zoom-right w-100 p-0">
-                                        <div class="zoompro-span"><img id="zoompro" class="zoompro" src="{{ Colour_product.first.images.first.img.url }}" alt="product" /></div>
-                                        <div class="product-labels d-none"><span class="lbl pr-label1">new</span></div>
-                                        <div class="product-buttons">
-                                            <a href="https://www.youtube.com/watch?v=NpEaa2P7qZI" class="mfpbox mfp-with-anim btn rounded-0 popup-video d-none"><i class="icon an an-video"></i><span class="tooltip-label">Watch Video</span></a>
-                                            <a href="#" class="btn rounded-0 prlightbox"><i class="icon an an-expand-l-arrows"></i><span class="tooltip-label">Zoom Image</span></a>
+                                    {% if product %}
+                                        <div class="zoompro-wrap product-zoom-right w-100 p-0">
+                                            {% if product.images.exists %}
+                                                <div class="zoompro-span">
+                                                    <img id="zoompro" class="zoompro" src="{{ product.images.first.image.url }}" alt="product" />
+                                                </div>
+                                            {% elif product.thumbnail %}
+                                                <div class="zoompro-span">
+                                                    <img id="zoompro" class="zoompro" src="{{ product.thumbnail.url }}" alt="product" />
+                                                </div>
+                                            {% endif %}
+                                            <div class="product-labels d-none"><span class="lbl pr-label1">new</span></div>
+                                            <div class="product-buttons">
+                                                <a href="https://www.youtube.com/watch?v=NpEaa2P7qZI" class="mfpbox mfp-with-anim btn rounded-0 popup-video d-none">
+                                                    <i class="icon an an-video"></i><span class="tooltip-label">Watch Video</span>
+                                                </a>
+                                                <a href="#" class="btn rounded-0 prlightbox">
+                                                    <i class="icon an an-expand-l-arrows"></i><span class="tooltip-label">Zoom Image</span>
+                                                </a>
+                                            </div>
                                         </div>
-                                    </div>
+                                
+                                        <div class="product-thumb product-horizontal-thumb w-100 pt-2 mt-1">
+                                            <div id="gallery" class="product-thumb-style1 overflow-hidden">
+                                                {% for img in product.images.all %}
+                                                    <a data-image="{{ img.image.url }}" data-zoom-image="{{ img.image.url }}" class="slick-slide slick-cloned active">
+                                                        <img class="blur-up lazyload" data-src="{{ img.image.url }}" src="{{ img.image.url }}" alt="product" />
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                
+                                        <div class="lightboximages">
+                                            <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
+                                            <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
+                                            <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
+                                            <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
+                                            <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
+                                            <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
+                                        </div>
                                     {% endif %}
-                                    
-                                    <div class="product-thumb product-horizontal-thumb w-100 pt-2 mt-1">
-                                        <div id="gallery" class="product-thumb-style1 overflow-hidden">
-                                            {% for i in Colour_product.first.images.all %}
-                                            <a data-image="{{ i.img.url }}" data-zoom-image="{{ i.img.url }}" class="slick-slide slick-cloned active">
-                                                <img class="blur-up lazyload" data-src="{{ i.img.url }}" src="{{ i.img.url }}" alt="product" />
-                                            </a>
-                                            {% endfor %}
-                                            
-                                        </div>
-                                    </div>
-                                    <div class="lightboximages">
-                                        <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
-                                        <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
-                                        <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
-                                        <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
-                                        <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
-                                        <a href="{{ product.thumbnail.url }}" data-size="1000x1280"></a>
-                                    </div>
-                                    
                                 </div>
+                                
                             </div>
                             
                             
@@ -386,11 +398,11 @@
                                     <!-- Product Action -->
                                     <div class="product-action w-100 clearfix">
                                         <div class="product-form__item--quantity d-flex-center mb-3">
-                                            <div class="qtyField">
+                                            <!-- <div class="qtyField">
                                                 <a class="qtyBtn minus" href="javascript:void(0);"><i class="icon an an-minus-r" aria-hidden="true"></i></a>
                                                 <input type="text" name="quantity" value="1" class="product-form__input qty rounded-0">
                                                 <a class="qtyBtn plus" href="javascript:void(0);"><i class="icon an an-plus-r" aria-hidden="true"></i></a>
-                                            </div>
+                                            </div> -->
                                             <div class="pro-stockLbl ms-3">
                                                 <span class="d-flex-center stockLbl instock"><i class="icon an an-check-cil"></i><span> In stock</span></span>
                                                 <span class="d-flex-center stockLbl preorder d-none"><i class="icon an an-clock-r"></i><span> Pre-order Now</span></span>
@@ -398,32 +410,15 @@
                                                 <span class="d-flex-center stockLbl lowstock d-none" data-qty="15"><i class="icon an an-exclamation-cir"></i><span> Order now, Only  <span class="items">10</span>  left!</span></span>
                                             </div>
                                         </div>
-                                        <!-- Swatches Color -->
-                                        <div class="swatches-image swatch clearfix swatch-0 option1" data-option-index="0">
-                                            <div class="product-form__item">
-                                                <label class="label d-flex">Color:<span class="required d-none">*</span><span class="slVariant ms-1 fw-bold">Red</span></label>
-                                                <ul class="swatches d-flex-wrap list-unstyled clearfix">
-                                                    <li data-value="Green" class="swatch-element color green available active">
-                                                        <label class="swatchLbl rounded-circle color medium top green" title="Green"></label>
-                                                        <span class="tooltip-label top">Green</span>
-                                                    </li>
-                                                    <li data-value="Peach" class="swatch-element color peach available">
-                                                        <label class="swatchLbl rounded-circle color medium top peach" title="Peach"></label>
-                                                        <span class="tooltip-label top">Peach</span>
-                                                    </li>
-                                                    <li data-value="Green" class="swatch-element color white available">
-                                                        <label class="swatchLbl rounded-circle color medium top white" title="White"></label>
-                                                        <span class="tooltip-label top">White</span>
-                                                    </li>
-                                                </ul>
-                                            </div>
-                                        </div>
-                                        <!-- End Swatches Color -->
+                                        
+
                                         <div class="row g-2">
                                             <div class="col-12 col-sm-6 col-md-6 col-lg-6">
                                                 <div class="product-form__item--submit">
-                                                    <button type="submit" name="add" class="btn rounded-0 product-form__cart-submit mb-0"><span>Add to cart</span></button>
-                                                    <button type="submit" name="add" class="btn rounded-0 product-form__sold-out mb-0 d-none" disabled="disabled">Sold out</button>
+                                                    
+                                                     <button type="submit" class="btn btn-outline-secondary"><a href="{% url 'add_to_cart' product.id %}">Add to cart</a></button>
+
+                                                    <!-- <button type="submit"  class="btn rounded-0 product-form__sold-out mb-0 d-none" disabled="disabled">Sold out</button> -->
                                                 </div>
                                             </div>
                                             <div class="col-12 col-sm-6 col-md-6 col-lg-6">
@@ -498,142 +493,24 @@
                                             <h4 class="pt-2 text-uppercase">Popular belief specimen</h4>
                                             <p>There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable. If you are going to use a passage.</p>
                                         </div>
+                                       
                                         <div class="col-12 col-sm-12 col-md-4 col-lg-4">
+                                            {% if Colour_product %}
+
+                                            {% if not Images %}
                                             <img data-src="{{ Colour_product.first.images.last.img.url }}" src="{{ Colour_product.first.images.last.img.url }}" alt="image" />
+                                            
+                                            {% else %}
+                                            <img data-src="{{ Images.last.img.url }}" src="{{ Images.last.img.url }}" alt="image" />
+                                            {% endif %}
+                                            {% endif %}
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
 
-                            <h3 class="tabs-ac-style d-md-none" rel="size-chart">Size Chart</h3>
-                            <div id="size-chart" class="tab-content">
-                                <h4 class="fw-bold text-center">Size Guide</h4>
-                                <p class="text-center">This is a standardised guide to give you an idea of what size you will need, however some brands may vary from these conversions.</p>
-                                <p class="text-center"><strong>Ready to Wear Clothing</strong></p>
-                                <div class="table-responsive px-1">
-                                    <table class="table table-bordered align-middle">
-                                        <tbody>
-                                            <tr>
-                                                <th>Size</th>
-                                                <th>XXS - XS</th>
-                                                <th>XS - S</th>
-                                                <th>S - M</th>
-                                                <th>M - L</th>
-                                                <th>L - XL</th>
-                                                <th>XL - XXL</th>
-                                            </tr>
-                                            <tr>
-                                                <td>UK</td>
-                                                <td>6</td>
-                                                <td>8</td>
-                                                <td>10</td>
-                                                <td>12</td>
-                                                <td>14</td>
-                                                <td>16</td>
-                                            </tr>
-                                            <tr>
-                                                <td>US</td>
-                                                <td>2</td>
-                                                <td>4</td>
-                                                <td>6</td>
-                                                <td>8</td>
-                                                <td>10</td>
-                                                <td>12</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Italy (IT)</td>
-                                                <td>38</td>
-                                                <td>40</td>
-                                                <td>42</td>
-                                                <td>44</td>
-                                                <td>46</td>
-                                                <td>48</td>
-                                            </tr>
-                                            <tr>
-                                                <td>France (FR/EU)</td>
-                                                <td>34</td>
-                                                <td>36</td>
-                                                <td>38</td>
-                                                <td>40</td>
-                                                <td>42</td>
-                                                <td>44</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Denmark</td>
-                                                <td>32</td>
-                                                <td>34</td>
-                                                <td>36</td>
-                                                <td>38</td>
-                                                <td>40</td>
-                                                <td>42</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Russia</td>
-                                                <td>40</td>
-                                                <td>42</td>
-                                                <td>44</td>
-                                                <td>46</td>
-                                                <td>48</td>
-                                                <td>50</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Germany</td>
-                                                <td>32</td>
-                                                <td>34</td>
-                                                <td>36</td>
-                                                <td>38</td>
-                                                <td>40</td>
-                                                <td>42</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Japan</td>
-                                                <td>5</td>
-                                                <td>7</td>
-                                                <td>9</td>
-                                                <td>11</td>
-                                                <td>13</td>
-                                                <td>15</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Australia</td>
-                                                <td>6</td>
-                                                <td>8</td>
-                                                <td>10</td>
-                                                <td>12</td>
-                                                <td>14</td>
-                                                <td>16</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Korea</td>
-                                                <td>33</td>
-                                                <td>44</td>
-                                                <td>55</td>
-                                                <td>66</td>
-                                                <td>77</td>
-                                                <td>88</td>
-                                            </tr>
-                                            <tr>
-                                                <td>China</td>
-                                                <td>160/84</td>
-                                                <td>165/86</td>
-                                                <td>170/88</td>
-                                                <td>175/90</td>
-                                                <td>180/92</td>
-                                                <td>185/94</td>
-                                            </tr>
-                                            <tr>
-                                                <td><strong>Jeans</strong></td>
-                                                <td>24-25</td>
-                                                <td>26-27</td>
-                                                <td>27-28</td>
-                                                <td>29-30</td>
-                                                <td>31-32</td>
-                                                <td>32-33</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
+                           
 
                             <h3 class="tabs-ac-style d-md-none" rel="shipping-return">Shipping &amp; Return</h3>
                             <div id="shipping-return" class="tab-content">
@@ -810,6 +687,7 @@
                                     <!--End Product Button-->
                                 </div>
                                 <!--End Product Image-->
+                                
                                 <!--Start Product Details-->
                                 <div class="product-details text-center">
                                     <!--Product Name-->
@@ -1085,327 +963,11 @@
                 </section>
                 <!--End You May Also Like Products-->
 
-                <!--Recently Viewed Products-->
-                <section class="section product-slider pb-0">
-                    <div class="container">
-                        <div class="row">
-                            <div class="section-header col-12">
-                                <h2 class="text-transform-none">Recently Viewed Products</h2>
-                            </div>
-                        </div>
-                        <div class="productSlider grid-products">
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="image" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="image" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
 
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                    <!--End Product Button-->   
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name">
-                                        <a href="product-layout1.html">Puffer Jacket</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="price">$89.00</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center">
-                                        <i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i><i class="an an-star-o"></i>
-                                        <span class="caption hidden ms-2">6 reviews</span>
-                                    </div>
-                                    <!--End Product Review-->
-                                    <!--Color Variant -->
-                                    <ul class="image-swatches swatches">
-                                        <li class="rounded blue medium"><span class="swacth-btn"></span><span class="tooltip-label">Blue</span></li>
-                                        <li class="rounded pink medium"><span class="swacth-btn"></span><span class="tooltip-label">Pink</span></li>
-                                        <li class="rounded red medium"><span class="swacth-btn"></span><span class="tooltip-label">Red</span></li>
-                                    </ul>
-                                    <!--End Color Variant-->
-                                </div>
-                                <!--End Product Details-->
-                            </div>
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
 
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name">
-                                        <a href="product-layout1.html">Long Sleeve T-shirts</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="price">$199.00</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center">
-                                        <i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i>
-                                        <span class="caption hidden ms-2">20 reviews</span>
-                                    </div>
-                                    <!--End Product Review-->
-                                    <!--Color Variant-->
-                                    <ul class="swatches">
-                                        <li class="swatch medium rounded black"><span class="tooltip-label">Black</span></li>
-                                        <li class="swatch medium rounded purple"><span class="tooltip-label">Purple</span></li>
-                                    </ul>
-                                    <!--End Color Variant-->
-                                </div>
-                                <!--End Product Details-->
-                            </div>
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
-                                    <!--Product label-->
-                                    <div class="product-labels"><span class="lbl pr-label1">HOT</span></div>
-                                    <!--Product label-->
 
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                    <!--End Product Button-->
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name">
-                                        <a href="product-layout1.html">Stand Collar Slim Shirt</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="price">$399.00</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center">
-                                        <i class="an an-star"></i><i class="an an-star"></i><i class="an an-star-o"></i><i class="an an-star-o"></i><i class="an an-star-o"></i>
-                                        <span class="caption hidden ms-2">19 reviews</span>
-                                    </div>
-                                    <!--End Product Review-->
-                                    <!--Color Variant-->
-                                    <ul class="image-swatches swatches">
-                                        <li class="rounded yellow medium"><span class="swacth-btn"></span><span class="tooltip-label">Yellow</span></li>
-                                        <li class="rounded blue medium"><span class="swacth-btn"></span><span class="tooltip-label">Blue</span></li>
-                                        <li class="rounded pink medium"><span class="swacth-btn"></span><span class="tooltip-label">Pink</span></li>
-                                        <li class="rounded red medium"><span class="swacth-btn"></span><span class="tooltip-label">Red</span></li>
-                                    </ul>
-                                    <!--End Color Variant-->
-                                </div>
-                                <!--End Product Details-->
-                            </div>
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
 
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                    <!--End Product Button-->
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name">
-                                        <a href="product-layout1.html">Martha Knit Top</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="old-price">$199.00</span>
-                                        <span class="price">$219.00</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center">
-                                        <i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i><i class="an an-star-o"></i>
-                                        <span class="caption hidden ms-2">24 reviews</span>
-                                    </div>
-                                    <!--End Product Review-->
-                                    <!--Color Variant -->
-                                    <ul class="swatches">
-                                        <li class="swatch medium rounded green"><span class="tooltip-label">Green</span></li>
-                                        <li class="swatch medium rounded orange"><span class="tooltip-label">Orange</span></li>
-                                    </ul>
-                                    <!--End Color Variant-->
-                                </div>
-                                <!--End Product Details-->
-                            </div>
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                    <!--End Product Button-->
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name">
-                                        <a href="product-layout1.html">Weave Hoodie Sweatshirt</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="price">$199.00</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center">
-                                        <i class="an an-star"></i><i class="an an-star-o"></i><i class="an an-star-o"></i><i class="an an-star-o"></i><i class="an an-star-o"></i>
-                                        <span class="caption hidden ms-2">2 reviews</span>
-                                    </div>
-                                    <!--End Product Review-->
-                                    <!--Color Variant-->
-                                    <ul class="swatches">
-                                        <li class="swatch medium rounded darkgreen"><span class="tooltip-label">darkgreen</span></li>
-                                    </ul>
-                                    <!--End Color Variant-->
-                                </div>
-                                <!--End Product Details-->
-                            </div>
-                        </div>
-                    </div>
-                </section>
-                <!--End Recently Viewed Products-->
+
 
                 <!--Customize Services-->
                 <div class="section about-service product-service pb-0">
@@ -1759,33 +1321,7 @@
                             <div class="sort-description">Optimal Multipurpose Bootstrap 5 Html Template that will give you and your customers a smooth shopping experience which can be used for various kinds of stores such as fashion.. </div>
                             <form method="post" action="#" id="product_form--option" class="product-form">
                                 <div class="product-options d-flex-wrap">
-                                    <div class="swatch clearfix swatch-0 option1">
-                                        <div class="product-form__item">
-                                            <label class="label d-flex">Color:<span class="required d-none">*</span> <span class="slVariant ms-1 fw-bold">Black</span></label>
-                                            <ul class="swatches-image swatches d-flex-wrap list-unstyled clearfix">
-                                                <li data-value="Black" class="swatch-element color available active">
-                                                    <label class="rounded-0 swatchLbl small color black" title="Black"></label>
-                                                    <span class="tooltip-label top">Black</span>
-                                                </li>
-                                                <li data-value="Green" class="swatch-element color available">
-                                                    <label class="rounded-0 swatchLbl small color green" title="Green"></label>
-                                                    <span class="tooltip-label top">Green</span>
-                                                </li>
-                                                <li data-value="Orange" class="swatch-element color available">
-                                                    <label class="rounded-0 swatchLbl small color orange" title="Orange"></label>
-                                                    <span class="tooltip-label top">Orange</span>
-                                                </li>
-                                                <li data-value="Blue" class="swatch-element color available">
-                                                    <label class="rounded-0 swatchLbl small color blue" title="Blue"></label>
-                                                    <span class="tooltip-label top">Blue</span>
-                                                </li>
-                                                <li data-value="Red" class="swatch-element color available">
-                                                    <label class="rounded-0 swatchLbl small color red" title="Red"></label>
-                                                    <span class="tooltip-label top">Red</span>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
+                                  
                                     <div class="swatch clearfix swatch-1 option2">
                                         <div class="product-form__item">
                                             <label class="label">Size:<span class="required d-none">*</span> <span class="slVariant ms-1 fw-bold">XS</span></label>

@@ -68,8 +68,9 @@
                             <li><a class="nav-link "  href="{% url 'useraccount' user.id %}">Dashboard</a></li>
                             <li><a class="nav-link "  href="{% url 'orders' user.id %}">Orders</a></li>
                             <li><a class="nav-link"  href="#{% url 'order_tracking' user.id %}">Orders tracking</a></li>
-                            <li><a class="nav-link active"  href="{% url 'add_address'%}">Addresses</a></li>
+                            <li><a class="nav-link active"  href="{% url 'view_address'%}">Addresses</a></li>
                             <li><a class="nav-link "  href="{% url 'user_details' user.id %}">Account details</a></li>
+                            <li><a class="nav-link"  href="{% url 'change_password' %}">Change Password</a></li>
                             <li><a class="nav-link" href="{% url 'userlogout' %}">logout</a></li>
                         </ul>
                         <!-- End Nav tabs -->
@@ -111,10 +112,22 @@
                                                         Phone: {{ address.phone }}
                                                     </p>
                                                 </div>
-                                               
+                                                
                                             </div>
                                         </div>
                                         {% endfor %}
+                                        {% if messages %}
+                                        {% for message in messages %}
+                                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                                                <use xlink:href="#exclamation-triangle-fill"/>
+                                            </svg>
+                                            <div>
+                                                {{ message }}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        {% endif %}
                                             <div class="accordion add-address mt-3" id="address1">
                                                 <button class="collapsed btn btn--small rounded" type="button" data-bs-toggle="collapse" data-bs-target="#shipping" aria-expanded="false" aria-controls="shipping">Add Address</button>
                                                 <div id="shipping" class="accordion-collapse collapse" data-bs-parent="#address">
@@ -168,16 +181,7 @@
                                                             <button type="submit" class="btn rounded mb-3">Submit</button>
                                                         </div>
                                                         <br>
-                                                        {% if messages %}
-                                                        {% for message in messages %}
-                                                            <div class="alert alert-danger d-flex align-items-center" role="alert">
-                                                                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:"><use xlink:href="#exclamation-triangle-fill"/></svg>
-                                                                <div>
-                                                                    {{ message }}
-                                                                </div>
-                                                            </div>
-                                                        {% endfor %}
-                                                    {% endif %} 
+                               
                                                     </fieldset>
                                                 </form>
 
@@ -212,55 +216,54 @@
                                     </div>
                                   </div>
                                   
-<!-- Edit Modal HTML -->
-<div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <div class="modal-body">
-          <form id="editAddressForm" method="post" action="{% url 'edit_address' address.id %}">
-            {% csrf_token %}
-            <input type="hidden" name="address_id" id="editAddressId">
-            <div class="form-group">
-              <label for="edit-name">Name</label>
-              <input type="text" class="form-control" value="{{ address.firstname }}" id="editName" name="name" required>
-            </div>
-            <div class="form-group">
-              <label for="edit-house-no">House No.</label>
-              <input type="text" class="form-control" value="{{ address.house_no }}" id="editHouseNo" name="house_no" required>
-            </div>
-            <div class="form-group">
-              <label for="edit-city">City</label>
-              <input type="text" class="form-control" value="{{ address.city }}" id="editCity" name="city" required>
-            </div>
-            <div class="form-group">
-              <label for="edit-state">State</label>
-              <input type="text" class="form-control" value="{{ address.state }}" id="editState" name="state" required>
-            </div>
-            <div class="form-group">
-              <label for="edit-country">Country</label>
-              <input type="text" class="form-control" value="{{ address.country }}" id="editCountry" name="country" required>
-            </div>
-            <div class="form-group">
-              <label for="edit-pincode">Pincode</label>
-              <input type="text" class="form-control" value="{{ address.pincode }}" id="editPincode" name="pincode" required>
-            </div>
-            <div class="form-group">
-              <label for="edit-phone">Phone</label>
-              <input type="tel" class="form-control" value="{{ address.phone }}" id="editPhone" name="phone" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Save changes</button>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
-  
+                            <!-- Edit Modal HTML -->
+                            <div class="modal fade" id="editAddressModal" tabindex="-1" role="dialog" aria-labelledby="editAddressModalLabel" aria-hidden="true">
+                                <div class="modal-dialog" role="document">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="editAddressModalLabel">Edit Address</h5>
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                <span aria-hidden="true">&times;</span>
+                                            </button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <form id="editAddressForm" method="post">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="address_id" id="editAddressId">
+                                                <div class="form-group">
+                                                    <label for="editName">Name</label>
+                                                    <input type="text" class="form-control" id="editName" name="name" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="editHouseNo">House No.</label>
+                                                    <input type="text" class="form-control" id="editHouseNo" name="house_no" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="editCity">City</label>
+                                                    <input type="text" class="form-control" id="editCity" name="city" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="editState">State</label>
+                                                    <input type="text" class="form-control" id="editState" name="state" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="editCountry">Country</label>
+                                                    <input type="text" class="form-control" id="editCountry" name="country" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="editPincode">Pincode</label>
+                                                    <input type="text" class="form-control" id="editPincode" name="pincode" required>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="editPhone">Phone</label>
+                                                    <input type="tel" class="form-control" id="editPhone" name="phone" required>
+                                                </div>
+                                                <button type="submit" class="btn btn-primary">Save changes</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                                
                             </div>
                             <!-- End Tab panes -->
@@ -288,11 +291,43 @@
                   modal.find('#confirmDeleteButton').attr('href', url);
                 });
               </script>
+
+              <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    $('#editAddressModal').on('show.bs.modal', function(event) {
+                        var button = $(event.relatedTarget); // Button that triggered the modal
+                        var addressId = button.data('id');
+                        var addressName = button.data('name');
+                        var addressHouseNo = button.data('house_no');
+                        var addressCity = button.data('city');
+                        var addressState = button.data('state');
+                        var addressCountry = button.data('country');
+                        var addressPincode = button.data('pincode');
+                        var addressPhone = button.data('phone');
+                
+                        var modal = $(this);
+                        modal.find('#editAddressId').val(addressId);
+                        modal.find('#editName').val(addressName);
+                        modal.find('#editHouseNo').val(addressHouseNo);
+                        modal.find('#editCity').val(addressCity);
+                        modal.find('#editState').val(addressState);
+                        modal.find('#editCountry').val(addressCountry);
+                        modal.find('#editPincode').val(addressPincode);
+                        modal.find('#editPhone').val(addressPhone);
+                
+                        // Set the form action dynamically
+                        modal.find('#editAddressForm').attr('action', '{% url "edit_address" 0 %}'.replace('/0/', '/' + addressId + '/'));
+                    });
+                });
+                </script>
+                
+                
+                
                 <script>
                     document.querySelector('.address-form').addEventListener('submit', function(event) {
                         let formIsValid = true;
                         
-                        const firstname = document.getElementById('input-firstname1');
+                        const name = document.getElementById('input-name1');
                         const email = document.getElementById('input-email1');
                         const phone = document.getElementById('input-phone');
                         const houseNo = document.getElementById('input-house-no');
@@ -337,4 +372,24 @@
                           modal.find('#editPhone').val(button.data('phone'));
                         });
                       </script>
+                      <script>
+                        document.addEventListener("DOMContentLoaded", function() {
+                            // Select all alert messages
+                            var alerts = document.querySelectorAll('.alert');
+                            if (alerts) {
+                                // Set a timeout to hide alerts after 5 seconds
+                                setTimeout(function() {
+                                    alerts.forEach(function(alert) {
+                                        alert.style.transition = "opacity 0.5s ease";
+                                        alert.style.opacity = '0';
+                                        // Remove the alert from the DOM after transition
+                                        setTimeout(function() {
+                                            alert.remove();
+                                        }, 500);
+                                    });
+                                }, 3000); 
+                            }
+                        });
+                        </script>
+                        
             {% endblock %}

@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'user_account',
     'category',
     'products',
+    'cart',
     
     
     
@@ -80,8 +81,9 @@ TEMPLATES = [
         'DIRS': [
             os.path.join(BASE_DIR,'adminside/templates'),
             os.path.join(BASE_DIR,'user_account/templates'),
-            os.path.join(BASE_DIR,'templates'),
-            os.path.join(BASE_DIR,'templates'),
+            os.path.join(BASE_DIR,'category/templates'),
+            os.path.join(BASE_DIR,'products/templates'),
+            os.path.join(BASE_DIR,'cart/templates'),
             ],
         'APP_DIRS': True,
         'OPTIONS': {

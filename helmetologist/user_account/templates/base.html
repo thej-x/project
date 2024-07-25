@@ -29,7 +29,6 @@
 
 
 
-
 </head>
     
     <body class="category-page category-empty">
@@ -93,8 +92,8 @@
                                 <!--End Setting Dropdown-->
                                 <!--Minicart Drawer-->
                                 <div class="header-cart iconset">
-                                    <a href="cart-style1.html" class="site-header__cart btn-minicart" data-bs-toggle="modal" data-bs-target="#minicart-drawer">
-                                        <i class="icon an an-sq-bag"></i><span class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">2</span><span class="tooltip-label">Cart</span>
+                                    <a href="{% url 'cart_show' %}" class="site-header__cart btn-minicart"  >
+                                        <i class="icon an an-cart-l"><span class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{cart_count}}</span><span class="tooltip-label">Cart</span></i>
                                     </a>
                                 </div>
                                 <!--End Minicart Drawer-->
@@ -113,7 +112,7 @@
                                         <ul id="siteNav" class="site-nav medium center hidearrow">
                                             <li class="lvl1 parent megamenu"><a href="{% url 'index' %}">Home <i class="an an-angle-down-l"></i></a></li>
 
-                                          <li class="lvl1 parent megamenu"><a href="category-4columns.html">Shop <i class="an an-angle-down-l"></i></a>
+                                          <li class="lvl1 parent megamenu"><a href="{% url 'shop' %}">Shop <i class="an an-angle-down-l"></i></a>
                                                 <div class="megamenu style4">
                                                     <div class="row">
                                                         <div class="lvl-1 col-md-3 col-lg-3"><a href="#" class="site-nav lvl-1 menu-title">Category Page</a>
@@ -490,6 +489,7 @@
             <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <!-- Include jQuery -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+            <script  src="{% static 'adminassets/js/cart.js' %}" ></script>
             <!-- Add fade-out effect to alerts -->
             <script>
                 $(document).ready(function() {

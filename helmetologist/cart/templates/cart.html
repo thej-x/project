@@ -1,0 +1,316 @@
+
+{% extends "base.html" %}
+
+{% block title %}Cart{% endblock %}
+{% load static %}
+
+{% block extra_styles %}
+
+
+{% endblock %}
+
+{% block nav_links %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+{% endblock %}
+   
+
+
+{% block content %}   
+
+
+            
+            <!--Body Container-->
+            <div id="page-content">  
+                <!--Collection Banner-->
+                <div class="collection-header">
+                    <div class="collection-hero">
+                        <div class="collection-hero__image"></div>
+                        <div class="collection-hero__title-wrapper container">
+                            <h1 class="collection-hero__title">Cart </h1>
+                            <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="{% url 'index' %}" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">Cart </span></div>
+                        </div>
+                    </div>
+                </div>
+                <!--End Collection Banner-->
+
+                    <!--Main Content-->
+                    <div class="container">
+                        <!--Cart Page-->
+                        <div class="row">
+                            <div class="col-12 col-sm-12 col-md-12 col-lg-12 main-col">
+                                <div class="alert alert-success py-2 rounded-1 alert-dismissible fade show cart-alert" role="alert">
+                                    <i class="align-middle icon an an-truck icon-large me-2"></i><strong class="text-uppercase">Congratulations!</strong> You've got free shipping!
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                </div>
+
+                                <form action="#" method="post" class="cart style1">
+                                    <table>
+                                        <thead class="cart__row cart__header small--hide">
+                                            <tr>
+                                                <th class="action">&nbsp;</th>
+                                                <th colspan="2" class="text-start">Product</th>
+                                                <th class="text-center">Price</th>
+                                                <th class="text-center">Quantity</th>
+                                                <th class="text-center">Total</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+
+                                            {% for product in cart_products %}
+                                            
+                                            <tr class="cart__row border-bottom line1 cart-flex border-top">
+                                                <td class="cart-delete text-center small--hide"><a href="{% url 'delete_from_cart' product.products.id %}" class="btn btn--secondary cart__remove remove-icon position-static" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove item"><i class="icon an an-times-r"></i></a></td>
+                                                <td class="cart__image-wrapper cart-flex-item">
+                                                    <img data-product={{prodcut.product.id}} data-action="add" class="cart__image blur-up lazyload update-cart" data-src="{{ product.images.image.url  }}" src="{{ product.products.images.first.image.url }}" alt="" width="80" />
+                                                </td>
+                                                <td class="cart__meta small--text-left cart-flex-item">
+                                                    <div class="list-view-item__title">
+                                                        <a href="product-layout1.html">{{ product.products.name }}</a>
+                                                    </div>
+                                                    <!-- <div class="cart__meta-text">
+                                                        Qty: {{product.quantity}}
+                                                    </div> -->
+                                                    <div class="cart-price d-md-none">
+                                                        <span class="money fw-500">{{product.products.price}}</span>
+                                                    </div>
+                                                </td>
+                                                <td class="cart__price-wrapper cart-flex-item text-center small--hide">
+                                                    <span class="money">{{product.products.price}}</span>
+                                                </td>
+                                                <td class="cart__update-wrapper cart-flex-item text-end text-md-center">
+                                                    <div class="cart__qty d-flex justify-content-end justify-content-md-center">
+                                                        
+                                                        <div class="qtyField">
+                                                            <a data-product="{{product.products.id}}" data-action="remove" class="qtyBtn minus update-item">
+                                                                <i class="icon an an-minus-r"></i>
+                                                            </a>
+                                                            <input id="qty-{{product.products.id}}" class="cart__qty-input qty" type="text" name="updates[]" value="{{product.quantity}}" pattern="[0-9]*" readonly />
+                                                            <a data-product="{{product.products.id}}" data-action="add" class="qtyBtn plus update-item">
+                                                                <i class="icon an an-plus-r"></i>
+                                                            </a>
+                                                        </div>
+                                                        
+                                                         
+                                                    </div>
+                                                    <a href="#" title="Remove" class="removeMb d-md-none d-inline-block text-decoration-underline mt-2 me-3">Remove</a>
+                                                </td>
+                                                <td class="cart-price cart-flex-item text-center small--hide">
+                                                    <span id="product-subtotal-{{product.products.id}}" class="money fw-500">{{ product.sub_total }}</span>
+                                                </td>
+   
+                                            </tr>
+
+                                            {% endfor %}
+
+                                        </tbody>
+                                        <tfoot>
+                                            <tr>
+                                                <td colspan="3" class="text-start pt-3"><a href="{% url 'index' %}" class="btn btn--link d-inline-flex align-items-center btn--small p-0 cart-continue"><i class="me-1 icon an an-angle-left-l"></i><span class="text-decoration-underline">Continue shopping</span></a></td>
+                                                <!-- <td colspan="3" class="text-end pt-3">
+                                                    <button type="submit" name="clear" class="btn btn--link d-inline-flex align-items-center btn--small small--hide"><i class="me-1 icon an an-times-r"></i><span class="ms-1 text-decoration-underline">Clear Shoping Cart</span></button>
+                                                    <button type="submit" name="update" class="btn btn--small d-inline-flex align-items-center rounded cart-continue ml-2"><i class="me-1 icon an an-sync-ar d-none"></i>Update Cart</button>
+                                                </td> -->
+                                            </tr>
+                                        </tfoot>
+                                    </table> 
+                                </form>                   
+                            </div>
+                        </div>
+
+                        
+                            <div class="col-12 col-sm-12 col-md-12 col-lg-4 cart__footer">
+                                <div class="solid-border">	
+                                    
+
+                                    <div class="row border-bottom pb-2">
+                                        <span class="col-6 col-sm-6 cart__subtotal-title">Subtotal</span>
+                                        <span class="col-6 col-sm-6 text-right"><span class="money">{{ user_cart.cart_sub_total }}</span></span>
+                                    </div>
+                                    
+                                    <!-- <div class="row border-bottom pb-2 pt-2">
+                                        <span class="col-6 col-sm-6 cart__subtotal-title">Tax</span>
+                                        <span class="col-6 col-sm-6 text-right">10.00</span>
+                                    </div> -->
+                                    <div class="row border-bottom pb-2 pt-2">
+                                        <span class="col-6 col-sm-6 cart__subtotal-title">Shipping</span>
+                                        <span class="col-6 col-sm-6 text-right">Free shipping</span>
+                                    </div>
+                                    <div class="row border-bottom pb-2 pt-2">
+                                        <span class="col-6 col-sm-6 cart__subtotal-title"><strong>Grand Total</strong></span>
+                                        <span class="col-6 col-sm-6 cart__subtotal-title cart__subtotal text-right"><span class="money">{{ user_cart.cart_sub_total }}</span></span>
+                                    </div>
+
+
+
+                                    <p class="cart__shipping m-0">Shipping is free for every purchase</p>
+                                    <p class="cart__shipping pt-0 m-0 fst-normal freeShipclaim"><i class="me-1 align-middle icon an an-truck-l"></i><b>FREE SHIPPING</b></p>
+                                    <div class="customCheckbox cart_tearm">
+                                        <input type="checkbox" value="allen-vela" id="cart_tearm">
+                                        <label for="cart_tearm">I agree with the terms and conditions</label>
+                                    </div>
+                                    <a href="{% url 'checkout' %}" id="cartCheckout" class="btn btn--small-wide rounded mt-4 checkout">Proceed To Checkout</a>
+                                    <div class="paymnet-img"><img src="{% static 'assets/images/payment-img.jpg'  %}" alt="Payment" /></div>
+                                    
+                                </div>
+                            </div>
+                        </div>
+                        <!--End Cart Page-->    
+                    </div>
+                    <!--End Main Content-->
+            </div>
+            <!--End Body Container-->
+
+
+{% endblock %}
+
+         
+{% block scripts %}
+        <!-- <script  src="{% static 'adminassets/js/cart.js' %}" ></script> -->
+        <script>    
+            var user = "{{ request.user }}";
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+            
+            const csrftoken = getCookie('csrftoken');
+            
+            
+        </script>
+
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+        <script>
+            var updateBtns = document.getElementsByClassName("update-item");
+            
+            for (var i = 0; i < updateBtns.length; i++) {
+                updateBtns[i].addEventListener("click", function () {
+                    var productId = this.dataset.product;
+                    var action = this.dataset.action;
+                    console.log("productId:", productId, "action:", action);
+            
+                    // Ensure that productId and action are not empty
+                    if (productId && action) {
+                        updateQuantity(productId, action);
+                        sendUpdateToServer(productId, action);
+                    } else {
+                        console.error("Missing productId or action!");
+                    }
+                });
+            }
+            
+            function updateQuantity(productId, action) {
+                var qtyInput = document.getElementById("qty-" + productId);
+                
+                var currentQty = parseInt(qtyInput.value);
+            
+                if (action === 'add') {
+                    qtyInput.value = currentQty + 1;
+                } else if (action === 'remove') {
+                    if (currentQty > 1) {
+                        qtyInput.value = currentQty - 1;
+                    } else {
+                        // Optionally, remove the entire cart item if quantity is zero
+                        qtyInput.parentElement.parentElement.remove();
+                    }
+                }
+            }
+            
+            
+            function sendUpdateToServer(productId, action) {
+                var qtyInput = document.getElementById("qty-" + productId);
+                
+                var currentQty = parseInt(qtyInput.value);
+                var url = "/update_cart_item/";
+                fetch(url, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({ productId: productId, action: action }),
+                })
+                .then((response) => {
+                    if (!response.ok) {
+                        return response.json().then((errorData) => {
+                            // Extract the error message from JSON
+                            throw new Error(errorData.error || 'An unknown error occurred');
+                        });
+                    }
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log("Server response:", data);
+                    
+                                // Update subtotal for the specific product
+                    var productSubtotalElement = document.querySelector(`#product-subtotal-${productId}`);
+                    console.log(productSubtotalElement)
+                    if (productSubtotalElement) {
+                        productSubtotalElement.textContent =data.subtotal; // Assuming formatMoney is a function to format currency
+                    }
+
+                    // Update the grand total
+                    var grandTotalElement = document.querySelector(".cart__subtotal.text-right .money");
+                    if (grandTotalElement) {
+                        grandTotalElement.textContent = data.total; // Assuming formatMoney is a function to format currency
+                        }          
+        
+                    var grandTotalElement = document.querySelector(".text-right .money");
+                    if (grandTotalElement) {
+                        grandTotalElement.textContent = data.total; // Assuming formatMoney is a function to format currency
+                        }          
+
+
+
+        
+        
+                })
+                .catch((error) => {
+                    console.error(error.message)
+                   
+                    qtyInput.value = currentQty-1;
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: error.message,
+                        confirmButtonText: 'OK'
+                    });
+                });
+
+                function updateCartTotals() {
+                    var subtotalElements = document.querySelectorAll('.cart-price .money');
+                    var grandTotal = 0;
+                    
+                    subtotalElements.forEach(function(el) {
+                        var price = parseFloat(el.textContent.replace(/[^0-9.-]+/g,""));
+                        var qty = parseInt(el.parentElement.previousElementSibling.querySelector('.cart__qty-input').value);
+                        grandTotal += price * qty;
+                    });
+                    
+                    var subtotalElement = document.querySelector('.cart__subtotal .money');
+                    var grandTotalElement = document.querySelector('.cart__subtotal.text-right .money');
+                    
+                    if (subtotalElement && grandTotalElement) {
+                        subtotalElement.textContent = formatMoney(grandTotal);
+                        grandTotalElement.textContent = formatMoney(grandTotal);
+                    }
+                }
+                
+                function formatMoney(amount) {
+                    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+                }
+            }
+            </script>
+            
+       
+{% endblock %}

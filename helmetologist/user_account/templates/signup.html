@@ -191,9 +191,9 @@
 
         // Validate password
         let password1 = form.password1.value;
-        if (!password1 || password1.includes(' ') || password1.length < 8) {
+        if (!password1 || password1.includes(' ') || password1.length < 6) {
             isValid = false;
-            messages.push('Password is required and must be at least 8 characters long.');
+            messages.push('Password is required and must be at least 6 characters long.');
             form.password1.classList.add('is-invalid');
         } else {
             form.password1.classList.remove('is-invalid');

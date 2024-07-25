@@ -1,0 +1,210 @@
+
+{% extends "base.html" %}
+
+{% block title %}Cart{% endblock %}
+{% load static %}
+
+{% block extra_styles %}
+
+
+{% endblock %}
+
+{% block nav_links %}
+
+
+{% endblock %}
+   
+
+
+{% block content %}   
+
+            <!--Body Container-->
+            <div id="page-content">   
+                <!--Collection Banner-->
+                <div class="collection-header">
+                    <div class="collection-hero">
+                        <div class="collection-hero__image"></div>
+                        <div class="collection-hero__title-wrapper container">
+                            <h1 class="collection-hero__title">Checkout</h1>
+                            <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="index.html" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">Checkout </span></div>
+                        </div>
+                    </div>
+                </div>
+                <!--End Collection Banner-->
+
+                <!--Main Content-->
+<div class="container">
+    <form class="checkout-form" method="post" action="#">
+        <div class="row">
+            <div class="col-md-6 col-lg-4">
+                <div class="card card--grey"></div>
+                <div class="card card--grey mt-2">
+                    <div class="card-body"> 
+                        <h2 class="fs-6">BILLING ADDRESS</h2>
+                        
+                             <!-- Commented out the checkbox for same address -->
+                            <div class="customCheckbox clearfix py-2 my-2">
+                                <input id="formcheckoutCheckbox2" name="checkbox2" type="checkbox"> 
+                                <label for="formcheckoutCheckbox2">The same as shipping address</label>
+                            </div>
+                    
+
+                            {% for address in Addresses %}
+                            <div class="card card--grey mt-2">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h5 class="card-title billing-address">
+                                            <input type="radio" name="billing_address" value="{{ address.id }}" id="address{{ address.id }}">
+                                            <br> <br>
+                                            <label for="address{{ address.id }}">Billing Address</label>
+                                        </h5>
+                                        
+                                        <p class="card-text">
+                                            <strong>{{ address.name }}</strong><br>
+                                            {{ address.house_no }},<br>
+                                            {{ address.city }}, {{ address.state }},<br>
+                                            {{ address.country }}<br>
+                                            Pincode: {{ address.pincode }}<br>
+                                            Phone: {{ address.phone }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                    </div>
+                        <!-- {% if messages %}
+                        {% for message in messages %}
+                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                                <use xlink:href="#exclamation-triangle-fill"/>
+                            </svg>
+                            <div>
+                                {{ message }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                        {% endif %} -->
+
+                        <!-- <label class="text-uppercase d-none">Country:</label>
+                        <div class="row">
+                            <div class="col-sm-6">
+                                <div class="form-group">
+                                    <input type="text" placeholder="Zip/postal code" class="form-control">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-0">
+                            <input type="text" placeholder="Address" class="form-control">
+                        </div> -->
+                    
+                </div>
+            </div>
+
+            <div class="col-md-6 col-lg-4 mt-2 mt-md-0">
+                <div class="card card--grey"></div>
+                <div class="card card--grey mt-2">
+                    <div class="card-body">
+                        <h2 class="fs-6">PAYMENT METHOD</h2>
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="customRadio clearfix">
+                                    <input id="formcheckoutRadio4" value="" name="radio2" type="radio" class="radio" checked="checked"> 
+                                    <label for="formcheckoutRadio4">COD</label>
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="customRadio clearfix">
+                                    <input id="formcheckoutRadio5" value="" name="radio2" type="radio" class="radio"> 
+                                    <label for="formcheckoutRadio5">Razer pay</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="card card--grey mt-2">
+                    <div class="card-body">
+                        <h2 class="fs-6">Order Comment</h2>
+                        <label class="text-uppercase d-none">Write a comment here:</label> 
+                        <textarea class="form-control textarea--height-200" rows="5" placeholder="Write a comment here"></textarea>
+                    </div>
+                </div> -->
+            </div>
+
+            <div class="col-md-12 col-lg-4 mt-2 mt-lg-0">
+                <h2 class="title fs-6">ORDER SUMMARY</h2>
+                <div class="table-responsive order-table style1"> 
+                    <table class="table table-bordered align-middle table-hover text-center mb-1">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th class="text-start">Name</th>
+                                <th>Price</th>
+                                <th>Qty</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in cart_items %}
+                            <tr>
+                                <td class="thumbImg">
+                                    <a href="product-layout1.html" class="thumb d-inline-block">
+                                        <img class="cart__image" data-src="{{ product.images.image.url  }}" src="{{ item.products.images.first.image.url }}" alt="{{item.product.name}}" width="80" />
+                                    </a>
+                                </td>
+                                <td class="text-start">
+                                    <a href="">{{item.products.name}}</a>
+                                </td>
+                                <td>{{item.products.price}}</td>
+                                <td>{{item.quantity}}</td>
+                                <td class="fw-500">{{item.sub_total}}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                        <tfoot class="font-weight-600">
+                            <tr>
+                                <td colspan="4" class="text-end fw-bolder">Shipping </td>
+                                <td class="fw-bolder">free shipping</td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-end fw-bolder">Total</td>
+                                <td class="fw-bolder">{{cart.cart_sub_total}}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Commented out the coupon code section
+                <div class="card card--grey mt-2">
+                    <div class="card-body">
+                        <h2 class="fs-6">Apply Couponcode</h2>
+                        <label class="text-uppercase d-none">Enter Coupon code:</label>
+                        <div class="input-group flex-nowrap">
+                            <input class="input-group__field" type="text" placeholder="Coupon code" name="coupon">
+                            <span class="input-group__btn">
+                                <input type="button" class="btn rounded-end text-nowrap" value="Apply">
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                -->
+
+                <div class="order-button-payment mt-2 clearfix">
+                    <a href="checkout-success.html" class="cartCheckout fs-6 btn btn-lg rounded w-100 fw-600 text-white">Place order</a>
+                </div>
+                <div class="paymnet-img text-center">
+                    <img src="{% static 'assets/images/payment-img.jpg' %}" alt="Payment">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+<!--End Main Content-->
+            </div>
+            <!--End Body Container-->
+
+{% endblock %}
+
+         
+{% block scripts %}
+            
+{% endblock %}
