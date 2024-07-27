@@ -15,7 +15,6 @@ urlpatterns = [
     path('verifyotp/',verify_otp,name ='verifyotp' ),
     path('resendotp/', resend_otp, name='resend_otp'),
     path('shop/',shop,name ='shop'),
-    path('wishlist/',wishlist,name='wishlist'),
     path('resendotp/', resend_otp, name='resend_otp'),
     path('resetpassword/',reset_password,name='resetpassword'),
     path('useraccount/<int:user_id>', useraccount, name='useraccount'),

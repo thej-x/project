@@ -9,6 +9,9 @@ from products.views import product_view
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from user_account.models import *
+from django.urls import reverse
+from order.models import *
+import uuid
 # Create your views here.
 
 date_now = (timezone.now()).date()
@@ -207,32 +210,162 @@ def delete_from_cart(request, product_id):
 
 
 
-def checkout(request):
+# def checkout(request):
     
-    if request.user.is_authenticated :
-        user = request.user
+#     if request.user.is_authenticated :
+#         user = request.user
         
-        cart,created = Cart.objects.get_or_create(user=user)
+#         cart,created = Cart.objects.get_or_create(user=user)
+#         cart_items = cart.cartproducts_set.all()
+#         addresses = Address.objects.filter(user=user, is_delete=False)
+        
+#     else:
+#         #create emty cart when non user visit
+#         cart_items=[]
+#         cart = {'cart_sub_total':0,'cart_sub_count':0}
+    
+#     context={
+#         'Addresses': addresses,
+#         'cart':cart,
+#         'cart_items': cart_items,
+#     }
+#     return render(request,'checkout.html',context)
+
+
+def checkout(request):
+    if request.user.is_authenticated:
+        user = request.user
+        cart, created = Cart.objects.get_or_create(user=user)
         cart_items = cart.cartproducts_set.all()
         addresses = Address.objects.filter(user=user, is_delete=False)
-        
+
+        if request.method == 'POST':
+            billing_address_id = request.POST.get('billing_address')
+            payment_method = request.POST.get('payment_method')
+
+            if not billing_address_id or not payment_method:
+                messages.error(request, "Please select a billing address and payment method.")
+                return redirect('checkout')
+
+            try:
+                billing_address = Address.objects.get(id=billing_address_id, user=user)
+            except Address.DoesNotExist:
+                messages.error(request, "Invalid address selected.")
+                return redirect('checkout')
+
+            
+            payment = Payment.objects.create(
+                user=user,
+                method=payment_method,
+                amount=cart.cart_sub_total,
+                status="pending"
+            )
+
+           
+            order = Order.objects.create(
+                user=user,
+                payment=payment,
+                billing_address=billing_address,
+                total_amount=cart.cart_sub_total,
+                payment_method=payment_method,
+                order_id=str(uuid.uuid4())[:8]  
+            )
+
+            
+            for item in cart_items:
+                OrderProduct.objects.create(
+                    order=order,
+                    product=item.products,
+                    price=item.products.price,
+                    quantity=item.quantity,
+                    user=user
+                )
+
+            
+            cart.cartproducts_set.all().delete()
+            
+            
+
+            url = reverse('checkout_success', args=[order.id])
+            return redirect(url)
+
     else:
-        #create emty cart when non user visit
-        cart_items=[]
-        cart = {'cart_sub_total':0,'cart_sub_count':0}
-    
-    context={
+        
+        cart_items = []
+        cart = {'cart_sub_total': 0, 'cart_sub_count': 0}
+        addresses = []
+
+    context = {
         'Addresses': addresses,
-        'cart':cart,
+        'cart': cart,
         'cart_items': cart_items,
     }
-    return render(request,'checkout.html',context)
+    return render(request, 'checkout.html', context)
 
 
-# def clear_cart(request,cart_id):
-#     user = request.user
+
+def checkout_success(request, order_id):
     
-#     user_cart = Cart.objects.get(user = user,id = cart_id)
-#     user_cart.delete()
+    user = request.user
+    order_products = []
+    if request.user.is_authenticated:
+        
+        order = get_object_or_404(Order, user=user, id=order_id)
+        order_products = OrderProduct.objects.filter(order = order, user = user)
+        print(order_products)
+        order_date = order.created_at
+        total_amount = order.total_amount
+        billing_address = order.billing_address
+        payment_method = order.payment_method
+        orderid = order.order_id
+
+    context = {
+        'order_products': order_products,
+        'orderid': orderid,
+        'order_date': order_date,
+        'total_amount': total_amount,
+        'payment_method': payment_method,
+        'billing_address':billing_address,
+    }
+    return render(request, 'checkout_success.html', context)
+
+
+def wishlist(request):
     
-#     return render('cart_show')
+
+    
+    
+    
+    context={
+        
+    }
+    return render(request,'wishlist.html',context)
+
+
+def add_to_wishlist(request, product_id):
+    product = get_object_or_404(Products, id=product_id)
+    user = request.user
+
+    quantity_str = request.GET.get('numbers', '1')
+    try:
+        quantity = int(quantity_str)
+    except ValueError:
+        quantity = 1
+
+    if quantity > product.quantity:
+        messages.error(request, 'Quantity exceeds available stock')
+        return redirect('product', product_slug=product.slug, product_id=product_id)
+
+    wishlist, created = Wishlist.objects.get_or_create(user=user, product=product)
+
+    if not created:
+        
+        wishlist.quantity += quantity
+        wishlist.save()
+    else:
+       
+        wishlist.quantity = quantity
+        wishlist.save()
+
+    messages.success(request, 'Product added to wishlist')
+    return redirect('product', product_slug=product.slug, product_id=product_id)

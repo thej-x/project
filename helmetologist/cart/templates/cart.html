@@ -11,7 +11,6 @@
 
 {% block nav_links %}
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-
 {% endblock %}
    
 
@@ -85,7 +84,7 @@
                                                             <a data-product="{{product.products.id}}" data-action="remove" class="qtyBtn minus update-item">
                                                                 <i class="icon an an-minus-r"></i>
                                                             </a>
-                                                            <input id="qty-{{product.products.id}}" class="cart__qty-input qty" type="text" name="updates[]" value="{{product.quantity}}" pattern="[0-9]*" readonly />
+                                                            <input id="qty-{{product.products.id}}" class="cart__qty-input qty" type="text" name="updates[]" value="{{product.quantity}}" pattern="[0-9]*" min="1" max="10" readonly />
                                                             <a data-product="{{product.products.id}}" data-action="add" class="qtyBtn plus update-item">
                                                                 <i class="icon an an-plus-r"></i>
                                                             </a>
@@ -107,10 +106,7 @@
                                         <tfoot>
                                             <tr>
                                                 <td colspan="3" class="text-start pt-3"><a href="{% url 'index' %}" class="btn btn--link d-inline-flex align-items-center btn--small p-0 cart-continue"><i class="me-1 icon an an-angle-left-l"></i><span class="text-decoration-underline">Continue shopping</span></a></td>
-                                                <!-- <td colspan="3" class="text-end pt-3">
-                                                    <button type="submit" name="clear" class="btn btn--link d-inline-flex align-items-center btn--small small--hide"><i class="me-1 icon an an-times-r"></i><span class="ms-1 text-decoration-underline">Clear Shoping Cart</span></button>
-                                                    <button type="submit" name="update" class="btn btn--small d-inline-flex align-items-center rounded cart-continue ml-2"><i class="me-1 icon an an-sync-ar d-none"></i>Update Cart</button>
-                                                </td> -->
+                                                
                                             </tr>
                                         </tfoot>
                                     </table> 
@@ -188,6 +184,7 @@
             
             
         </script>
+        
 
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
         <script>
@@ -221,6 +218,16 @@
                         qtyInput.value = currentQty - 1;
                     } else {
                         // Optionally, remove the entire cart item if quantity is zero
+                        
+
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Minimum quantity is 1',
+                            confirmButtonText: 'OK'
+                        });
+                        qtyInput.value = 1;
+                        
                         qtyInput.parentElement.parentElement.remove();
                     }
                 }

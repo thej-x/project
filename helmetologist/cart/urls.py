@@ -10,5 +10,9 @@ urlpatterns = [
     path('update_cart_item/', updateCartItem, name='update_cart_item'),
     path('delete_from_cart/<str:product_id>/', delete_from_cart, name='delete_from_cart'),
     path('checkout/', checkout, name='checkout'),
+    path('checkout_success/<int:order_id>/', checkout_success, name='checkout_success'),
+    path('wishlist/',wishlist,name='wishlist'),
+    path('add_to_wishlist/<int:product_id>',add_to_wishlist,name='add_to_wishlist'),
+    
     # path('clear_cart/<int:cart_id>',clear_cart,name='clear_cart'),
     ]

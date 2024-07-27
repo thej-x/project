@@ -715,15 +715,6 @@ def  filtered(request):
         
         return redirect('shop')    
 
-def wishlist(request):
-    
 
-    
-    
-    
-    context={
-        
-    }
-    return render(request,'wishlist.html',context)
 
 

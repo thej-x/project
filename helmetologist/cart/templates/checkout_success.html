@@ -1,0 +1,175 @@
+
+{% extends "base.html" %}
+
+{% block title %}Checkout{% endblock %}
+{% load static %}
+
+{% block extra_styles %}
+
+
+{% endblock %}
+
+{% block nav_links %}
+
+
+{% endblock %}
+{% block content %}
+<!--Body Container-->
+<div id="page-content">
+    <!--Collection Banner-->
+    <div class="collection-header">
+        <div class="collection-hero">
+            <div class="collection-hero__image"></div>
+            <div class="collection-hero__title-wrapper container">
+                <h1 class="collection-hero__title">Checkout Success</h1>
+                <div class="breadcrumbs text-uppercase mt-1 mt-lg-2">
+                    <a href="{% url 'index' %}" title="Back to the home page">Home</a>
+                    <span>|</span><span class="fw-bold">Checkout Success</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--End Collection Banner-->
+
+    <!--Main Content-->
+    <div class="container">
+        <div class="checkout-success-content py-2">
+            <!--Order Card-->
+            <div class="row">
+                <div class="col-12 col-sm-12 col-md-12 col-lg-12">
+                    <div class="checkout-scard card border-0 rounded">
+                        <div class="card-body text-center">
+                            <p class="card-icon"><i class="icon an an-shield-check fs-1"></i></p>
+                            <h4 class="card-title">Thank you for your order!</h4>
+                            <p class="card-text mb-1">You will receive an order confirmation email with details of your order and a link to track its progress.</p>
+                            <p class="card-text mb-1">All necessary information about the delivery has been sent to your email.</p>
+                            <p class="card-text text-order badge bg-success my-3">Your order # is: <b>{{ orderid }}</b></p>
+                            <p class="card-text mb-0">Order date: {{ order_date }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!--End Order Card-->
+
+            <!--Order Summary-->
+            <div class="row">
+                <div class="col-12 col-sm-12 col-md-12 col-lg-6">
+                    <div class="checkout-item-ordered">
+                        <h2 class="fs-6 mb-3">Order Summary</h2>
+                        <div class="table-content table-responsive order-table mb-4">
+                            <table class="table table-bordered align-middle table-hover text-center mb-0">
+                                <thead>
+                                    <tr>
+                                        <th class="fw-bold">Image</th>
+                                        <th class="text-start fw-600">Product Name</th>
+                                        <th class="fw-600">Price</th>
+                                        <th class="fw-600">Qty</th>
+                                        <th class="fw-600">Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                
+                                    {% for product in order_products %}
+                                    <tr>
+                                        <td class="pro-img">
+                                           
+                                                <img class="primary blur-up lazyload" src="{{ product.product.images.first.image.url }}" alt="image" title="product" width="80" />
+                                            </a>
+                                        </td>
+                                        <td class="pro-name text-start">
+                                            <a href="" class="d-block">{{ product.product.name }}</a>
+                                            <div class="cart__meta-text">
+                                                <!-- Additional product details can go here -->
+                                            </div>
+                                        </td>
+                                        <td class="pro-price">{{ product.product.price }}</td>
+                                        <td class="pro-qty">{{ product.quantity }}</td>
+                                        <td class="pro-total fw-500">{{ product.total_price }}</td>
+                                    </tr>
+                                    {% empty %}
+                                    <tr>
+                                        <td colspan="5">No products found.</td>
+                                    </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="4" class="item subtotal text-end fw-bolder">Subtotal:</td>
+                                            <td class="fw-500 last">{{ total_amount }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="item shipping text-end fw-bolder">Shipping:</td>
+                                            <td class="fw-500 last">Free Shipping</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4" class="item total text-end fw-bolder">Grand Total:</td>
+                                            <td class="fw-500 last">{{ grand_total }}</td>
+                                        </tr>
+                                    </tfoot>
+                                    </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-12 col-sm-12 col-md-12 col-lg-6">
+                    <div class="ship-info-details shipping-method-details">
+                        <div class="row g-0">
+                            <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                                <div class="shipping-details mb-4 mb-sm-0 clearfix">
+                                    <h3>Shipping Address</h3>
+                                    <p>{{ billing_address.name }}</p>
+                                    <p>{{ billing_address.email }}</p>
+                                    <p>{{ billing_address.phone }}</p>
+                                    <p>{{ billing_address.house_no }}</p>
+                                    <p>{{ billing_address.city }}</p>
+                                    <p>{{ billing_address.state }}</p>
+                                    <p>{{ billing_address.country }}</p>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                    <div class="ship-info-details billing-payment-details">
+                        <div class="row g-0">
+                            <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                                <div class="shipping-details mb-4 mb-sm-0 clearfix">
+                                    <h3>Shipping Method</h3>
+                                    <p>{{ order.shipping_method }}</p>
+                                    <p>Delivery Date: {{ delivery_date }}</p>
+                                </div>
+                            </div>
+                            <div class="col-12 col-sm-6 col-md-6 col-lg-6">
+                                <div class="billing-details clearfix">
+                                    <h3>Payment Method</h3>
+                                    <p>{{ payment_method }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex-wrap w-100 mt-4 text-center">
+                        <a href="{% url 'index' %}" class="d-inline-flex align-items-center btn btn-outline-primary rounded me-2 mb-2 me-sm-3">
+                            <i class="me-2 icon an an-angle-left-r"></i>Continue Shopping
+                        </a>
+                        <button type="button" class="d-inline-flex align-items-center btn rounded me-2 mb-2 me-sm-3" onclick="window.print();">
+                            <i class="me-2 icon an an-print"></i>Print Order
+                        </button>
+                        <button type="button" class="d-inline-flex align-items-center btn rounded me-2 mb-2 me-sm-3">
+                            <i class="me-2 icon an an-sync-ar"></i>Re-Order
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!--End Order Summary-->
+        </div>
+    </div>
+    <!--End Main Content-->
+</div>
+<!--End Body Container-->
+{% endblock %}
+
+
+         
+            {% block scripts %}
+                        
+            {% endblock %}

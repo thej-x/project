@@ -435,7 +435,7 @@
                                     <!-- End Product Action -->
                                     <!-- Product Info link -->
                                     <p class="infolinks d-flex-center mt-2 mb-0">
-                                        <a class="btn add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l me-1" aria-hidden="true"></i><span> Add to Wishlist</span></a>
+                                        <a class="btn add-to-wishlist" href="{% url 'add_to_wishlist' product.id %}"><i class="icon an an-heart-l me-1" aria-hidden="true"></i><span> Add to Wishlist</span></a>
                                         <a class="btn add-to-compare" href="compare-style1.html"><i class="icon an an-sync-ar me-1" aria-hidden="true"></i><span> Add to Compare</span></a>
                                         <a class="btn shippingInfo" href="#ShippingInfo"><i class="icon an an-paper-l-plane me-1"></i><span> Delivery &amp; Returns</span></a>
                                         <a class="btn emaillink me-0" href="#productInquiry"> <i class="icon an an-question-cil me-1"></i><span> Enquiry</span></a>
