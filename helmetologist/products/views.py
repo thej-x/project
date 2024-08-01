@@ -127,6 +127,7 @@ def edit_product(request, product_id):
         price = request.POST.get('price')
         description = request.POST.get('description')
         details = request.POST.get('details')
+        quantity = request.POST.get('quantity')
         category_id = request.POST.get('category')
         thumbnail = request.FILES.get('thumbnail')
 
@@ -168,6 +169,7 @@ def edit_product(request, product_id):
         product.price = price
         product.description = description
         product.category = category
+        product.quantity = quantity
         product.details = details
 
         product.save()
@@ -183,26 +185,30 @@ def edit_product(request, product_id):
     return render(request, 'edit_product.html', context)
         
         
-def product_view(request, product_slug,product_id):
+def product_view(request,product_slug,product_id):
      
-    product = get_object_or_404(Products, slug=product_slug,id=product_id)
-        
+    product = get_object_or_404(Products, slug=product_slug,id=product_id)    
+    category = product.category 
     images = ProductImage.objects.filter(product=product)
+    realted_products = Products.objects.filter(category=category)
+    print(realted_products)
     
     if request.user.is_authenticated:
         user = request.user
         user_cart, created = Cart.objects.get_or_create(user=user)
         cart_items = user_cart.cartproducts_set.count() 
-        cart_products = user_cart.cartproducts_set.all()
+        wishlist_items = Wishlist.objects.filter(user=user).count()
     else:
         cart_items = 0
-        cart_products = []
+        
 
     
     context = {
         'product': product,
         'images': images,
-        'cart_count': cart_items
+        'cart_count': cart_items,
+        'wishlist_items' : wishlist_items,
+        'related_products' : realted_products,
     }
     return render(request, 'product.html', context)
 

@@ -1,0 +1,91 @@
+{% extends "adminbase.html" %}
+{% load static %}
+{% block title %}Admin - Order Details{% endblock %}
+
+{% block extra_styles %}
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{% static 'css/custom_style.css' %}">
+    <style>
+        .section {
+            padding: 20px 0;
+        }
+        .order-product-info {
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .order-product-info h4, .order-product-info h5 {
+            margin-bottom: 10px;
+        }
+        .order-product-info p {
+            margin-bottom: 5px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .alert {
+            margin-top: 20px;
+        }
+    </style>
+{% endblock %}
+
+{% block nav-links %}
+<!-- Navigation links can be added here if needed -->
+{% endblock %}
+
+{% block content %}
+<section class="section">
+    <div class="container">
+        
+
+        <h2>Product Details</h2>
+
+        <!-- Order Product Information -->
+        <div class="order-product-info">
+            <h4>Order ID: {{ order.orderid }}</h4>
+            <h5>Product Name: {{ order_product.product.name }}</h5>
+            <p><strong>Price:</strong> {{ order_product.price }}</p>
+            <p><strong>Quantity:</strong> {{ order_product.quantity }}</p>
+            <p><strong>Status:</strong> {{ order_product.get_status_display }}</p>
+            <p><strong>Total:</strong> {{ order_product.totel_price }}</p>
+        </div>
+
+        
+         <!-- Change Status Form -->
+         <form method="post" action="{% url 'update_order_product_status' order.orderid order_product.id %}">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="status">Order Status:</label>
+                <select id="status" name="status" class="form-control">
+                    {% if order_product.status not in "Delivered Returned Cancelled" %}
+                        {% for choice in status_choices %}
+                            <option value="{{ choice.0 }}" {% if choice.0 == order_product.status %}selected{% endif %}>{{ choice.1 }}</option>
+                        {% endfor %}
+                    {% else %}
+                        <option value="{{ order_product.status }}" selected>{{ order_product.get_status_display }}</option>
+                    {% endif %}
+                </select>
+            </div>
+            {% if order_product.status not in "Delivered Returned Cancelled" %}
+                <button type="submit" class="btn btn-primary">Update Status</button>
+            {% endif %}
+            <a href="{% url 'adminorders' %}" class="btn btn-warning btn-back">Back to Orders</a>
+        </form>
+
+        <!-- Alert Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} d-flex align-items-center" role="alert">
+                    <div>{{ message }}</div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<!-- Additional scripts can be added here if needed -->
+{% endblock %}

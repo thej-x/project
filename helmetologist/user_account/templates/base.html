@@ -6,6 +6,7 @@
 <head>
     <!--Required Meta Tags-->
     <meta charset="utf-8">
+    
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="description">
@@ -61,7 +62,7 @@
                                 <button type="button" class="btn--link site-header__menu js-mobile-nav-toggle mobile-nav--open me-3 d-lg-none"><i class="icon an an-times-l"></i><i class="icon an an-bars-l"></i></button>
                                 <!--End Mobile Toggle-->
                                 <!--Logo-->
-                                <div class="logo mx-lg-auto"><a href="index.html"><img class="logo-img" src="{% static 'assets/images/headerlogo.png' %}" alt="Optimal Multipurpose eCommerce Bootstrap 5 Html Template" title="Optimal Multipurpose eCommerce Bootstrap 5 Html Template" /><span class="logo-txt d-none">Optimal</span></a></div>
+                                <div class="logo mx-lg-auto"><a href="index.html"><img class="logo-img" src="{% static 'assets/images/headerlogo.png' %}" alt="Optimal Multipurpose eCommerce Bootstrap 5 Html Template" title="Optimal Multipurpose eCommerce Bootstrap 5 Html Template" /><span class="logo-txt d-none">Helmetologist</span></a></div>
                                 <!--End Logo-->
                             </div>
                             <!--End Logo / Menu Toggle-->
@@ -72,7 +73,7 @@
                                 <!--End Search-->
                                 <!--Wishlist-->
                                 <div class="wishlist-link iconset">
-                                    <a href="my-wishlist.html"><i class="icon an an-heart-l"></i><span class="wishlist-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">0</span><span class="tooltip-label">Wishlist</span></a>
+                                    <a href="{% url 'wishlist' %}"><i class="icon an an-heart-l"></i><span class="wishlist-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{wishlist_items}}</span><span class="tooltip-label">Wishlist</span></a>
                                 </div>
                                 <!--End Wishlist-->
                                 <!--Setting Dropdown-->
@@ -490,6 +491,7 @@
             <!-- Include jQuery -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
             <script  src="{% static 'adminassets/js/cart.js' %}" ></script>
+            <script  src="{% static 'adminassets/js/shop.js' %}" ></script>
             <!-- Add fade-out effect to alerts -->
             <script>
                 $(document).ready(function() {
@@ -497,7 +499,7 @@
                         $(".alert").fadeOut("slow", function() {
                             $(this).remove();
                         });
-                    }, 5000); // 5000 milliseconds = 5 seconds
+                    }, 3000); // 3000 milliseconds = 3 seconds
                 });
             </script>
             <script>

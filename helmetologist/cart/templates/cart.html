@@ -7,6 +7,7 @@
 {% block extra_styles %}
 
 
+
 {% endblock %}
 
 {% block nav_links %}
@@ -31,8 +32,21 @@
                         </div>
                     </div>
                 </div>
-                <!--End Collection Banner-->
 
+                <!--End Collection Banner-->
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                        <use xlink:href="#exclamation-triangle-fill"/>
+                    </svg>
+                    <div>
+                        {{ message }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+                {% if cart_products %}
                     <!--Main Content-->
                     <div class="container">
                         <!--Cart Page-->
@@ -71,11 +85,11 @@
                                                         Qty: {{product.quantity}}
                                                     </div> -->
                                                     <div class="cart-price d-md-none">
-                                                        <span class="money fw-500">{{product.products.price}}</span>
+                                                        <span class="money fw-500">&#8377; {{product.products.price}}</span>
                                                     </div>
                                                 </td>
                                                 <td class="cart__price-wrapper cart-flex-item text-center small--hide">
-                                                    <span class="money">{{product.products.price}}</span>
+                                                    <span class="money">&#8377; {{product.products.price}}</span>
                                                 </td>
                                                 <td class="cart__update-wrapper cart-flex-item text-end text-md-center">
                                                     <div class="cart__qty d-flex justify-content-end justify-content-md-center">
@@ -95,7 +109,7 @@
                                                     <a href="#" title="Remove" class="removeMb d-md-none d-inline-block text-decoration-underline mt-2 me-3">Remove</a>
                                                 </td>
                                                 <td class="cart-price cart-flex-item text-center small--hide">
-                                                    <span id="product-subtotal-{{product.products.id}}" class="money fw-500">{{ product.sub_total }}</span>
+                                                    <span id="product-subtotal-{{product.products.id}}" class="money fw-500">&#8377; {{ product.sub_total }}</span>
                                                 </td>
    
                                             </tr>
@@ -121,7 +135,7 @@
 
                                     <div class="row border-bottom pb-2">
                                         <span class="col-6 col-sm-6 cart__subtotal-title">Subtotal</span>
-                                        <span class="col-6 col-sm-6 text-right"><span class="money">{{ user_cart.cart_sub_total }}</span></span>
+                                        <span class="col-6 col-sm-6 text-right"><span class="money">&#8377; {{ user_cart.cart_sub_total }}</span></span>
                                     </div>
                                     
                                     <!-- <div class="row border-bottom pb-2 pt-2">
@@ -134,7 +148,7 @@
                                     </div>
                                     <div class="row border-bottom pb-2 pt-2">
                                         <span class="col-6 col-sm-6 cart__subtotal-title"><strong>Grand Total</strong></span>
-                                        <span class="col-6 col-sm-6 cart__subtotal-title cart__subtotal text-right"><span class="money">{{ user_cart.cart_sub_total }}</span></span>
+                                        <span class="col-6 col-sm-6 cart__subtotal-title cart__subtotal text-right"><span class="money">&#8377; {{ user_cart.cart_sub_total }}</span></span>
                                     </div>
 
 
@@ -154,6 +168,26 @@
                         <!--End Cart Page-->    
                     </div>
                     <!--End Main Content-->
+                    {% else %}
+
+                    <!--Container-->
+                    <div class="container">
+                        <!--Category Empty-->
+                        <div class="row">
+                            <div class="col-12 col-sm-12 col-md-12 col-lg-12 text-center pt-5 pb-5">
+                                <p><img src="{% static 'assets/images/sad-icon.png' %}" alt="" /></p>
+                                <h2 class="mt-4"><strong>SORRY,</strong> Your shopping cart is empty!</h2>
+                                <p class="mb-3 pb-1">You have no items in your shopping cart.</p>
+                                <p><a href="{% url 'index' %}" class="btn btn-outline-primary rounded mb-2 me-2">GO Back</a><a href="{% url 'shop' %}" class="btn rounded mb-2 text-capitalize">Continue shopping</a></p>
+                            </div>
+                        </div>
+                        <!--End Category Empty-->
+                    </div>
+                    <!--End Container-->
+                 {% endif %}
+
+
+
             </div>
             <!--End Body Container-->
 
@@ -225,6 +259,11 @@
                             title: 'Error',
                             text: 'Minimum quantity is 1',
                             confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                // Reload the page
+                                location.reload();
+                            }
                         });
                         qtyInput.value = 1;
                         

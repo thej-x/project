@@ -4,7 +4,26 @@
 {% load static %}
 
 {% block extra_styles %}
-
+<style>
+    .status-pending {
+      color: orange;
+    }
+    .status-processing {
+      color: blue;
+    }
+    .status-shipped {
+      color: purple;
+    }
+    .status-delivered {
+      color: green;
+    }
+    .status-cancelled {
+      color: red;
+    }
+    .status-returned {
+      color: brown;
+    }
+  </style>
 
 {% endblock %}
 
@@ -65,11 +84,11 @@
                             <!-- Nav tabs -->
                             <ul class="nav flex-column bg-light h-100 dashboard-list" role="tablist">
                                 <li><a class="nav-link "  href="{% url 'useraccount' user.id %}">Dashboard</a></li>
-                                <li><a class="nav-link active"  href="{% url 'orders' user.id %}">Orders</a></li>
+                                <li><a class="nav-link active"  href="{% url 'order' user.id %}">Orders</a></li>
                                 <li><a class="nav-link"  href="#{% url 'order_tracking' user.id %}">Orders tracking</a></li>
                                 <li><a class="nav-link"  href="{% url 'view_address'  %}">Addresses</a></li>
-                                <li><a class="nav-link "  href="{% url 'user_details'  %}">Account details</a></li>
-                                <li><a class="nav-link"  href="{% url 'change_password' user.id %}">Change Password</a></li>
+                                <li><a class="nav-link "  href="{% url 'user_details' user.id %}">Account details</a></li>
+                                <li><a class="nav-link"  href="{% url 'change_password'  %}">Change Password</a></li>
                                 <li><a class="nav-link" href="{% url 'userlogout' %}">logout</a></li>
                             </ul>
                             <!-- End Nav tabs -->
@@ -89,46 +108,43 @@
                                             <thead class="alt-font">
                                                 <tr>
                                                     <th>Order</th>
+                                                    <th>order id</th>
                                                     <th>Product</th>
+                                                    <th>quantity</th>
                                                     <th>Date</th>
                                                     <th>Status</th>
                                                     <th>Total</th>
-                                                    <th>Actions</th>
+                                                    <th>View</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr>
-                                                    <td>1</td>
-                                                    <td>Long Sleeve T-shirts</td>
-                                                    <td>March 04, 2021</td>
-                                                    <td class="text-success">Completed</td>
-                                                    <td>$165.00 for 1 item </td>
-                                                    <td><a class="link-underline view" href="cart-style1.html">View</a></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>2</td>
-                                                    <td>Floral Crop Top</td>
-                                                    <td>May 19, 2021</td>
-                                                    <td class="text-success">Completed</td>
-                                                    <td>$150.00 for 1 item </td>
-                                                    <td><a class="link-underline view" href="cart-style1.html">View</a></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>3</td>
-                                                    <td>Bodysuit Black</td>
-                                                    <td>June 24, 2021</td>
-                                                    <td class="text-danger">Processing</td>
-                                                    <td>$190.00 for 2 item </td>
-                                                    <td><a class="link-underline view" href="cart-style1.html">View</a></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>4</td>
-                                                    <td>Hoodie Sweatshirt</td>
-                                                    <td>July 28, 2021</td>
-                                                    <td class="text-danger">Processing</td>
-                                                    <td>$170.00 for 1 item </td>
-                                                    <td><a class="link-underline view" href="cart-style1.html">View</a></td>
-                                                </tr>
+                                                {% for order in orders %}
+                                                
+                                                    {% for item in order.order.all %}
+                                                        <tr>
+                                                            <td>{{ order.id }}</td>
+                                                            <td>{{ order.orderid }}</td>
+                                                            <td>{{ item.product }}</td>
+                                                            <td>{{ item.quantity }}</td>
+                                                            <td>{{ order.created_at|date:"F d, Y" }}</td>
+                                                            <td><span class="status-{{ item.status|lower }}">{{ item.status }}</span></td>
+                                                                
+                                                              
+                                                            <td>{{ item.totel_price }} </td>
+                                                            
+                                                            <td><a href="{% url 'view_order' item.id %}" class="btn btn btn-view">View</a>
+                                                            </td>
+                                                        </tr>
+                                                    {% empty %}
+                                                        <tr>
+                                                            <td colspan="6">No orders found.</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% empty %}
+                                                    <tr>
+                                                        <td colspan="6">No orders found.</td>
+                                                    </tr>
+                                                {% endfor %}
                                             </tbody>
                                         </table>
                                     </div>

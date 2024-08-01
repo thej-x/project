@@ -1,0 +1,109 @@
+{% extends "adminbase.html" %}
+{% load static %}
+{% block title %}Admin-order details{% endblock %}
+
+<!-- this block custom styles eg :
+<link rel="stylesheet" href="{% static 'css/custom_style.css' %}"> -->
+{% block extra_styles %}
+
+<style>
+    .status-pending {
+      color: orange;
+    }
+    .status-processing {
+      color: blue;
+    }
+    .status-shipped {
+      color: purple;
+    }
+    .status-delivered {
+      color: green;
+    }
+    .status-cancelled {
+      color: red;
+    }
+    .status-returned {
+      color: brown;
+    }
+  </style>
+
+{% endblock %}
+<!-- end styles -->
+
+<!-- main content start -->
+{% block content %}
+
+<!-- Main Content -->
+
+<section class="section">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4>Table of coupons details</h4>
+          <!-- <a href="{% url 'add_products' %}" class="btn btn-primary">Add Products</a> -->
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover" id="save-stage" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>Order Id</th>
+                  <th>Customer</th>
+                  <th>Ordered Date</th>
+                  <th>Total Amount</th>
+                  <th>Payment Method</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for order in orders %}
+                <tr data="">
+                  <td>{{ order.id }}</td>
+                  <td>{{ order.user.first_name }}</td>
+                  <td>{{ order.created_at }}</td>
+                  <td>{{ order.total_amount }}</td>
+                  <td>{{ order.payment_method }}</td> 
+                  <td ><a href="{% url 'order_products' order.orderid %}" class="orderdetails btn btn-primary">view products</a></td>  
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+<!-- main content start -->
+
+{% block scripts %}
+
+<script src="{% static 'adminassets/bundles/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/jquery-ui/jquery-ui.min.js' %}"></script>
+<script src="{% static 'adminassets/js/page/datatables.js' %}"></script>
+
+
+{% endblock %}
+
+
+
+
+ <!-- <th>Statues</th> -->
+
+
+
+
+                  <!-- <td>
+                    {% if order.order.exists %}
+                      {% for order_product in order.order.all %}
+                        <span class="status-{{ order_product.status|lower }}">
+                          {{ order_product.status }}
+                        </span>
+                      {% endfor %}
+                    {% else %}
+                      No products
+                    {% endif %}
+                  </td> -->

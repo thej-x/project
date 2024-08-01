@@ -1,0 +1,115 @@
+{% extends "adminbase.html" %}
+{% load static %}
+{% block title %}Admin-order details{% endblock %}
+
+<!-- this block custom styles eg :
+<link rel="stylesheet" href="{% static 'css/custom_style.css' %}"> -->
+{% block extra_styles %}
+
+
+
+{% endblock %}
+<!-- end styles -->
+
+<!-- main content start -->
+{% block content %}
+
+<!-- Main Content -->
+
+<section class="section">
+  <div class="row">
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header">
+          <h4>Table of users order details</h4>
+           <a href="{% url 'add_coupon' %}" class="btn btn-primary">Add Coupon</a>
+        </div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover" id="save-stage" style="width:100%;">
+              <thead>
+                <tr>
+                  <th>Title </th>
+                  <th>Code</th>
+                  <th>Discount percentage</th>
+                  <th>Start date</th>
+                  <th>End date</th>
+                  <th>Quantity</th>
+                  <th>Minimum amount</th>
+                  <th>Maximum amount</th>
+                  <th>Created at</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for coupon in coupons %}
+                <tr data="">
+                  <td>{{ coupon.title }}</td>
+                  <td>{{ coupon.code }}</td>
+                  <td>{{ coupon.discount_percentage }}</td>
+                  <td>{{ coupon.start_date }}</td>
+                  <td>{{ coupon.end_date }}</td> 
+                  <td>{{ coupon.quantity }}</td> 
+                  
+                  <td>{{ coupon.min_amount }}</td> 
+                  <td>{{ coupon.max_amount }}</td>
+                  <td>{{ coupon.created }}</td>
+                  <td>
+                    {% if  coupon.active %}  
+                    <form method="POST"
+                        action="{% url 'coupon_inactive' coupon.id %}"
+                        style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success">Active</button>
+                    </form>
+                    {% else %}
+                    <form method="POST"
+                        action="{% url 'coupon_inactive' coupon.id %}"
+                        style="display:inline;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger">Deactive</button>
+                    </form>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}
+<!-- main content start -->
+
+{% block scripts %}
+
+<script src="{% static 'adminassets/bundles/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/jquery-ui/jquery-ui.min.js' %}"></script>
+<script src="{% static 'adminassets/js/page/datatables.js' %}"></script>
+
+
+{% endblock %}
+
+
+
+
+ <!-- <th>Statues</th> -->
+
+
+
+
+                  <!-- <td>
+                    {% if order.order.exists %}
+                      {% for order_product in order.order.all %}
+                        <span class="status-{{ order_product.status|lower }}">
+                          {{ order_product.status }}
+                        </span>
+                      {% endfor %}
+                    {% else %}
+                      No products
+                    {% endif %}
+                  </td> -->

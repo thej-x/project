@@ -1,0 +1,216 @@
+{% extends "base.html" %}
+
+{% block title %} User login{% endblock %}
+{% load static %}
+
+{% block extra_styles %}
+<style>
+    .status-pending {
+      color: orange;
+    }
+    .status-processing {
+      color: blue;
+    }
+    .status-shipped {
+      color: purple;
+    }
+    .status-delivered {
+      color: green;
+    }
+    .status-cancelled {
+      color: red;
+    }
+    .status-returned {
+      color: brown;
+    }
+  </style>
+
+{% endblock %}
+
+{% block nav_links %}
+
+{% endblock %}
+
+
+{% block content %}  
+
+            <!--Body Container-->
+            <div id="page-content">
+                <!--Collection Banner-->
+                <div class="collection-header">
+                    <div class="collection-hero">
+                        <div class="collection-hero__image"></div>
+                        <div class="collection-hero__title-wrapper container">
+                            <h1 class="collection-hero__title">My Account</h1>
+                            <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="index.html" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">My Account</span></div>
+                        </div>
+                    </div>
+                </div>
+                <!--End Collection Banner-->
+
+                <!--Container-->
+                <div class="container pt-2">
+                    <!--Main Content-->
+                    <div class="dashboard-upper-info">
+                        <div class="row align-items-center g-0">
+                            <div class="col-xl-3 col-lg-3 col-sm-6">
+                                <div class="d-single-info">
+                                    <p class="user-name">Hello <span class="fw-600">optimal</span></p>
+                                    <p>(not optimal? <a class="link-underline fw-600" href="{% url 'userlogout' %}">Log Out</a>)</p>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-lg-4 col-sm-6">
+                                <div class="d-single-info">
+                                    <p>Need Assistance? Customer service at.</p>
+                                    <p><a href="mailto:admin@example.com">helmetologist@example.com</a></p>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-lg-3 col-sm-6">
+                                <div class="d-single-info">
+                                    <p>E-mail them at </p>
+                                    <p><a href="mailto:support@example.com">{{user.email}}</a></p>
+                                </div>
+                            </div>
+                            <div class="col-xl-2 col-lg-2 col-sm-6">
+                                <div class="d-single-info text-lg-center">
+                                    <a class="link-underline fw-600 view-cart" href="cart-style1.html"><i class="icon an an-sq-bag me-2"></i>View Cart</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-4 mb-lg-5 pb-lg-5">
+                        <div class="col-xl-3 col-lg-2 col-md-12 mb-4 mb-lg-0">
+                            <!-- Nav tabs -->
+                            <ul class="nav flex-column bg-light h-100 dashboard-list" role="tablist">
+                                <li><a class="nav-link" href="{% url 'useraccount' user.id %}">Dashboard</a></li>
+                                <li><a class="nav-link active" href="{% url 'order' user.id %}">Orders</a></li>
+                                <li><a class="nav-link" href="{% url 'view_address' %}">Addresses</a></li>
+                                <li><a class="nav-link" href="{% url 'user_details' user.id %}">Account details</a></li>
+                                <li><a class="nav-link" href="{% url 'change_password' %}">Change Password</a></li>
+                                <li><a class="nav-link" href="{% url 'userlogout' %}">logout</a></li>
+                            </ul>
+                            <!-- End Nav tabs -->
+                        </div>
+
+                        <div class="col-xl-9 col-lg-10 col-md-12">
+                            <!-- Tab panes -->
+                            <div class="tab-content dashboard-content">
+                               <!-- Orders tracking -->
+                               <div id="orderstracking" class="order-tracking tab-pane fade show active">
+                                <h3>Orders tracking</h3>
+                                <form class="orderstracking-from mt-3">
+                                    <p class="mb-3">To Cancel your order please press "Cancel" button. This was given to you on your receipt and in the confirmation email you should have received.</p>
+                                    <div class="row align-items-center">
+                                      <div class="form-group col-md-2 col-lg-2">
+                                        <button type="button" class="btn rounded w-100 h-100" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                                          <span>Cancel</span> <span>Order</span>
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </form>
+                                <div class="row mt-2">
+                                    <div class="col-sm-12">
+                                        <h3>Status for order id: {{order_product.order.orderid}}</h3>
+                                        <!-- Status Order -->
+                                        <div class="row mt-3">
+                                            <div class="col-lg-2 col-md-3 col-sm-4">
+                                                <div class="product-img mb-3 mb-sm-0">
+                                                    <img class="blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="product" title="">
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-6 col-md-9 col-sm-8">
+                                                <div class="tracking-detail d-flex-center">
+                                                    <ul>
+                                                        <li>
+                                                            <div class="left"><span>Product name</span></div>
+                                                            <div class="right"><span>{{order_product.product.name}}</span></div>
+                                                        </li>
+                                                        <li>
+                                                            <div class="left"><span>customer name</span></div>
+                                                            <div class="right"><span>{{user.first_name}}</span></div>
+                                                        </li>
+                                                        <li>
+                                                            <div class="left"><span>order date</span></div>
+                                                            <div class="right"><span>{{ order_product.order.created_at|date:"F d, Y" }}</span></div>
+                                                        </li>
+                                                        
+                                                        <li>
+                                                            <div class="left"><span>shipping address</span></div>
+                                                            <div class="right"><span>{{order_product.order.billing_address}}</span></div>
+                                                        </li>
+                                                        <li>
+                                                            <div class="left"><span>Order status</span></div>
+                                                            <div class="right"><span class="status-{{ order_product.status|lower }}">
+                                                                {{ order_product.status }}
+                                                              </span></div>
+                                                        </li>
+                                                        
+                                                       
+                                                        
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                            <div class="col-lg-4 col-md-12 col-sm-12 mt-4 mt-lg-0">
+                                                <div class="tracking-map map-section ratio ratio-16x9 h-100">
+                                                    <iframe src="https://www.google.com/maps/embed?pb=" allowfullscreen="" height="650"></iframe>                             
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <!-- End Status Order -->
+                                        <!-- Tracking Steps -->
+                                        <div class="tracking-steps nav mt-5 mb-4 clearfix">
+                                            <div class="step done"><span>order placed</span></div>
+                                            <div class="step current"><span>preparing to ship</span></div>
+                                            <div class="step"><span>shipped</span></div>
+                                            <div class="step"><span>delivered</span></div>
+                                        </div>
+                                        <!-- End Tracking Steps -->
+                                        <!-- Order Table -->
+                                        <div class="table-responsive order-table">
+                                            
+                                        </div>
+                                        <!-- End Order Table -->
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Orders tracking -->
+<!-- Cancel Order Modal -->
+<div class="modal fade" id="cancelOrderModal" tabindex="-1" aria-labelledby="cancelOrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="cancelOrderModalLabel">Cancel Order</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="cancelOrderForm" method="post" action="{% url 'cancel_order_request' order_product.id %}">
+            {% csrf_token %}
+            <div class="mb-3">
+              <label for="cancellationReason" class="form-label">Reason for Cancellation</label>
+              <textarea class="form-control" id="cancellationReason" name="cancellation_reason" rows="3" required></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="submit" form="cancelOrderForm" class="btn btn-danger">Confirm Cancellation</button>
+        </div>
+      </div>
+    </div>
+  </div>
+                            </div>
+                            <!-- End Tab panes -->
+                        </div>
+                    </div>
+                    <!--End Main Content-->
+                </div>
+                <!--End Container-->
+            </div>
+            <!--End Body Container-->
+
+{% endblock %}
+
+
+{% block scripts %}
+{% endblock %}  

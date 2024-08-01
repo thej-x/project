@@ -16,6 +16,7 @@
   <!-- Custom style CSS -->
   <link rel="stylesheet" href="{% static 'adminassets/css/custom.css' %}">
   <link rel='shortcut icon' type='image/x-icon' href="{% static 'adminassets/img/favicon.ico' %}" />
+
   {% block nav_links %}
             
             
@@ -108,20 +109,30 @@
             </li>
             <li class="dropdown">
               <a href="{% url 'adminuser' %}" class="nav-link"><i data-feather="command"></i><span>Users</span></a>
-              <ul class="dropdown-menu">
-              </ul>
+              
+             
             </li>
             <li class="dropdown">
               <a href="{% url 'admincategory' %}" class="nav-link"><i data-feather="tag"></i><span>Category</span></a>
-              <ul class="dropdown-menu">
-              </ul>
+              
+              
             </li>
             <li class="dropdown">
-              <a href="{% url 'adminproducts' %}" class="nav-link"><i data-feather="box"></i><span>Products</span></a>
+              <a href="{% url 'adminproducts' %}" class="nav-link"><i data-feather="package"></i><span>Products</span></a>
 
             </li>
             <li class="dropdown">
-              <a href="{% url 'adminlogout' %}" class="nav-link"><span>logout</span></a>
+              <a href="{% url 'adminorders' %}" class="nav-link"><i data-feather="shopping-cart"></i><span>Orders</span></a>
+              
+            </li>
+
+            <li class="dropdown">
+              <a href="{% url 'admincoupon' %}" class="nav-link"><i data-feather="percent"></i><span>Coupons</span></a>
+              
+            </li>
+
+            <li class="dropdown">
+              <a href="{% url 'adminlogout' %}" class="nav-link"><i data-feather="log-out"></i><span>logout</span></a>
 
             </li>
             
@@ -171,8 +182,17 @@
   <script src="{% static 'adminassets/js/scripts.js' %}"></script>
   <!-- Custom JS File -->
   <script src="{% static 'adminassets/js/custom.js' %}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
 
-  
+  <script>
+    $(document).ready(function() {
+        setTimeout(function() {
+            $(".alert").fadeOut("slow", function() {
+                $(this).remove();
+            });
+        }, 3000); // 3000 milliseconds = 3 seconds
+    });
+</script>
   
   {% block scripts %}
 

@@ -58,7 +58,9 @@
                             <div class="customCheckbox clearfix py-2 my-2">
                                 <input id="formcheckoutCheckbox2" name="checkbox2" type="checkbox"> 
                                 <label for="formcheckoutCheckbox2">The same as shipping address</label>
+                                <a href="{% url 'view_address' %}">Add address/Edit address Click here!</a>
                             </div>
+
                             {% for address in Addresses %}
                             <div class="card card--grey mt-2">
                                 <div class="card">
@@ -152,6 +154,24 @@
                             </tfoot>
                         </table>
                     </div>
+
+                    <div class="card card--grey mt-2">
+                        <div class="card-body">
+                            <h2 class="fs-6">Apply Couponcode</h2>
+                            <label class="text-uppercase d-none">Enter Coupon code:</label>
+                            <form method="post" action="{% url 'apply_coupon' %}">
+                                {% csrf_token %}
+                                <div class="input-group flex-nowrap">
+                                    <input class="input-group__field" type="text" placeholder="Coupon code" name="code">
+                                    <span class="input-group__btn">
+                                        <a href="{% url 'apply_coupon' %}"><button type="submit" class="btn rounded-end text-nowrap">Apply</button></a>
+                                    </span>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+
                     <div class="order-button-payment mt-2 clearfix">
                         <button type="submit" class="cartCheckout fs-6 btn btn-lg rounded w-100 fw-600 text-white">Place order</button>
                     </div>

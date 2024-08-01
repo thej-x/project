@@ -62,7 +62,7 @@
                                 <!--End Search-->
                                 <!--Wishlist-->
                                 <div class="wishlist-link iconset">
-                                    <a href="my-wishlist.html"><i class="icon an an-heart-l"></i><span class="wishlist-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">0</span><span class="tooltip-label">Wishlist</span></a>
+                                    <a href="{% url 'wishlist' %}"><i class="icon an an-heart-l"></i><span class="wishlist-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{wishlist_items}}</span><span class="tooltip-label">Wishlist</span></a>
                                 </div>
                                 <!--End Wishlist-->
                                 <!--Setting Dropdown-->
@@ -365,6 +365,7 @@
                                     <!-- Product Reviews -->
                                     <div class="product-review mb-2"><a class="reviewLink d-flex-center" href="#reviews"><i class="an an-star"></i><i class="an an-star mx-1"></i><i class="an an-star"></i><i class="an an-star mx-1"></i><i class="an an-star-o"></i><span class="spr-badge-caption ms-2">16 Reviews</span></a></div>
                                     <!-- End Product Reviews -->
+
                                     <!-- Product Info -->
                                     <div class="product-info">
                                          
@@ -404,10 +405,13 @@
                                                 <a class="qtyBtn plus" href="javascript:void(0);"><i class="icon an an-plus-r" aria-hidden="true"></i></a>
                                             </div> -->
                                             <div class="pro-stockLbl ms-3">
+                                                {% if product.quantity > 10 %}
                                                 <span class="d-flex-center stockLbl instock"><i class="icon an an-check-cil"></i><span> In stock</span></span>
-                                                <span class="d-flex-center stockLbl preorder d-none"><i class="icon an an-clock-r"></i><span> Pre-order Now</span></span>
-                                                <span class="d-flex-center stockLbl outstock d-none"><i class="icon an an-times-cil"></i> <span>Sold out</span></span>
-                                                <span class="d-flex-center stockLbl lowstock d-none" data-qty="15"><i class="icon an an-exclamation-cir"></i><span> Order now, Only  <span class="items">10</span>  left!</span></span>
+                                                {% elif product.quantity > 0 and product.quantity <= 10 %}
+                                                <span class="d-flex-center stockLbl lowstock" data-qty="15"><i class="icon an an-exclamation-cir"></i><span> Order now, Only  <span class="items">{{product.quantity}}</span>  left!</span></span>
+                                                {% else  %}
+                                                <span class="d-flex-center stockLbl outstock"><i class="icon an an-times-cil"></i> <span>Sold out</span></span>
+                                                {% endif %}
                                             </div>
                                         </div>
                                         
@@ -454,7 +458,7 @@
                                 </div>
                                 <!-- End Social Sharing -->
                                 <!-- Product Info -->
-                                <div class="freeShipMsg" data-price="199"><i class="icon an an-truck" aria-hidden="true"></i>SPENT <b class="freeShip"><span class="money" data-currency-usd="$199.00" data-currency="USD">$199.00</span></b> MORE FOR FREE SHIPPING</div>
+                                <div class="freeShipMsg" data-price="199"><i class="icon an an-truck" aria-hidden="true"></i> <b class="freeShip"><span class="money" data-currency-usd="$199.00" data-currency="USD"></span></b>  FREE SHIPPING</div>
                                 <div class="shippingMsg"><i class="icon an an-clock-r" aria-hidden="true"></i>Estimated Delivery Between <b id="fromDate">Wed, May 1</b> and <b id="toDate">Tue, May 7</b>.</div>
                                 <div class="userViewMsg" data-user="20" data-time="11000"><i class="icon an an-eye-r" aria-hidden="true"></i><strong class="uersView">21</strong> People are Looking for this Product</div>
                                 <div class="trustseal-img mt-4"><img src="{% static 'assets/images/powerby-cards.jpg' %}" alt="powerby cards" /></div>
@@ -479,9 +483,9 @@
                                 <div class="product-description">
                                     <div class="row">
                                         <div class="col-12 col-sm-12 col-md-8 col-lg-8 mb-4 mb-md-0">
-                                            <p>Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book.</p>
+                                            <p>{{product.details}}</p>
                                             <h4 class="pt-2 text-uppercase">Features</h4>
-                                            <p>There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.</p>
+                                            <p>{{product.description}}.</p>
                                             <ul>
                                                 <li>Curabitur pulvinar ex at tempus sodales.</li>
                                                 <li>Donec vitae ante sed ligula viverra fermentum</li>
@@ -495,14 +499,8 @@
                                         </div>
                                        
                                         <div class="col-12 col-sm-12 col-md-4 col-lg-4">
-                                            {% if Colour_product %}
-
-                                            {% if not Images %}
-                                            <img data-src="{{ Colour_product.first.images.last.img.url }}" src="{{ Colour_product.first.images.last.img.url }}" alt="image" />
-                                            
-                                            {% else %}
-                                            <img data-src="{{ Images.last.img.url }}" src="{{ Images.last.img.url }}" alt="image" />
-                                            {% endif %}
+                                            {% if product %}
+                                                        <img data-src="{{ images.last.image.url }}" src="{{ images.last.image.url }}" alt="{{ product.name }}" />                 
                                             {% endif %}
                                         </div>
 
@@ -650,314 +648,98 @@
                             </div>
                         </div>
                         <div class="productSlider grid-products">
+
+
+
+
+                            {% for product in related_products %}
+                            {% if product.is_listed %}
+
                             <div class="item">
+
+                                
                                 <!--Start Product Image-->
                                 <div class="product-image">
                                     <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
+                                    <a href="{% url 'product' product_slug=product.slug product_id=product.id %}" class="product-img">
+                                        {% with product.images.first as primary_image %}
                                         <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
+                                        <img class="primary blur-up lazyload" data-src="{{ primary_image.image.url }}" src="{{ primary_image.image.url }}" alt="" title="">
                                         <!-- End image -->
+                                        {%endwith%}
                                         <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
+
+                                        {% with product.images.last as hover_image %}
+                                        <img class="hover blur-up lazyload" data-src="{{ hover_image.image.url }}" src="{{ hover_image.image.url }}" alt="" title="">
                                         <!-- End hover image -->
+                                        {%endwith%}
                                         <!-- product label -->
-                                        <div class="product-labels"><span class="lbl on-sale">50% Off</span></div>
+                                            <!-- <div class="product-labels"><span class="lbl on-sale">50% Off</span></div> -->
                                         <!-- End product label -->
                                     </a>
                                     <!--End Product Image-->
 
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
+                                     <!--Product Button-->
+                                     <div class="button-set style2">
                                         <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
+                                            <li>
+                                                <!--Cart Button-->
+
+                                                <!-- Custom Add to Cart Button -->
+
+                                                <button data-product="{{ product.id }}" method="post" data-action="add" class="btn-icon btn btn-addto-cart pro-addtocart-popup update-cart">
+                                                    <i class="icon an an-cart-l"></i>
+                                                    <span class="tooltip-label">Add to Cart</span>
+                                                </button>
+                                                <!-- <a class="btn-icon btn btn-addto-cart pro-addtocart-popup" href="{% url 'add_to_cart' product.id %}">
+                                                    <i class="icon an an-cart-l"></i> 
+                                                    <span class="tooltip-label">Add to Cart</span>
+                                                </a> -->
+
+                                                <!--end Cart Button-->
+                                            </li>
+                                           <li>
+                                                <!--Wishlist Button-->
+                                                <a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html">
+                                                    <i class="icon an an-heart-l"></i>
+                                                    <span class="tooltip-label">Add To Wishlist</span>
+                                                </a>
+                                                <!--End Wishlist Button-->
+                                            </li>
                                         </ul>
                                     </div>
                                     <!--End Product Button-->
                                 </div>
                                 <!--End Product Image-->
                                 
-                                <!--Start Product Details-->
+                                <!--start product details -->
                                 <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name text-uppercase">
-                                        <a href="product-layout1.html">Martha Knit Top</a>
+                                    <!-- product name -->
+                                    <div class="product-name">
+                                        <a href="{% url 'product' product_slug=product.slug product_id=product.id  %}">{{ product.name }}</a>
                                     </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
+                                    <!-- End product name -->
+                                    <!-- product price -->
                                     <div class="product-price">
-                                        <span class="old-price">$199.00</span>
-                                        <span class="price">$219.00</span>
+                                        <span class="old-price">{{ product.price }}</span>
+                                        <span class="price">{{ product.price }}</span>
                                     </div>
-                                    <!--End Product Price-->
+                                    <!-- End product price -->
                                     <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center"><i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star-o"></i></div>
+                                    <div class="product-review"><i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star-o"></i></div>
                                     <!--End Product Review-->
-                                    <!--Color Variant -->
-                                    <ul class="image-swatches swatches">
-                                        <li class="rounded blue medium"><span class="swacth-btn"></span><span class="tooltip-label">Blue</span></li>
-                                        <li class="rounded pink medium"><span class="swacth-btn"></span><span class="tooltip-label">Pink</span></li>
-                                        <li class="rounded red medium"><span class="swacth-btn"></span><span class="tooltip-label">Red</span></li>
-                                    </ul>
-                                    <!-- End Variant -->
                                 </div>
-                                <!--End Product Details-->
-                            </div>
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
+                                <!-- End product details -->
 
-                                    <!--Countdown Timer-->
-                                    <div class="saleTime desktop" data-countdown="2024/10/01"></div>
-                                    <!--End Countdown Timer-->
 
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                    <!--End Product Button-->
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name text-uppercase">
-                                        <a href="product-layout1.html">Long Sleeve T-shirts</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="price">$199.00</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center"><i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i><i class="an an-star"></i> <i class="an an-star"></i></div>
-                                    <!--End Product Review-->
-                                    <!-- Color Variant -->
-                                    <ul class="swatches">
-                                        <li class="swatch medium rounded black"><span class="tooltip-label">Black</span></li>
-                                        <li class="swatch medium rounded navy"><span class="tooltip-label">Navy</span></li>
-                                        <li class="swatch medium rounded purple"><span class="tooltip-label">Purple</span></li>
-                                    </ul>
-                                    <!-- End Variant -->
-                                </div>
-                                <!--End Product Details-->
+                                
                             </div>
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
-                                    <!--Product label-->
-                                    <div class="product-labels"><span class="lbl pr-label1">New</span></div>
-                                    <!--Product label-->
 
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                    <!--End Product Button-->
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name text-uppercase">
-                                        <a href="product-layout1.html">Button Up Top Black</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="price">$99.00</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center"><i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star-o"></i> <i class="an an-star-o"></i> <i class="an an-star-o"></i></div>
-                                    <!--End Product Review-->
-                                    <!--Color Variant -->
-                                    <ul class="swatches">
-                                        <li class="swatch medium rounded red"><span class="tooltip-label">red</span></li>
-                                        <li class="swatch medium rounded orange"><span class="tooltip-label">orange</span></li>
-                                        <li class="swatch medium rounded yellow"><span class="tooltip-label">yellow</span></li>
-                                    </ul>
-                                    <!-- End Variant -->
-                                </div>
-                                <!--End Product Details-->
-                            </div>
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
 
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                    <!--End Product Button-->
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name text-uppercase">
-                                        <a href="product-layout1.html">Sunset Sleep Scarf Top</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="price">$88.00</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center"><i class="an an-star"></i> <i class="an an-star-o"></i> <i class="an an-star-o"></i> <i class="an an-star-o"></i> <i class="an an-star-o"></i></div>
-                                    <!--End Product Review-->
-                                    <!-- Color Variant -->
-                                    <ul class="image-swatches swatches">
-                                        <li class="rounded yellow medium"><span class="swacth-btn"></span><span class="tooltip-label">Yellow</span></li>
-                                        <li class="rounded blue medium"><span class="swacth-btn"></span><span class="tooltip-label">Blue</span></li>
-                                        <li class="rounded pink medium"><span class="swacth-btn"></span><span class="tooltip-label">Pink</span></li>
-                                        <li class="rounded red medium"><span class="swacth-btn"></span><span class="tooltip-label">Red</span></li>
-                                    </ul>
-                                    <!-- End Variant -->
-                                </div>
-                                <!--End Product Details-->
-                            </div>
-                            <div class="item">
-                                <!--Start Product Image-->
-                                <div class="product-image">
-                                    <!--Start Product Image-->
-                                    <a href="product-layout1.html" class="product-img">
-                                        <!-- image -->
-                                        <img class="primary blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="" title="">
-                                        <!-- End image -->
-                                        <!-- Hover image -->
-                                        <img class="hover blur-up lazyload" data-src="{% static 'assets/images/products/product-1-1.jpg' %}" src="{% static 'assets/images/products/product-1-1.jpg' %}" alt="" title="">
-                                        <!-- End hover image -->
-                                    </a>
-                                    <!--End Product Image-->
 
-                                    <!--Product Button-->
-                                    <div class="button-set style0 d-none d-md-block">
-                                        <ul>
-                                            <!--Cart Button-->
-                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                            <!--End Cart Button-->
-                                            <!--Quick View Button-->
-                                            <li><a class="btn-icon quick-view-popup quick-view" href="javascript:void(0)" data-toggle="modal" data-target="#content_quickview"><i class="icon an an-search-l"></i> <span class="tooltip-label top">Quick View</span></a></li>
-                                            <!--End Quick View Button-->
-                                            <!--Wishlist Button-->
-                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                            <!--End Wishlist Button-->
-                                            <!--Compare Button-->
-                                            <li><a class="btn-icon compare add-to-compare" href="compare-style2.html"><i class="icon an an-sync-ar"></i> <span class="tooltip-label top">Add to Compare</span></a></li>
-                                            <!--End Compare Button-->
-                                        </ul>
-                                    </div>
-                                    <!--End Product Button-->   
-                                </div>
-                                <!--End Product Image-->
-                                <!--Start Product Details-->
-                                <div class="product-details text-center">
-                                    <!--Product Name-->
-                                    <div class="product-name text-uppercase">
-                                        <a href="product-layout1.html">Backpack With Contrast Bow</a>
-                                    </div>
-                                    <!--End Product Name-->
-                                    <!--Product Price-->
-                                    <div class="product-price">
-                                        <span class="price">$39.20</span>
-                                    </div>
-                                    <!--End Product Price-->
-                                    <!--Product Review-->
-                                    <div class="product-review d-flex align-items-center justify-content-center"><i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star-o"></i></div>
-                                    <!--End Product Review-->
-                                    <!-- Color Variant -->
-                                    <ul class="swatches">
-                                        <li class="swatch medium rounded black"><span class="tooltip-label">black</span></li>
-                                        <li class="swatch medium rounded navy"><span class="tooltip-label">navy</span></li>
-                                        <li class="swatch medium rounded darkgreen"><span class="tooltip-label">darkgreen</span></li>
-                                    </ul>
-                                    <!-- End Variant -->
-                                </div>
-                                <!--End Product Details-->
-                            </div>
+                            {% endif %}
+                            {% endfor %}
+
                         </div>
                     </div>
                 </section>
@@ -969,44 +751,7 @@
 
 
 
-                <!--Customize Services-->
-                <div class="section about-service product-service pb-0">
-                    <div class="container">
-                        <div class="section-header col-12">
-                            <h2 class="text-transform-none">Why Optimal?</h2>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-4 text-center mb-4 mb-md-0">
-                                <div class="service-info">
-                                    <i class="icon an an-desktop mb-3"></i>
-                                    <div class="text">
-                                        <h4>Design Quality</h4>
-                                        <p>The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for interested.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-4 text-center mb-4 mb-md-0">
-                                <div class="service-info">
-                                    <i class="icon an an-mobile-alt mb-3"></i>
-                                    <div class="text">
-                                        <h4>Mobile First Design</h4>
-                                        <p>The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for interested.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-12 col-sm-6 col-md-4 col-lg-4 text-center mb-0 mb-md-0">
-                                <div class="service-info">
-                                    <i class="icon an an-sort-amount-up mb-3"></i>
-                                    <div class="text">
-                                        <h4>High Speed & Performance</h4>
-                                        <p>The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for interested.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!--End Customize Services-->
+               
 
                       <!--Footer-->
                       <div class="footer footer-1">

@@ -12,7 +12,7 @@ class Products(models.Model):
     description = models.TextField()
     details = models.TextField()
     category = models.ForeignKey(Category, on_delete=models.CASCADE)
-    quantity = quantity = models.PositiveIntegerField(default=1)
+    quantity = models.PositiveIntegerField(default=1)
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

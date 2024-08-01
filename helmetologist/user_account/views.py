@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate,login,update_session_auth_hash
 from django.contrib import messages
 from django.views.decorators.cache import never_cache
 import re
-from django.urls import reverse  # Import reverse here
+from django.urls import reverse  
 from django.core.paginator import Paginator
 from django.shortcuts import render, redirect
 from django.contrib.auth.hashers import make_password
@@ -21,11 +21,14 @@ from django.dispatch import receiver
 from .models import Profile
 from django.core.mail import send_mail
 from django.http import JsonResponse
+import json
+from django.template.loader import render_to_string
 from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from django.contrib.auth import logout as auth_logout
 from .models import Address
 from category.models import Category
 from products.models import Products
+from order.models import Order,OrderProduct
 from django.contrib.auth import get_user_model
 from cart.models import *
 
@@ -34,20 +37,23 @@ from cart.models import *
 def index(request):
     categories = Category.objects.all()
     products = Products.objects.all()[:8]
+    
 
     if request.user.is_authenticated:
         user = request.user
         user_cart, created = Cart.objects.get_or_create(user=user)
         cart_items = user_cart.cartproducts_set.count() 
-        cart_products = user_cart.cartproducts_set.all()
+        wishlist_items = Wishlist.objects.filter(user=user).count()
+        
     else:
         cart_items = 0
-        cart_products = []
+        wishlist_items = 0
 
     return render(request, 'index.html', {
         'Categories': categories,
         'Products': products,
-        'cart_count': cart_items
+        'cart_count': cart_items,
+        'wishlist_items' : wishlist_items,
     })
 
 def base(request):
@@ -437,8 +443,8 @@ def view_address(request):
 def delete_address(request, add_id):
         user = request.user
         address = Address.objects.get(pk=add_id,user=user)
-        address.is_delete = True
-        address.delete()
+        address.is_delete = not address.is_delete
+        address.save()
         messages.success(request, 'Address deleted successfully')
         return redirect('view_address')
     
@@ -537,14 +543,22 @@ def useraccount(request,user_id):
 
 @never_cache
 @login_required(login_url="login")
-def orders(request,user_id):
-    user = User.objects.get(id = user_id )
+def order(request, user_id):
     
+    user = User.objects.get(id=user_id)
+    orders = Order.objects.filter(user=user)
+    user_cart, created = Cart.objects.get_or_create(user=user)
+    cart_items = user_cart.cartproducts_set.count() 
+    wishlist_items = Wishlist.objects.filter(user=user).count()
+       
     context = {
-        'user':user,
+        'user': user,
+        'orders': orders,
+        'cart_count': cart_items,
+        'wishlist_items' : wishlist_items,
     }
-     
-    return render(request, 'orders.html',context)
+
+    return render(request, 'order.html', context)
 
 @never_cache
 @login_required(login_url="login")
@@ -562,6 +576,9 @@ def order_tracking(request,user_id):
 def user_details(request, user_id):
     user = User.objects.get(id=user_id)
     
+    user_cart, created = Cart.objects.get_or_create(user=user)
+    cart_items = user_cart.cartproducts_set.count() 
+    wishlist_items = Wishlist.objects.filter(user=user).count()
     if request.method == 'POST':
         uname = request.POST.get('username')
         fname = request.POST.get('firstname')
@@ -591,6 +608,8 @@ def user_details(request, user_id):
     
     context = {
         'user': user,
+        'cart_count': cart_items,
+        'wishlist_items' : wishlist_items,
     }
     
     return render(request, 'userdetails.html', context)
@@ -628,92 +647,143 @@ def change_password(request):
 
 
 @never_cache
-@login_required(login_url="login")
 def shop(request):
-    try:
-        # Get all products and order them by 'id' (or another field)
-        products = (
-            Products.objects
-            .select_related("product")
-            .filter(is_listed=True)
-            .order_by('product__id')  # Ensure this matches the distinct field
-            .distinct('product__id')
-        )
+    categories = Category.objects.filter(is_listed = True)
+    products = Products.objects.filter(is_listed = True)
+    
+    if request.user.is_authenticated:
+        user = request.user
+        user_cart, created = Cart.objects.get_or_create(user=user)
+        cart_items = user_cart.cartproducts_set.count() 
+        wishlist_items = Wishlist.objects.filter(user=user).count()
+    
+    context = {
+        'categories':categories,
+        'products':products,
+        'cart_count': cart_items,
+        'wishlist_items' : wishlist_items,
+    }
 
-        page_number = request.GET.get('page')
-        paginator = Paginator(products, 9)  # Show 9 products per page
-        page_obj = paginator.get_page(page_number)
-
-        category = Category.objects.filter(is_listed=True)
-        
-        
-        return render(
-            request,
-            "shop.html",
-            {"page_obj": page_obj, "categories": category, },
-        )
-    except Exception as e:
-        return render(request, "shop.html", {"error": str(e)})
+    return render(request,'shop.html',context)
 
 from django.db.models import OuterRef, Subquery, F,Q
+
+def filter_category(request):
+    
+    products = Products.objects.filter(is_listed = True)
+    is_error = False
+    if request.method == 'POST':
+        jsondata = json.loads(request.body.decode("utf-8"))
+        req = jsondata.get('categories')
+        
+        product = Products.objects.filter(category_id__in = req).distinct()
+        
+        if len(req)==0:
+            product = Products.objects.filter(is_listed = True)
+        if len(product) == 0:
+            is_error = True
+        
+        context = {
+            'products':product,
+            'is_error': is_error,
+        }
+        
+        data = render_to_string('includes/ajax/product-filter.html',context)
+        
+    return JsonResponse({'status':'sucess','data': data ,})
  
-def  filtered(request):
-    try:
-        select_category = []
-        sort = request.GET.get('option')
-        page_number = request.GET.get('page')
-        
-        
-        ordering = 'product__price'
-        
-        if request.method == "GET":
-            if sort:
-                ordering = 'product__price' if sort == 'L' else '-product__price'
-                
-            select_category = request.GET.getlist('category')
-            products = Products.objects.filter(is_listed = True)
-
-            if select_category :
-                products = products.filter(
-                    Q(product__catagory__in=select_category) 
-                    
-                )
-
-            if select_category :
-                products = products.filter(
-                    Q(product__catagory__in=select_category) 
-                    
-                )
-
-            for category_id in select_category:
-                select_category.append(int(category_id))
  
-            subquery = Products.objects.filter(
-                product_id=OuterRef('product_id')
-            ).order_by(ordering).values('id')[:1]
+def filter_price(request):
+    if request.method == 'POST':
+        try:
+            jsondata = json.loads(request.body.decode("utf-8"))
+            min_price = jsondata.get('min_price', 1000)
+            max_price = jsondata.get('max_price', 10000)
 
-            products = products.filter(id__in=Subquery(subquery)).order_by(ordering)
-            paginator = Paginator(products, 9) 
-            page_obj = paginator.get_page(page_number)
-            categories = Category.objects.filter(is_listed=True)
-            
+            products = Products.objects.filter(price__gte=min_price, price__lte=max_price, is_listed=True).distinct()
+
+            is_error = False
+            if not products.exists():
+                is_error = True
 
             context = {
-                "page_obj": page_obj,
-                "categories": categories,
-                "selected_categories": select_category,
-                "sort": sort,
+                'products': products,
+                'is_error': is_error,
             }
 
-            return render(request, "shop.html", context)
-        else:
-            return redirect('shop')
+            data = render_to_string('includes/ajax/product-filter.html', context)
 
+            return JsonResponse({'status': 'success', 'data': data})
 
+        except json.JSONDecodeError:
+            return JsonResponse({'status': 'error', 'message': 'Invalid JSON'})
 
-    except Exception as e:
+    return JsonResponse({'status': 'error', 'message': 'Invalid request method'})
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+# def  filtered(request):
+#     try:
+#         select_category = []
+#         sort = request.GET.get('option')
+#         page_number = request.GET.get('page')
         
-        return redirect('shop')    
+        
+#         ordering = 'product__price'
+        
+#         if request.method == "GET":
+#             if sort:
+#                 ordering = 'product__price' if sort == 'L' else '-product__price'
+                
+#             select_category = request.GET.getlist('category')
+#             products = Products.objects.filter(is_listed = True)
+
+#             if select_category :
+#                 products = products.filter(
+#                     Q(product__catagory__in=select_category) 
+                    
+#                 )
+
+#             if select_category :
+#                 products = products.filter(
+#                     Q(product__catagory__in=select_category) 
+                    
+#                 )
+
+#             for category_id in select_category:
+#                 select_category.append(int(category_id))
+ 
+#             subquery = Products.objects.filter(
+#                 product_id=OuterRef('product_id')
+#             ).order_by(ordering).values('id')[:1]
+
+#             products = products.filter(id__in=Subquery(subquery)).order_by(ordering)
+#             paginator = Paginator(products, 9) 
+#             page_obj = paginator.get_page(page_number)
+#             categories = Category.objects.filter(is_listed=True)
+            
+
+#             context = {
+#                 "page_obj": page_obj,
+#                 "categories": categories,
+#                 "selected_categories": select_category,
+#                 "sort": sort,
+#             }
+
+#             return render(request, "shop.html", context)
+#         else:
+#             return redirect('shop')
+
+
+
+#     except Exception as e:
+        
+#         return redirect('shop')    
 
 
 

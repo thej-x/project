@@ -3170,7 +3170,7 @@ ul.checkmarkList li:before { content:"\e954";font-family:'annimex-icons'; positi
 .size-swacthes .swacth-list .swacth-btn { font-size:11px; display:block; margin-bottom:2px; width:30px; height:30px; line-height:28px; }
 
 /* Price Range */
-.price-filter input[type="text"] { background:#fff; height:30px; padding:0 10px; text-align:center; font-size:12px; width:100px; }
+.price-filter input[type="number"] { background:#fff; height:30px; padding:0 10px; text-align:center; font-size:12px; width:100px; }
 #slider-range.ui-slider-horizontal { background:#e9e9e9; border:none; border-radius:0; height:3px; margin:20px 0; }
 #slider-range .ui-slider-handle { background:#000; border:2px solid #000; height:12px; outline:none; top:-5px; width:12px; border-radius:50%; cursor:w-resize; margin-left:0px; }
 #slider-range .ui-slider-handle + .ui-slider-handle { margin-left:-12px; }

@@ -34,7 +34,7 @@ class Order(models.Model):
         null=True,
         default=True,
     )
-    order_id = models.CharField(max_length=20, unique=True, default=None, null=True)
+    orderid = models.CharField(max_length=20, unique=True, default=None, null=True)
     
     
     
@@ -60,13 +60,12 @@ class OrderProduct(models.Model):
     delivery_date = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(blank=True, null=True)
     trackig_id = models.CharField(max_length=20, unique=True, default=None, null=True)
-   
     request_status = models.CharField(max_length=30, default="None", null=True)
-    def totel(self):
-        return self.quantity * self.price
+    
+    
 
     def set_expected_delivery_date(self):
-     
+        
         if self.order and self.order.created_at:
 
             expected_delivery_date = self.order.created_at + timezone.timedelta(
