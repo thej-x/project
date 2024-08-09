@@ -1,6 +1,7 @@
 from django.db import models
 from products.models import Products
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 # Create your models here.
 
@@ -38,7 +39,8 @@ class Coupon(models.Model):
             return max(total_amount - discount, 0)
         return total_amount
     
-    
+    def __str__(self) -> str:
+        return f"'{self.title}"
     
 class UserCoupon(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -51,16 +53,25 @@ class UserCoupon(models.Model):
 class Cart(models.Model):
     user = models.ForeignKey(User,on_delete=models.CASCADE,null=True)
     coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, blank=True, null=True)
+    coupon_applied_total = models.DecimalField(max_digits=10,decimal_places=2,null=True,blank=True)
     coupon_applied = models.BooleanField(default=False, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+  
     @property
     def cart_sub_total(self):
         cart_items = self.cartproducts_set.all() 
         total = sum([item.sub_total for item in cart_items])
         return total
     
+    @property
+    def coupon_applied_cart_sub_total(self):
+        total = self.cart_sub_total
+        if self.coupon :
+            current_date = timezone.now().date()
+            if self.coupon.start_date <= current_date <= self.coupon.end_date:
+                total = self.coupon.apply_discount(total)
+        return total
     
     @property
     def cart_sub_count(self):

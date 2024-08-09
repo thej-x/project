@@ -84,7 +84,7 @@
                                         </td>
                                         <td class="pro-price">&#8377; {{ product.product.price }}</td>
                                         <td class="pro-qty">{{ product.quantity }}</td>
-                                        <td class="pro-total fw-500">&#8377; {{ product.total_price }}</td>
+                                        <td class="pro-total fw-500">&#8377; {{product_total_price}}</td>
                                     </tr>
                                     {% empty %}
                                     <tr>
@@ -95,7 +95,7 @@
                                     <tfoot>
                                         <tr>
                                             <td colspan="4" class="item subtotal text-end fw-bolder">Subtotal:</td>
-                                            <td class="fw-500 last">&#8377; {{ total_amount }}</td>
+                                            <td class="fw-500 last">&#8377; {{ product_total_price }}</td>
                                         </tr>
                                         <tr>
                                             <td colspan="4" class="item shipping text-end fw-bolder">Shipping:</td>
@@ -103,7 +103,7 @@
                                         </tr>
                                         <tr>
                                             <td colspan="4" class="item total text-end fw-bolder">Grand Total:</td>
-                                            <td class="fw-500 last">&#8377; {{ grand_total }}</td>
+                                            <td class="fw-500 last">&#8377; {{ total_amount }}</td>
                                         </tr>
                                     </tfoot>
                                     </table>

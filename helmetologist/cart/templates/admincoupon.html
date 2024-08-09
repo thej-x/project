@@ -37,7 +37,8 @@
                   <th>Quantity</th>
                   <th>Minimum amount</th>
                   <th>Maximum amount</th>
-                  <th>Created at</th>
+    
+                  <th>edit</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -53,7 +54,10 @@
                   
                   <td>{{ coupon.min_amount }}</td> 
                   <td>{{ coupon.max_amount }}</td>
-                  <td>{{ coupon.created }}</td>
+                  
+                  <td>
+                    <a href="{% url 'edit_coupon' coupon.id %}" class="edit_coupon btn btn-primary">Edit</a>
+                  </td>
                   <td>
                     {% if  coupon.active %}  
                     <form method="POST"
@@ -74,7 +78,21 @@
                 </tr>
                 {% endfor %}
               </tbody>
+              {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                        <use xlink:href="#exclamation-triangle-fill"/>
+                    </svg>
+                    <div>
+                        {{ message }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
             </table>
+            
+
           </div>
         </div>
       </div>
@@ -91,7 +109,31 @@
 <script src="{% static 'adminassets/bundles/jquery-ui/jquery-ui.min.js' %}"></script>
 <script src="{% static 'adminassets/js/page/datatables.js' %}"></script>
 
-
+<script>
+  $('#editCouponModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget);
+      var id = button.data('id');
+      var title = button.data('title');
+      var code = button.data('code');
+      var discount_percentage = button.data('discount_percentage');
+      var start_date = button.data('start_date');
+      var end_date = button.data('end_date');
+      var quantity = button.data('quantity');
+      var min_amount = button.data('min_amount');
+      var max_amount = button.data('max_amount');
+      
+      var modal = $(this);
+      modal.find('#editCouponId').val(id);
+      modal.find('#editTitle').val(title);
+      modal.find('#editCode').val(code);
+      modal.find('#editDiscountPercentage').val(discount_percentage);
+      modal.find('#editStartDate').val(start_date);
+      modal.find('#editEndDate').val(end_date);
+      modal.find('#editQuantity').val(quantity);
+      modal.find('#editMinAmount').val(min_amount);
+      modal.find('#editMaxAmount').val(max_amount);
+  });
+</script>
 {% endblock %}
 
 

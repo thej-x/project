@@ -1,6 +1,6 @@
 {% extends "adminbase.html" %}
 {% load static %}
-{% block title %}Add Products{% endblock %}
+{% block title %}Add Coupon{% endblock %}
 
 {% block extra_styles %}
 <!-- Custom style CSS -->
@@ -15,8 +15,22 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h4>Add New Product</h4>
+                    <h4>Add New Coupon</h4>
                 </div>
+                <!-- Alert Messages -->
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                        <use xlink:href="#exclamation-triangle-fill"/>
+                    </svg>
+                    <div>
+                        {{ message }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+
                 <div class="card-body">
                     <div id="addProductsFormContainer">
                        
@@ -61,19 +75,7 @@
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
                         
-                        {% if messages %}
-                        <div class="messages text-center text-capitalize font-weight-bold">
-                        {% for message in messages %}
-                        {% if message.tags == 'error' %}
-                        <h5 class="text-danger">! {{ message }}</h5>
-                        {% elif message.tags == 'success' %}
-                        <h5 class="text-success">! {{ message }}</h5>
-                        {% else %}
-                        <h5>! {{ message }}</h5>
-                        {% endif %}
-                        {% endfor %}
-                        </div>
-                        {% endif %}
+                        
                     </div>
                 </div>
             </div>

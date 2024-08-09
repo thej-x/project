@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 from pathlib import Path
 import os
 from django.contrib.messages import constants as messages
+import razorpay
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -49,6 +50,7 @@ INSTALLED_APPS = [
     'products',
     'cart',
     'order',
+    'offer',
     
     
 ]
@@ -85,6 +87,7 @@ TEMPLATES = [
             os.path.join(BASE_DIR,'products/templates'),
             os.path.join(BASE_DIR,'cart/templates'),
             os.path.join(BASE_DIR,'order/templates'),
+            os.path.join(BASE_DIR,'offer/templates'),
             ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -203,3 +206,17 @@ LOGOUT_URL = 'logout'
 LOGIN_REDIRECT_URL ='index'
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+
+
+
+# Razor pay validation
+
+
+
+RAZORPAY_KEY = 'rzp_test_IVt1VtSDh7yRTV'
+RAZORPAY_SECRET  = 'lKIzdIviwRlqHuqJ4wXmILyC'
+
+
+
+

@@ -16,8 +16,10 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.utils.dateparse import parse_date
 from decimal import Decimal
 from django.views.decorators.http import require_POST
-
-
+import razorpay
+from django.conf import settings
+from datetime import date
+from urllib.parse import parse_qs
 # Create your views here.
 
 date_now = (timezone.now()).date()
@@ -73,9 +75,7 @@ def add_to_cart(request,product_id):
     
     
     cart, created = Cart.objects.get_or_create(user=request.user) 
-        
-    
-    
+            
     cart_products = CartProducts.objects.filter(cart=cart, products=product).first()
     if cart_products:
         print('working')
@@ -217,125 +217,248 @@ def delete_from_cart(request, product_id):
 
 
 
+
+client = razorpay.Client(auth =(settings.RAZORPAY_KEY,settings.RAZORPAY_SECRET))
+
 def checkout_view(request):
-    if request.user.is_authenticated :
-        
+    if request.user.is_authenticated:
+        print('111')
         user = request.user
         cart, created = Cart.objects.get_or_create(user=user)
         cart_items = cart.cartproducts_set.all()
         addresses = Address.objects.filter(user=user, is_delete=False)
-  
-    context = {
-        'Addresses': addresses,
-        'cart': cart,
-        'cart_items': cart_items,
-    }
-    return render(request, 'checkout.html', context)
+        cart_total = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
 
-
-
-
-
-def checkout(request):
-    if request.user.is_authenticated :
-        
-        user = request.user
-        cart, created = Cart.objects.get_or_create(user=user)
-        cart_items = cart.cartproducts_set.all()
-        addresses = Address.objects.filter(user=user, is_delete=False)
-        
-        if request.method == 'POST':
-            code = request.POST.get('code')
-            print('coupon===',code)
-            coupon = Coupon.objects.filter(code=code,active = True).first()
-            print(coupon)
-            
-            
-            
-        
-        
-        
-        if cart_items.count() == 0:
-            messages.error(request, "Your cart is empty.add any product")
-            return redirect('cart_show')
-
-        if request.method == 'POST':
-            billing_address_id = request.POST.get('billing_address')
-            payment_method = request.POST.get('payment_method')
-
-            if not billing_address_id or not payment_method:
-                messages.error(request, "Please select a billing address and payment method.")
-                return redirect('checkout')
-
-            try:
-                billing_address = Address.objects.get(id=billing_address_id, user=user)
-            except Address.DoesNotExist:
-                messages.error(request, "Invalid address selected.")
-                return redirect('checkout')
-
-            
-            payment = Payment.objects.create(
-                user=user,
-                method=payment_method,
-                amount=cart.cart_sub_total,
-                status="pending"
-            )
-
-           
-            order = Order.objects.create(
-                user=user,
-                payment=payment,
-                billing_address=billing_address,
-                total_amount=cart.cart_sub_total,
-                payment_method=payment_method,
-                orderid=str(uuid.uuid4())[:8]  
-            )
-
-            
-            for item in cart_items:
-                OrderProduct.objects.create(
-                    order=order,
-                    product=item.products,
-                    price=item.products.price,
-                    quantity=item.quantity,
-                    user=user
-                )
-
-            
-            cart.cartproducts_set.all().delete()
-            
-            
-
-            url = reverse('checkout_success', args=[order.id])
-            return redirect(url)
-
+        context = {
+            'addresses': addresses,
+            'cart': cart,
+            'cart_items': cart_items,
+            'cart_total': cart_total,
+        }
+        return render(request, 'checkout.html', context)
     else:
-        
+        print('121')
         cart_items = []
         cart = {'cart_sub_total': 0, 'cart_sub_count': 0}
         addresses = []
 
-    context = {
-        'Addresses': addresses,
-        'cart': cart,
-        'cart_items': cart_items,
-    }
-    return render(request, 'checkout.html', context)
-
-
-def apply_coupon(request):
-    
-    if request.method == 'POST':
-        code = request.POST.get('code')
-        print('coupon===',code)
-        coupon = Coupon.objects.filter(code=code,active = True)
-        print(coupon)
+        context = {
+            'addresses': addresses,
+            'cart': cart,
+            'cart_items': cart_items,
+        }
+        return render(request, 'checkout.html', context)
+#place order
+def cash_on_delivery(request):
+    if request.user.is_authenticated:
+        user = request.user
+        cart, created = Cart.objects.get_or_create(user=user)
+        cart_items = cart.cartproducts_set.all()
+        addresses = Address.objects.filter(user=user, is_delete=False)
+        cart_total = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
         
-    return render(request,'checkout.html')
+        if request.method == 'POST':
+            action = request.POST.get('action')
+
+            if action == 'apply_coupon':
+                code = request.POST.get('code')
+                coupon = Coupon.objects.filter(code=code, active=True).first()
+
+                if not coupon:
+                    messages.error( request, 'Invalid coupon')
+                    return redirect('checkout_view')
+    
+
+                if cart.coupon:
+                     messages.success(request, 'Coupon already applied')
+                     return redirect('checkout_view')
+                if coupon.quantity == 0:
+                    messages.warning(request, 'Coupon exceeds the limit')
+                    return redirect('checkout_view')
+
+                cart.coupon = coupon
+                coupon.quantity -= 1
+                coupon.save()
+                cart.save()
+
+                messages.success( request, 'Coupon applied')
+                return redirect('checkout_view')
+
+            elif action == 'remove_coupon':
+                if cart.coupon:
+                    cart.coupon.quantity += 1
+                    cart.coupon.save()
+                    cart.coupon = None
+                    cart.save()
+                    messages.success(request,'Coupon removed')
+                    return redirect('checkout_view')
+                else:
+                  messages.error(request,  'No coupon to remove')
+                  return redirect('checkout_view')
+
+            elif action == 'place_order':
+                if cart_items.count() == 0:
+                    return JsonResponse({'success': False, 'message': "Your cart is empty. Add any product."})
+
+                billing_address_id = request.POST.get('billing_address')
+                payment_method = request.POST.get('payment_method')
+                if payment_method == 'COD':
+                    if not billing_address_id or not payment_method:
+                        return JsonResponse({'success': False, 'error': "Please select a billing address and payment method."})
+
+                    try:
+                        billing_address = Address.objects.get(id=billing_address_id, user=user)
+                    except Address.DoesNotExist:
+                        return JsonResponse({'success': False, 'message': "Invalid address selected."})
+
+                    order_amount = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
+                    if order_amount < 1.00:
+                        return JsonResponse({'success': False, 'message': "Order amount must be at least ₹1.00."})
+
+                    payment = Payment.objects.create(
+                        user=user,
+                        method=payment_method,
+                        amount=order_amount,
+                        status="pending"
+                    )
+
+                    order = Order.objects.create(
+                        user=user,
+                        payment=payment,
+                        billing_address=billing_address,
+                        total_amount=order_amount,
+                        payment_method=payment_method,
+                        orderid=str(uuid.uuid4())[:8]
+                    )
+
+                    for item in cart_items:
+                        OrderProduct.objects.create(
+                            order=order,
+                            product=item.products,
+                            price=item.products.price,
+                            quantity=item.quantity,
+                            user=user
+                        )
+
+                    cart.cartproducts_set.all().delete()
+                    cart.coupon = None
+                    cart.save()
+
+                    # Return a JSON response with success message and redirect URL
+                    return JsonResponse({
+                        'success': True,
+                        'message': "Order placed successfully.",
+                        'redirect_url': reverse('checkout_success', args=[order.id])
+                    })
+    
+    return JsonResponse({'success': False, 'message': "User not authenticated."})
+    
+def create_razorpay_order(request):
+    try:
+     if request.method == 'POST': 
+        billing_address_id = request.POST.get('billing_address')
+        payment_method = request.POST.get('payment_method')
+        if not billing_address_id or not payment_method:
+           return JsonResponse({'success': False, 'error': "Please select a billing address and payment method."})
+       
+        if payment_method == "Razorpay":
+            
+            user = request.user
+            cart, created = Cart.objects.get_or_create(user=user)
+            cart_items = cart.cartproducts_set.all()
+            cart_total = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
+            amount = int(cart_total) * 100  # Amount should be in paise
+            
+            # Create a Razorpay order
+            order = client.order.create({
+                'amount': amount,
+                'currency': 'INR',
+                'payment_capture': '1'  # Automatic payment capture
+            })
+            
+            return JsonResponse({
+                'success': True,
+                'order_id': order['id'],
+                'amount': order['amount']
+            })
+        else:
+            return JsonResponse({'success': False, 'message': 'Invalid payment method'}, status=400)
+    
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
+
+def verify_razorpay_payment(request):
+    try:
+        data = json.loads(request.body)
+        payment_id = data.get('razorpay_payment_id')
+        order_id = data.get('razorpay_order_id')
+        signature = data.get('razorpay_signature')
+        order_data = data.get("orderData", "")
+        parsed_data = parse_qs(order_data)
+        billing_address_id = parsed_data.get("billing_address", [""])[0]
+        payment_method = parsed_data.get("payment_method", [""])[0]
+        user = request.user
+        cart, created = Cart.objects.get_or_create(user=user)
+        cart_items = cart.cartproducts_set.all()
+        
+        data = {
+            'razorpay_order_id': order_id,
+            'razorpay_payment_id': payment_id,
+            'razorpay_signature': signature
+        }
+        client.utility.verify_payment_signature(data)
+        billing_address = Address.objects.get(id=billing_address_id, user=user)
+        order_amount = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
+        payment = Payment.objects.create(
+                        user=user,
+                        method=payment_method,
+                        amount=order_amount,
+                        status="pending"
+                    )
+        order = Order.objects.create(
+                        user=user,
+                        payment=payment,
+                        billing_address=billing_address,
+                        total_amount=order_amount,
+                        payment_method=payment_method,
+                        orderid=str(uuid.uuid4())[:8],
+                        razorpay_order_id =order_id,
+                        razorpay_payment_id =payment_id ,
+                        razorpay_payment_signature=signature
+                    )
+        for item in cart_items:
+                        OrderProduct.objects.create(
+                            order=order,
+                            product=item.products,
+                            price=item.products.price,
+                            quantity=item.quantity,
+                            user=user
+                        )
+
+        cart.cartproducts_set.all().delete()
+        cart.coupon = None
+        cart.save()
+        
+
+        return JsonResponse({'success': True,'order_id':order.id})
+
+    except razorpay.errors.SignatureVerificationError:
+        return JsonResponse({'success': False, 'message': 'Payment signature verification failed'}, status=400)
+    except Order.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Order not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)  
+    
+
+    
 
 
 
+    
 
+
+
+    
 def checkout_success(request, order_id):
     
     user = request.user
@@ -344,6 +467,8 @@ def checkout_success(request, order_id):
         
         order = get_object_or_404(Order, user=user, id=order_id)
         order_products = OrderProduct.objects.filter(order = order, user = user)
+        for product in order_products:
+            product_total_price = product.product.price * product.quantity
         print(order_products)
         order_date = order.created_at
         total_amount = order.total_amount
@@ -358,6 +483,7 @@ def checkout_success(request, order_id):
         'total_amount': total_amount,
         'payment_method': payment_method,
         'billing_address':billing_address,
+        '   ' : product_total_price,
     }
     return render(request, 'checkout_success.html', context)
 
@@ -467,7 +593,10 @@ def admincoupon(request):
     }
     return render(request,'admincoupon.html',context)
 
+
 def add_coupon(request):
+    
+    errors = []
     if request.method == 'POST':
         title = request.POST.get('title')
         coupon_code = request.POST.get('coupon_code')
@@ -479,9 +608,8 @@ def add_coupon(request):
         max_amount = request.POST.get('max_amount')
         active = request.POST.get('active') == 'on'
         
-        errors = []
         
-        
+
         if not title:
             errors.append("Coupon name is required.")
         if not coupon_code:
@@ -490,17 +618,31 @@ def add_coupon(request):
             errors.append("Start date is required.")
         if not end_date:
             errors.append("End date is required.")
+        
+        
+        if start_date and start_date <= date.today():
+            errors.append("Start date must be greater than the current date.")
+        if start_date and end_date and end_date <= start_date:
+            errors.append("End date must be greater than the start date.")
+        
+        
         if not quantity or not quantity.isdigit() or int(quantity) <= 0:
             errors.append("Quantity must be a positive integer.")
-        if not min_amount or not min_amount.replace('.', '', 1).isdigit() or Decimal(min_amount) <= 0:
-            errors.append("Minimum amount must be a positive number.")
-        if max_amount and (not max_amount.replace('.', '', 1).isdigit() or Decimal(max_amount) <= 0):
-            errors.append("Maximum amount must be a positive number.")
-        if discount_percentage and (not discount_percentage.replace('.', '', 1).isdigit() or Decimal(discount_percentage) <= 0 or Decimal(discount_percentage) > 100):
-            errors.append("Discount percentage must be a number between 0 and 100.")
-
+        
+        
+        if not min_amount or not min_amount.replace('.', '', 1).isdigit() or Decimal(min_amount) <= 999 < Decimal(max_amount) :
+            errors.append("Minimum amount must be greater than 999 and less than maximum amount.")
+        
+        
+        if max_amount and (not max_amount.replace('.', '', 1).isdigit() or Decimal(max_amount) >= 5999):
+            errors.append("Maximum amount must be less than 5999.")
+        
+        
+        if discount_percentage and (not discount_percentage.replace('.', '', 1).isdigit() or Decimal(discount_percentage) < 1 or Decimal(discount_percentage) > 50):
+            errors.append("Discount percentage must be a number between 1 and 50.")
+        
         if not errors:
-            # Save to the database (assuming you have a Coupon model)
+            
             Coupon.objects.create(
                 title=title,
                 code=coupon_code,
@@ -514,7 +656,67 @@ def add_coupon(request):
             )
             return redirect('admincoupon')
     
-    return render(request, 'add_coupon.html')
+    return render(request, 'add_coupon.html', {'messages': errors})
+
+def edit_coupon(request, coupon_id):
+    coupon = get_object_or_404(Coupon, id=coupon_id)
+    errors = []
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        coupon_code = request.POST.get('coupon_code')
+        discount_percentage = request.POST.get('discount_percentage')
+        start_date = parse_date(request.POST.get('start_date'))
+        end_date = parse_date(request.POST.get('end_date'))
+        quantity = request.POST.get('quantity')
+        min_amount = request.POST.get('min_amount')
+        max_amount = request.POST.get('max_amount')
+        active = request.POST.get('active') == 'on'
+
+      
+        errors.extend(validate_coupon(title, coupon_code, discount_percentage, start_date, end_date, quantity, min_amount, max_amount))
+
+        if not errors:
+            coupon.title = title
+            coupon.code = coupon_code
+            coupon.discount_percentage = Decimal(discount_percentage) if discount_percentage else None
+            coupon.start_date = start_date
+            coupon.end_date = end_date
+            coupon.quantity = int(quantity)
+            coupon.min_amount = Decimal(min_amount)
+            coupon.max_amount = Decimal(max_amount) if max_amount else None
+            coupon.active = active
+            coupon.save()
+            return redirect('admincoupon')
+
+    return render(request, 'edit_coupon.html', {'coupon': coupon, 'messages': errors})
+
+def validate_coupon(title, coupon_code, discount_percentage, start_date, end_date, quantity, min_amount, max_amount):
+    errors = []
+    
+    if not title:
+        errors.append("Coupon name is required.")
+    if not coupon_code:
+        errors.append("Coupon code is required.")
+    if not start_date:
+        errors.append("Start date is required.")
+    if not end_date:
+        errors.append("End date is required.")
+    if start_date and start_date <= date.today():
+        errors.append("Start date must be greater than the current date.")
+    if start_date and end_date and end_date <= start_date:
+        errors.append("End date must be greater than the start date.")
+    if not quantity or not quantity.isdigit() or int(quantity) <= 0:
+        errors.append("Quantity must be a positive integer.")
+    if not min_amount or not min_amount.replace('.', '', 1).isdigit() or Decimal(min_amount) <= 999 or (max_amount and Decimal(min_amount) >= Decimal(max_amount)):
+        errors.append("Minimum amount must be greater than 999 and less than maximum amount.")
+    if max_amount and (not max_amount.replace('.', '', 1).isdigit() or Decimal(max_amount) >= 5999):
+        errors.append("Maximum amount must be less than 5999.")
+    if discount_percentage and (not discount_percentage.replace('.', '', 1).isdigit() or Decimal(discount_percentage) < 1 or Decimal(discount_percentage) > 50):
+        errors.append("Discount percentage must be a number between 1 and 50.")
+
+    return errors
+        
 
 @require_POST
 def coupon_inactive(request, coupon_id):

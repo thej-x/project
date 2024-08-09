@@ -2,7 +2,7 @@ from django.db import models
 from PIL import Image
 from django.utils.text import slugify
 from category.models import Category
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator,MinValueValidator
 
 # Create your models here.
 class Products(models.Model):
@@ -18,7 +18,33 @@ class Products(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_listed = models.BooleanField(default=True)
     slug = models.SlugField(unique=False, blank=True)
+    is_offer_applied = models.BooleanField(default=False)
+    discount_percentage = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(1), MaxValueValidator(99)])
+    discounted_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, editable=False) 
     
+    
+    def get_highest_discount_percentage(self):
+        product_discount = self.discount_percentage if self.discount_percentage else 0
+        category_discount = 0
+        
+        # Check if there's an offer applied to the category
+        if self.category and self.category.is_offer_applied:
+            # Assuming `Category` has a field `discount_percentage` to store the discount
+            category_discount = self.category.discount_percentage if self.category.discount_percentage else 0
+        
+        return max(product_discount, category_discount)
+    
+    def get_discounted_price(self):
+        discount_percentage = self.get_highest_discount_percentage()
+        if discount_percentage:
+            return self.price * (1 - discount_percentage / 100)
+        return self.price
+    def save(self, *args, **kwargs):
+        # Override discount_percentage with the highest available discount
+        self.discount_percentage = self.get_highest_discount_percentage()
+        # Calculate the discounted price based on the overridden discount percentage
+        self.discounted_price = self.get_discounted_price()
+        super(Products, self).save(*args, **kwargs)
     
     def save(self, *args, **kwargs):
         if not self.slug:

@@ -1,25 +1,19 @@
-
 {% extends "base.html" %}
 
 {% block title %}Checkout{% endblock %}
 {% load static %}
 
 {% block extra_styles %}
-
-
+<!-- Add any additional styles here -->
 {% endblock %}
 
 {% block nav_links %}
-
-
+<!-- Add any additional navigation links here -->
 {% endblock %}
-   
 
-
-{% block content %}   
-
+{% block content %}
 <!--Body Container-->
-<div id="page-content">   
+<div id="page-content">
     <!--Collection Banner-->
     <div class="collection-header">
         <div class="collection-hero">
@@ -34,8 +28,8 @@
 
     {% if messages %}
     {% for message in messages %}
-    <div class="alert alert-danger d-flex align-items-center" role="alert">
-        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+    <div class="alert alert-{{ message.tags }} d-flex align-items-center" role="alert">
+        <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="{{ message.tags|title }}:">
             <use xlink:href="#exclamation-triangle-fill"/>
         </svg>
         <div>
@@ -47,21 +41,22 @@
 
     <!--Main Content-->
     <div class="container">
-        <form class="checkout-form" method="post" action="{% url 'checkout' %}">
-            {% csrf_token %}
+        <form class="checkout-form" id="checkout-form">
+            <input type="hidden" name="action" value="place_order">
+
             <div class="row">
                 <div class="col-md-6 col-lg-4">
                     <div class="card card--grey"></div>
                     <div class="card card--grey mt-2">
-                        <div class="card-body"> 
+                        <div class="card-body">
                             <h2 class="fs-6">BILLING ADDRESS</h2>
                             <div class="customCheckbox clearfix py-2 my-2">
-                                <input id="formcheckoutCheckbox2" name="checkbox2" type="checkbox"> 
+                                <input id="formcheckoutCheckbox2" name="checkbox2" type="checkbox">
                                 <label for="formcheckoutCheckbox2">The same as shipping address</label>
                                 <a href="{% url 'view_address' %}">Add address/Edit address Click here!</a>
                             </div>
 
-                            {% for address in Addresses %}
+                            {% for address in addresses %}
                             <div class="card card--grey mt-2">
                                 <div class="card">
                                     <div class="card-body">
@@ -93,19 +88,19 @@
                             <div class="row">
                                 <div class="col-6">
                                     <div class="customRadio clearfix">
-                                        <input id="formcheckoutRadio4" value="COD" name="payment_method" type="radio" class="radio" checked="checked"> 
+                                        <input id="formcheckoutRadio4" value="COD" name="payment_method" type="radio" class="radio" checked="checked">
                                         <label for="formcheckoutRadio4">COD</label>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="customRadio clearfix">
-                                        <input id="formcheckoutRadio5" value="Razorpay" name="payment_method" type="radio" class="radio"> 
+                                        <input id="formcheckoutRadio5" value="Razorpay" name="payment_method" type="radio" class="radio">
                                         <label for="formcheckoutRadio5">Razorpay</label>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <div class="customRadio clearfix">
-                                        <input id="formcheckoutRadio6" value="Wallet" name="payment_method" type="radio" class="radio"> 
+                                        <input id="formcheckoutRadio6" value="Wallet" name="payment_method" type="radio" class="radio">
                                         <label for="formcheckoutRadio6">Wallet</label>
                                     </div>
                                 </div>
@@ -116,7 +111,7 @@
 
                 <div class="col-md-12 col-lg-4 mt-2 mt-lg-0">
                     <h2 class="title fs-6">ORDER SUMMARY</h2>
-                    <div class="table-responsive order-table style1"> 
+                    <div class="table-responsive order-table style1">
                         <table class="table table-bordered align-middle table-hover text-center mb-1">
                             <thead>
                                 <tr>
@@ -143,52 +138,199 @@
                                 {% endfor %}
                             </tbody>
                             <tfoot class="font-weight-600">
+                                {% if cart.coupon %}
                                 <tr>
                                     <td colspan="4" class="text-end fw-bolder">Shipping </td>
-                                    <td class="fw-bolder">free shipping</td>
+                                    <td class="fw-bolder">Free Shipping</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bolder">Coupon name : {{ cart.coupon.title }} </td>
+                                    <td class="fw-bolder">{{ cart.coupon.discount_percentage }} %</td>
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-end fw-bolder">Total</td>
-                                    <td class="fw-bolder">{{ cart.cart_sub_total }}</td>
+                                    <td class="fw-bolder">{{ cart_total }}</td>
                                 </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bolder">Shipping </td>
+                                    <td class="fw-bolder">Free Shipping</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4" class="text-end fw-bolder">Total</td>
+                                    <td class="fw-bolder">{{ cart_total }}</td>
+                                </tr>
+                                {% endif %}
                             </tfoot>
                         </table>
                     </div>
 
-                    <div class="card card--grey mt-2">
-                        <div class="card-body">
-                            <h2 class="fs-6">Apply Couponcode</h2>
-                            <label class="text-uppercase d-none">Enter Coupon code:</label>
-                            <form method="post" action="{% url 'apply_coupon' %}">
-                                {% csrf_token %}
-                                <div class="input-group flex-nowrap">
-                                    <input class="input-group__field" type="text" placeholder="Coupon code" name="code">
-                                    <span class="input-group__btn">
-                                        <a href="{% url 'apply_coupon' %}"><button type="submit" class="btn rounded-end text-nowrap">Apply</button></a>
-                                    </span>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-
                     <div class="order-button-payment mt-2 clearfix">
-                        <button type="submit" class="cartCheckout fs-6 btn btn-lg rounded w-100 fw-600 text-white">Place order</button>
+                        <button type="submit" class="cartCheckout fs-6 btn btn-lg rounded w-100 fw-600 text-white" id="place-order-button">Place Order</button>
                     </div>
-                    <div class="paymnet-img text-center">
-                        <img src="{% static 'assets/images/payment-img.jpg' %}" alt="Payment">
+                    <div class="order-button-payment mt-2 clearfix">
+                        <button type="button" id="pay_now" class="cartCheckout fs-6 btn btn-lg rounded w-100 fw-600 text-white d-none payWithRazorpay">Pay with Razorpay</button>
+                    </div>
+                </form>
+
+                <div class="payment-img text-center">
+                    <img src="{% static 'assets/images/payment-img.jpg' %}" alt="Payment">
+                </div>
+
+                <div class="card card--grey mt-2">
+                    <div class="card-body">
+                        <h2 class="fs-6">Apply Coupon Code</h2>
+                        <label class="text-uppercase d-none">Enter Coupon Code:</label>
+                        <form method="post" action="{% url 'checkout' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="apply_coupon">
+                            <div class="input-group flex-nowrap">
+                                <input class="input-group__field" type="text" placeholder="Coupon code" name="code">
+                                <span class="input-group__btn">
+                                    <button type="submit" class="btn rounded-end text-nowrap">Apply</button>
+                                </span>
+                            </div>
+                        </form>
+
+                        {% if cart.coupon %}
+                        <form method="post" action="{% url 'checkout' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="action" value="remove_coupon">
+                            <input type="hidden" name="remove_code" value="{{ cart.coupon.code }}"> <!-- Hidden field for the coupon code -->
+                            <button type="submit" class="btn btn-danger mt-2">Remove Coupon</button>
+                        </form>
+                        {% endif %}
                     </div>
                 </div>
             </div>
-        </form>
+        </div>
+        <!--End Main Content-->
     </div>
-    <!--End Main Content-->
-</div>
-<!--End Body Container-->
-
+    <!--End Body Container-->
 {% endblock %}
 
-         
 {% block scripts %}
-            
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script >
+    document.addEventListener('DOMContentLoaded', function() {
+        const placeOrderButton = document.getElementById('place-order-button');
+        const payNowButton = document.getElementById('pay_now');
+        const checkoutForm = document.getElementById('checkout-form');
+    
+        placeOrderButton.addEventListener('click', function(e) {
+            e.preventDefault(); // Prevent form submission
+    
+            const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
+            const orderData = new URLSearchParams(new FormData(checkoutForm)).toString(); // Serialize form data
+    
+            if (paymentMethod === 'COD') {
+                // Handle COD submission
+                const csrftoken = getCookie('csrftoken');
+                
+                fetch('{% url "checkout" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: orderData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.redirect_url) {
+                            window.location.href = data.redirect_url;
+                        }
+                    } else {
+                        alert(data.error);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                });
+            } else if(paymentMethod === "Razorpay") {
+                // Handle Razorpay payment
+                
+                fetch('/create_razorpay_order/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body:orderData
+                })
+                .then(response => response.json())
+                .then(data => {
+
+                    if (data.success) {
+                        var options = {
+                            "key": 'rzp_test_IVt1VtSDh7yRTV',
+                            "amount": data.amount,
+                            "currency": "INR",
+                            "name": "helmetologist",
+                            "description": "Test Transaction",
+                            "order_id": data.order_id,
+                            "handler": function(response) {
+                                fetch('/verify_razorpay_payment/', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'X-CSRFToken': '{{ csrf_token }}'
+                                    },
+                                    body: JSON.stringify({
+                                        razorpay_payment_id: response.razorpay_payment_id,
+                                        razorpay_order_id: response.razorpay_order_id,
+                                        razorpay_signature: response.razorpay_signature,
+                                        orderData: orderData
+                                    })
+                                })
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.success) {
+                                       
+                                        window.location.href = `/checkout_success/${data.order_id}/`;
+                                    } else {
+                                        alert(data.error);
+                                    }
+                                });
+                            },
+                            "prefill": {
+                                "name": "Your Name",
+                                "email": "Your Email",
+                                "contact": "Your Phone"
+                            },
+                            "theme": {
+                                "color": "#F37254"
+                            }
+                        };
+                        var rzp1 = new Razorpay(options);
+                        rzp1.open();
+                    } else {
+                        alert(data.error ? data.error : 'Order creation failed.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        });
+    
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+    });
+    
+</script>
 {% endblock %}

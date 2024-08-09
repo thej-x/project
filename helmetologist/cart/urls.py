@@ -9,8 +9,10 @@ urlpatterns = [
     path('update_item/', updateItem, name='update_item'),
     path('update_cart_item/', updateCartItem, name='update_cart_item'),
     path('delete_from_cart/<str:product_id>/', delete_from_cart, name='delete_from_cart'),
-    path('checkout/', checkout, name='checkout'),
+    path('checkout/', cash_on_delivery, name='checkout'),
     path('checkout_view/', checkout_view, name='checkout_view'),
+    # path('payment_success/', payment_success, name='payment_success'),
+  
     path('checkout_success/<int:order_id>/', checkout_success, name='checkout_success'),
     path('wishlist/',wishlist,name='wishlist'),
     path('add_to_wishlist/<int:product_id>',add_to_wishlist,name='add_to_wishlist'),
@@ -19,9 +21,12 @@ urlpatterns = [
     path('admincoupon/', admincoupon, name='admincoupon'),
     path('coupon_inactive/<int:coupon_id>',coupon_inactive,name='coupon_inactive'),
     path('add_coupon/', add_coupon, name='add_coupon'),
-    path('apply_coupon/', apply_coupon, name='apply_coupon'),
-
-
+    path('edit_coupon/<int:coupon_id>',edit_coupon, name='edit_coupon'),
     
+#  razorpay
+    path('create_razorpay_order/', create_razorpay_order, name='create_razorpay_order'),
+    path('verify_razorpay_payment/', verify_razorpay_payment, name='verify_razorpay_payment'),
+   
+
     # path('clear_cart/<int:cart_id>',clear_cart,name='clear_cart'),
     ]

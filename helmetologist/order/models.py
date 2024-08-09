@@ -28,6 +28,12 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     coupon_id = models.CharField(max_length=100, blank=True, null=True)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    razorpay_order_id = models.CharField(max_length=100,blank=True,null=True)
+    razorpay_payment_id = models.CharField(max_length=100,blank=True,null=True)
+    razorpay_payment_signature = models.CharField(max_length=100,blank=True,null=True)
+    
+    
+    
     payment_method = models.CharField(
         max_length=20,
         choices=[("COD", "Cash on Delivery"), ("Razorpay", "Razorpay")],

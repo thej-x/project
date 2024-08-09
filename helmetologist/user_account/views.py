@@ -206,12 +206,6 @@ def resend_otp(request):
     return JsonResponse({'success': True, 'message': 'OTP resent successfully.'}, status=200)
 
 
-
-
-
-
-
-
 @never_cache
 def loginpage(request):
     if request.method == 'POST':
