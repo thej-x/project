@@ -458,7 +458,7 @@ def verify_razorpay_payment(request):
 
 
 
-    
+@never_cache    
 def checkout_success(request, order_id):
     
     user = request.user
@@ -547,6 +547,7 @@ def wishlist_to_cart(request, product_id):
     product.save()
 
     return redirect('wishlist')
+
 
 def add_to_wishlist(request, product_id):
     product = get_object_or_404(Products, id=product_id)

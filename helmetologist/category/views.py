@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404, HttpResponse
 from django.contrib.auth.decorators import login_required,user_passes_test
 from django.views.decorators.cache import never_cache
 from django.core.files.uploadedfile import UploadedFile
+from offer.models import Offer
 from PIL import Image
 
 def is_superuser(user):
@@ -31,8 +32,10 @@ def is_valid_image(file):
 @login_required(login_url='/adminlogin/')
 def admincategory(request):
     categories=Category.objects.all()
+    offers = Offer.objects.filter(is_active =True)
     context ={
         'Categories': categories,
+        'offers' : offers,
     }
     return render(request,'admincategory.html',context)
 
@@ -118,7 +121,42 @@ def edit_category(request,category_id):
     except Exception:
         return redirect("admincategory")
     
+def apply_or_notapply_offer(request,category_id):
+    
+    if request.method == 'POST':
         
+        category = get_object_or_404(Category,id = category_id)
+        offer_id = request.POST.get('offer_id')
+        dissable_offer = request.POST.get('dissable')
+        print(dissable_offer)
+        
+        if offer_id:
+            offer = get_object_or_404(Offer,id=offer_id)
+            if offer.offer_type == 'category':
+                category.discount_percentage = offer.discount_percentage
+                category.is_offer_applied = True
+                category.save()
+                products = Products.objects.filter(category=category)
+                for product in products:
+                    if product.is_offer_applied == False:
+                        product.discount_percentage = category.discount_percentage
+                        product.is_offer_applied = True
+                        product.save()
+                    else:
+                        product.save()
+                        
+        elif dissable_offer:
+            print('working')
+            category.is_offer_applied =False
+            category.discount_percentage = 0 
+            category.save()
+            products = Products.objects.filter(category=category)
+            for product in products:
+                product.is_offer_applied = False
+                product.discount_percentage = 0
+                product.save()
+    return redirect(reverse('admincategory'))
+            
         
         
 def shop(request,shop_cat_slug):

@@ -28,6 +28,7 @@
                   <th>Thumbnail</th>
                   <th>Created date</th>
                   <th>Edit</th>
+                  <th>Offer</th>
                   <th>Action</th>
                 </tr>
               </thead>
@@ -39,6 +40,30 @@
                   <td>{{category.created_at}}</td>
                   <td>
                     <a href="{% url 'editcategory' category.id %}" class="block-user btn btn-primary">Edit</a>
+                  </td>
+                  <td>
+                    
+
+                      <form action="{% url 'apply_or_notapply_offer' category.id %}" method="post">
+                        {% csrf_token %}
+                        {% if category.is_offer_applied %}
+                            <button type="submit" name="dissable" value="1" class="btn btn-warning">Disable Offer</button>
+                        {% else %}
+                            <select name="offer_id" class="custom-select">
+                                <option value="">Select Offer</option>
+                                {% for offer in offers %}
+                                    {% if offer.offer_type == 'category' and offer.is_valid %}
+                                        <option value="{{ offer.id }}">{{ offer.name }} ({{ offer.discount_percentage }}%)</option>
+                                    {% endif %}
+                                {% endfor %}
+                            </select>
+                            <button type="submit" class="btn btn-primary">Apply</button>
+                        {% endif %}
+                    
+                    {% if not offers %}
+                        <p>No offers available</p>
+                    {% endif %}
+                  </form>
                   </td>
                   <td>
                     {% if category.is_listed %}  
@@ -58,6 +83,7 @@
                       {% endif %}
           
                   </td>
+                  
                 </tr>
                 {% endfor %}
               </tbody>

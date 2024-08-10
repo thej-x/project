@@ -10,6 +10,7 @@ urlpatterns = [
     path('add_category/', add_category, name='add_category'),
     path('unlist_category/<int:category_id>',unlist_category, name='unlist_category'),
     path('edit_category/<int:category_id>', edit_category, name='editcategory'),
+    path('apply_or_notapply_offer/<int:category_id>', apply_or_notapply_offer, name='apply_or_notapply_offer'),
     path('update_item/',updateItem,name='updateItem'),
     path('<slug:shop_cat_slug>/',shop, name='shop'),
 ]
