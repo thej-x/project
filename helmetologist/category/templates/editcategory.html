@@ -22,34 +22,40 @@
               <form id="editCategoryForm" action="{% url 'editcategory' data.id %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="form-group">
-                  <label for="cat_name">Category Name</label>
-                  <input type="text" class="form-control" id="cat_name" name="cat_name" value="{{ data.cat_name }}" required>
+                    <label for="cat_name">Category Name</label>
+                    <input type="text" class="form-control" id="cat_name" name="cat_name" value="{{ data.cat_name }}" required>
+                    <div class="invalid-feedback">
+                        Please enter a valid category name (3-50 characters, letters, numbers, and spaces only).
+                    </div>
                 </div>
                 <div class="form-group">
-                  <label for="cat_thumbnail">Thumbnail</label>
-                  <input type="file" class="form-control" id="cat_thumbnail" name="cat_thumbnail">
-                  {% if data.cat_thumbnail %}
-                    <img src="{{ data.cat_thumbnail.url }}" alt="Current Thumbnail" style="max-height: 200px; margin-top: 10px;">
-                  {% endif %}
+                    <label for="cat_thumbnail">Thumbnail</label>
+                    <input type="file" class="form-control" id="cat_thumbnail" name="cat_thumbnail" accept="image/*">
+                    {% if data.cat_thumbnail %}
+                        <img src="{{ data.cat_thumbnail.url }}" alt="Current Thumbnail" style="max-height: 200px; margin-top: 10px;">
+                    {% endif %}
+                    <div class="invalid-feedback">
+                        Please upload a valid image file (JPEG, PNG, GIF) not exceeding 2MB.
+                    </div>
                 </div>
                 <div class="form-group">
-                  <a href="{% url 'admincategory' %}"><button type="button" class="btn btn-secondary" id="cancelEditCategory">Cancel</button></a>
-                  <button type="submit" class="btn btn-primary">Submit</button>
+                    <a href="{% url 'admincategory' %}"><button type="button" class="btn btn-secondary" id="cancelEditCategory">Cancel</button></a>
+                    <button type="submit" class="btn btn-primary">Submit</button>
                 </div>
-              </form>
-              {% if messages %}
-              <div class="messages text-center text-capitalize font-weight-bold">
-            {% for message in messages %}
-            {% if message.tags == 'error' %}
-            <h5 class="text-danger">! {{ message }}</h5>
-            {% elif message.tags == 'success' %}
-            <h5 class="text-success">! {{ message }}</h5>
-            {% else %}
-            <h5>! {{ message }}</h5>
-            {% endif %}
-            {% endfor %}
-            </div>
-            {% endif %}
+            </form>
+                <!-- Alert Messages -->
+                {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-success d-flex align-items-center" role="alert">
+                    <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                        <use xlink:href="#exclamation-triangle-fill"/>
+                    </svg>
+                    <div>
+                        {{ message }}
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
             </div>
   
           </div>
@@ -77,4 +83,39 @@
       window.location.href = '/categories'; // Adjust the URL as needed
     });
 </script>
+<script>
+  document.getElementById('editCategoryForm').addEventListener('submit', function(event) {
+      let isValid = true;
+      
+      // Validate Category Name
+      const catNameInput = document.getElementById('cat_name');
+      const catNameValue = catNameInput.value.trim();
+      const catNameRegex = /^[A-Za-z0-9 ]{3,50}$/;
+      if (!catNameRegex.test(catNameValue)) {
+          catNameInput.classList.add('is-invalid');
+          isValid = false;
+      } else {
+          catNameInput.classList.remove('is-invalid');
+      }
+  
+      // Validate Thumbnail (if a file is selected)
+      const catThumbnailInput = document.getElementById('cat_thumbnail');
+      const allowedExtensions = /(\.jpg|\.jpeg|\.png|\.gif)$/i;
+      const maxFileSize = 2 * 1024 * 1024; // 2MB in bytes
+      if (catThumbnailInput.files.length > 0) {
+          const file = catThumbnailInput.files[0];
+          if (!allowedExtensions.exec(file.name) || file.size > maxFileSize) {
+              catThumbnailInput.classList.add('is-invalid');
+              isValid = false;
+          } else {
+              catThumbnailInput.classList.remove('is-invalid');
+          }
+      }
+  
+      // Prevent form submission if validation fails
+      if (!isValid) {
+          event.preventDefault();
+      }
+  });
+  </script>
 {% endblock %}

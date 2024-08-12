@@ -32,26 +32,41 @@ def cart_show(request):
     if user.is_authenticated:
         user_cart, created = Cart.objects.get_or_create(user=user)
         cart_products = user_cart.cartproducts_set.all()
-        cart_items = user_cart.cartproducts_set.count() 
-        wishlist_items = Wishlist.objects.filter(user=user).count()
 
+        # Handle expired offers for products in the cart
+        for cart_product in cart_products:
+            product = cart_product.products
+            if product.validate_offerdate and product.validate_offerdate < date.today():
+                product.discount_percentage = None
+                product.is_offer_applied = False
+                product.validate_offerdate = None
+                product.discounted_price = None
+                product.save(update_fields=['discount_percentage', 'is_offer_applied', 'validate_offerdate', 'discounted_price'])
+        
+        # Re-fetch cart products to reflect any updates
+        cart_products = user_cart.cartproducts_set.all()
+        cart_items = cart_products.count() 
+        wishlist_items = Wishlist.objects.filter(user=user).count()
+        
     else:
-        cart_products = []
-        user_cart = {'cart_sub_total': 0, 'cart_sub_count': 0}
-        cart_items = user_cart['cart_sub_count']
+        return redirect('login')
 
     context = {
         'user_cart': user_cart,
         'cart_products': cart_products,
         'cart_count': cart_items,
-        'wishlist_items':wishlist_items,
+        'wishlist_items': wishlist_items,
     }
+    
     return render(request, 'cart.html', context)
     
     
 def add_to_cart(request,product_id):
     
     product = get_object_or_404(Products,id = product_id)
+    if product.is_offer_applied:
+        product.price = product.discounted_price
+       
     cart = get_object_or_404(Cart, user=request.user)
     
     print(f"Product ID: {product_id}, Cart ID: {cart.id}")
@@ -105,14 +120,23 @@ def updateItem(request):
         
         cart = get_object_or_404(Cart, user=user)
         product = get_object_or_404(Products, id=productId)
+        
+        if product.quantity == 0:
+            return JsonResponse({'error': 'Product is out of stock'}, status=400)
+            
         cart_product, created = CartProducts.objects.get_or_create(cart=cart, products=product)
+        
+         
+
         
         if action == 'add':
             if created :
                 cart_product.quantity = 1
+                product.quantity -= 1
+                product.save()
             else:
-                cart_product.quantity += 1
-            print(f"Quantity after add: {cart_product.quantity}")
+                return JsonResponse({'error': 'Not enough stock available'}, status=400)
+            
         
         else:
             return JsonResponse('Invalid action', status=400)
@@ -126,7 +150,7 @@ def updateItem(request):
     
     return JsonResponse('Invalid request', status=400)
 
-def updateCartItem(request):
+def updateWishlist(request):
     user = request.user
     
     if request.method == 'POST':
@@ -134,12 +158,52 @@ def updateCartItem(request):
         productId = data['productId']
         action = data['action']
         
-        cart = get_object_or_404(Cart, user=user)
         product = get_object_or_404(Products, id=productId)
-        cart_product, created = CartProducts.objects.get_or_create(cart=cart, products=product)
+        wishlist, created = Wishlist.objects.get_or_create(product=product, user=user)
         
         if action == 'add':
-           
+            if created:
+                
+                pass
+            else:
+                return JsonResponse({'error': 'Item already in wishlist'}, status=400)
+        else:
+            return JsonResponse({'error': 'Invalid action'}, status=400)
+        
+        return JsonResponse({'message': 'Item added to wishlist'}, safe=False)
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+        
+
+def updateCartItem(request):
+    user = request.user
+    
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        print(data)
+        productId = data['productId']
+        
+        print(productId,'hiiiii')
+        action = data['action']
+        
+        cart = get_object_or_404(Cart, user=user)
+        print(cart)
+        
+        product = get_object_or_404(Products, id=productId)
+        print(product,'kkkkk')
+        
+        if product.is_offer_applied and product.discounted_price:
+            price = product.discounted_price
+        else:
+            price = product.price
+        
+        # Get or create the cart product
+        cart_product, created = CartProducts.objects.get_or_create(cart=cart, products=product)
+        
+        
+        if action == 'add':
+            if product.is_offer_applied:
+                product.price = product.discounted_price
             if product.quantity > 0:
                 if created:
                     cart_product.quantity = 1
@@ -248,6 +312,7 @@ def checkout_view(request):
             'cart_items': cart_items,
         }
         return render(request, 'checkout.html', context)
+    
 #place order
 def cash_on_delivery(request):
     if request.user.is_authenticated:
@@ -278,7 +343,10 @@ def cash_on_delivery(request):
 
                 cart.coupon = coupon
                 coupon.quantity -= 1
+                if coupon.quantity==0:
+                    messages.warning(request,'coupon exceeds the limit')
                 coupon.save()
+                
                 cart.save()
 
                 messages.success( request, 'Coupon applied')
@@ -315,6 +383,8 @@ def cash_on_delivery(request):
                     if order_amount < 1.00:
                         return JsonResponse({'success': False, 'message': "Order amount must be at least ₹1.00."})
 
+                    
+
                     payment = Payment.objects.create(
                         user=user,
                         method=payment_method,
@@ -332,13 +402,29 @@ def cash_on_delivery(request):
                     )
 
                     for item in cart_items:
+                        original_price = item.products.price
+
+                        if item.products.discounted_price:
+                                        discount_price = item.products.discounted_price
+                                        discount_percentage = item.products.discount_percentage
+                        elif item.products.discount_percentage:
+                                        # Calculate the discount based on percentage
+                                        discount_amount = (original_price * item.products.discount_percentage) / 100
+                                        discount_price = original_price - discount_amount
+                                        discount_percentage = item.products.discount_percentage
+                        else:
+                                        discount_price = original_price
+                                        discount_percentage = None
+
+                                    # Create the OrderProduct instance with the appropriate price and discount percentage
                         OrderProduct.objects.create(
-                            order=order,
-                            product=item.products,
-                            price=item.products.price,
-                            quantity=item.quantity,
-                            user=user
-                        )
+                                        order=order,
+                                        product=item.products,
+                                        price=discount_price,
+                                        quantity=item.quantity,
+                                        user=user,
+                                        discount_percentage=discount_percentage,
+                                    )
 
                     cart.cartproducts_set.all().delete()
                     cart.coupon = None
@@ -427,13 +513,31 @@ def verify_razorpay_payment(request):
                         razorpay_payment_signature=signature
                     )
         for item in cart_items:
-                        OrderProduct.objects.create(
+            original_price = item.products.price
+
+# Calculate the discount price
+            if item.products.discounted_price:
+                            discount_price = item.products.discounted_price
+                            discount_percentage = item.products.discount_percentage
+            elif item.products.discount_percentage:
+                            # Calculate the discount based on percentage
+                            discount_amount = (original_price * item.products.discount_percentage) / 100
+                            discount_price = original_price - discount_amount
+                            discount_percentage = item.products.discount_percentage
+            else:
+                            discount_price = original_price
+                            discount_percentage = None
+
+                        # Create the OrderProduct instance with the appropriate price and discount percentage
+            OrderProduct.objects.create(
                             order=order,
                             product=item.products,
-                            price=item.products.price,
+                            price=discount_price,
                             quantity=item.quantity,
-                            user=user
+                            user=user,
+                            discount_percentage=discount_percentage,
                         )
+                        
 
         cart.cartproducts_set.all().delete()
         cart.coupon = None
@@ -489,18 +593,37 @@ def checkout_success(request, order_id):
 
 
 def wishlist(request):
-    user = request.user 
-    wishlist_products = Wishlist.objects.filter(user = user)
-    wishlist_items = Wishlist.objects.filter(user=user).count()
-    user_cart, created = Cart.objects.get_or_create(user=user)
-    cart_items = user_cart.cartproducts_set.count() 
-    context={
+    user = request.user
+    if user.is_authenticated:
+        wishlist_products = Wishlist.objects.filter(user=user)
+        wishlist_items = wishlist_products.count()
+        user_cart, created = Cart.objects.get_or_create(user=user)
+        cart_items = user_cart.cartproducts_set.count()
         
-        'wishlist_products' : wishlist_products,
-        'wishlist_items' : wishlist_items,
+        # Handle expired offers for products in the wishlist
+        for wishlist_item in wishlist_products:
+            product = wishlist_item.product
+            if product.validate_offerdate and product.validate_offerdate < date.today():
+                product.discount_percentage = None
+                product.is_offer_applied = False
+                product.validate_offerdate = None
+                product.discounted_price = None
+                product.save(update_fields=['discount_percentage', 'is_offer_applied', 'validate_offerdate', 'discounted_price'])
+        
+        # Re-fetch wishlist products to reflect any updates
+        wishlist_products = Wishlist.objects.filter(user=user)
+        wishlist_items = wishlist_products.count()
+
+    else:
+        return redirect('login')
+        
+    context = {
+        'wishlist_products': wishlist_products,
+        'wishlist_items': wishlist_items,
         'cart_count': cart_items,
     }
-    return render(request,'wishlist.html',context)
+    
+    return render(request, 'wishlist.html', context)
 
 def remove_from_wishlist(request,product_id):
     user = request.user 
@@ -525,8 +648,8 @@ def wishlist_to_cart(request, product_id):
         quantity = 1
 
     if quantity > product.quantity:
-        messages.error(request, 'Quantity exceeds limit')
-        return redirect('product', product_slug=product.slug, product_id=product_id)
+        messages.error(request, 'Product out of stock')
+        return redirect('wishlist')
 
     cart_product, created = CartProducts.objects.get_or_create(cart=cart, products=product)
 

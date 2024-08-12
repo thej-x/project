@@ -81,25 +81,25 @@
                                                     <div class="list-view-item__title">
                                                         <a href="product-layout1.html">{{ product.products.name }}</a>
                                                     </div>
-                                                    <!-- <div class="cart__meta-text">
-                                                        Qty: {{product.quantity}}
-                                                    </div> -->
-                                                    <div class="cart-price d-md-none">
-                                                        <span class="money fw-500">&#8377; {{product.products.price}}</span>
-                                                    </div>
                                                 </td>
+                                                {% if product.products.is_offer_applied %}
+                                                <td class="cart__price-wrapper cart-flex-item text-center small--hide">
+                                                    <span class="money">&#8377; {{product.products.discounted_price}}</span>  
+                                                </td>
+                                                {% else %}
                                                 <td class="cart__price-wrapper cart-flex-item text-center small--hide">
                                                     <span class="money">&#8377; {{product.products.price}}</span>
                                                 </td>
+                                                {% endif %}
                                                 <td class="cart__update-wrapper cart-flex-item text-end text-md-center">
-                                                    <div class="cart__qty d-flex justify-content-end justify-content-md-center">
+                                                    <div class="cart__qty d-flex justify-content-end justify-content-md-center" >
                                                         
                                                         <div class="qtyField">
-                                                            <a data-product="{{product.products.id}}" data-action="remove" class="qtyBtn minus update-item">
+                                                            <a data-product="{{product.id}}" data-action="remove" class="qtyBtn minus update-item">
                                                                 <i class="icon an an-minus-r"></i>
                                                             </a>
-                                                            <input id="qty-{{product.products.id}}" class="cart__qty-input qty" type="text" name="updates[]" value="{{product.quantity}}" pattern="[0-9]*" min="1" max="10" readonly />
-                                                            <a data-product="{{product.products.id}}" data-action="add" class="qtyBtn plus update-item">
+                                                            <input id="qty-{{product.id}}" class="cart__qty-input qty" type="text" name="updates[]" value="{{product.quantity}}" pattern="[0-9]*" min="1" max="10" data-productid="{{product.products.id}}" readonly />
+                                                            <a data-product="{{product.id}}" data-cart="{{product.id}}" data-action="add" class="qtyBtn plus update-item">
                                                                 <i class="icon an an-plus-r"></i>
                                                             </a>
                                                         </div>
@@ -109,7 +109,7 @@
                                                     <a href="#" title="Remove" class="removeMb d-md-none d-inline-block text-decoration-underline mt-2 me-3">Remove</a>
                                                 </td>
                                                 <td class="cart-price cart-flex-item text-center small--hide">
-                                                    <span id="product-subtotal-{{product.products.id}}" class="money fw-500">&#8377; {{ product.sub_total }}</span>
+                                                    <span id="product-subtotal-{{product.id}}" class="money fw-500">&#8377; {{ product.sub_total }}</span>
                                                 </td>
    
                                             </tr>
@@ -223,6 +223,8 @@
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
         <script>
             var updateBtns = document.getElementsByClassName("update-item");
+          
+           
             
             for (var i = 0; i < updateBtns.length; i++) {
                 updateBtns[i].addEventListener("click", function () {
@@ -232,8 +234,12 @@
             
                     // Ensure that productId and action are not empty
                     if (productId && action) {
+                        var inputElement = document.getElementById("qty-" + productId);
+                        var productDataId = inputElement.getAttribute('data-productid');
                         updateQuantity(productId, action);
-                        sendUpdateToServer(productId, action);
+                        sendUpdateToServer(productId, action,productDataId);
+                       
+            
                     } else {
                         console.error("Missing productId or action!");
                     }
@@ -273,7 +279,7 @@
             }
             
             
-            function sendUpdateToServer(productId, action) {
+            function sendUpdateToServer(productId, action,productDataId) {
                 var qtyInput = document.getElementById("qty-" + productId);
                 
                 var currentQty = parseInt(qtyInput.value);
@@ -284,7 +290,7 @@
                         "Content-Type": "application/json",
                         "X-CSRFToken": csrftoken,
                     },
-                    body: JSON.stringify({ productId: productId, action: action }),
+                    body: JSON.stringify({ productId: productDataId, action: action }),
                 })
                 .then((response) => {
                     if (!response.ok) {

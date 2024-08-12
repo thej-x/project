@@ -22,6 +22,7 @@
             <!--Body Container-->
             <div id="page-content">   
                 <!--Collection Banner-->
+                
                 <div class="collection-header">
                     <div class="collection-hero">
                         <div class="collection-hero__image"></div>
@@ -71,7 +72,11 @@
                                                 <img src="{{product.product.thumbnail.url}}" width="100" alt="" title="">
                                             </td>
                                             <td class="product-name"><h6 class="mb-0"><a href="product-layout1.html">{{product.product.name}}</a></h6></td>
+                                            {% if product.product.is_offer_applied %}
+                                            <td class="product-price text-center"><span class="amount fw-500">&#8377; {{product.product.discounted_price}}</span></td>
+                                            {% else %}
                                             <td class="product-price text-center"><span class="amount fw-500">&#8377; {{product.product.price}}</span></td>
+                                            {% endif %}
                                             {% if product.product.quantity > 10 %}
                                             
                                             <td class="stock text-center"><span class="text-in-stock">in stock</span></td>

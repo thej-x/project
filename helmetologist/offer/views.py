@@ -109,14 +109,43 @@ def edit_offer(request, offer_id):
 @login_required(login_url='/adminlogin/')
 @user_passes_test(is_superuser)
 @csrf_exempt
-def delete_offer(request,offer_id):
-        offer = Offer.objects.get(id=offer_id)
-        offer.delete()
-        return redirect('adminoffers')
+def delete_offer(request, offer_id):
+    # Fetch the offer or return a 404 if not found
+    offer = get_object_or_404(Offer, id=offer_id)
+
+    # Fetch and update related products
+    products = Products.objects.filter(is_offer_applied=True,offer_id = offer_id )
+    
+    for product in products:
+        # Reset offer-related fields
+        product.discount_percentage = None
+        product.is_offer_applied = False
+        product.validate_offerdate = None
+        product.discounted_price = None
+        product.save(update_fields=['discount_percentage', 'is_offer_applied', 'validate_offerdate', 'discounted_price'])
+
+    # Delete the offer
+    offer.delete()
+
+    # Redirect with a success message
+    messages.success(request, "Offer deleted successfully.")
+    return redirect('adminoffers')
 
 @require_POST
+@login_required(login_url='/adminlogin/')
+@user_passes_test(is_superuser)    
 def offer_inactive(request, offer_id):
     offer = get_object_or_404(Offer, id=offer_id)
     offer.is_active = not offer.is_active
+    products = Products.objects.filter(is_offer_applied=True,offer_id = offer_id )
+    
+    for product in products:
+        # Reset offer-related fields
+        product.discount_percentage = None
+        product.is_offer_applied = False
+        product.validate_offerdate = None
+        product.discounted_price = None
+        product.save(update_fields=['discount_percentage', 'is_offer_applied', 'validate_offerdate', 'discounted_price'])
+
     offer.save()
     return redirect('adminoffers')

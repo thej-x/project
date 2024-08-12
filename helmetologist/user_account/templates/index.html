@@ -245,6 +245,11 @@
                                                         <img class="hover blur-up lazyload" src="{{ hover_image.image.url }}" alt="{{ product.name }}" title="">
                                                         <!-- End hover image -->
                                                         {%endwith%} 
+                                                        {% if product.is_offer_applied %}
+                                                        <!-- product label -->
+                                                        <div class="product-labels"><span class="lbl on-sale">{{product.discount_percentage}}% Off</span></div>
+                                                        <!-- End product label -->
+                                                         {% endif %}
                                                     </a>
                                                     <!-- end product image -->
                                             
@@ -256,7 +261,7 @@
 
                                                                 <!-- Custom Add to Cart Button -->
 
-                                                                <button data-product="{{ product.id }}" method="post" data-action="add" class="btn-icon btn btn-addto-cart pro-addtocart-popup update-cart">
+                                                                <button data-product="{{ product.id }}" data-quantity="{{ product.quantity }}" method="post" data-action="add" class="btn-icon btn btn-addto-cart pro-addtocart-popup update-cart">
                                                                     <i class="icon an an-cart-l"></i>
                                                                     <span class="tooltip-label">Add to Cart</span>
                                                                 </button>
@@ -270,10 +275,10 @@
                                                             </li>
                                                            <li>
                                                                 <!--Wishlist Button-->
-                                                                <a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html">
+                                                                <button data-product="{{ product.id }}" data-action="add" class="btn-icon wishlist add-to-wishlist pro-addtowishlist-popup update_wishlist">
                                                                     <i class="icon an an-heart-l"></i>
                                                                     <span class="tooltip-label">Add To Wishlist</span>
-                                                                </a>
+                                                                </button>
                                                                 <!--End Wishlist Button-->
                                                             </li>
                                                         </ul>
@@ -289,10 +294,17 @@
                                                     </div>
                                                     <!-- End product name -->
                                                     <!-- product price -->
+
+                                                    {% if product.is_offer_applied %}
                                                     <div class="product-price">
-                                                        <span class="old-price">{{ product.price }}</span>
-                                                        <span class="price">{{ product.price }}</span>
+                                                        <span class="old-price">&#8377;{{ product.price }}</span>
+                                                        <span class="price">&#8377;{{ product.discounted_price }}</span>
                                                     </div>
+                                                    {% else %}
+                                                    <div class="product-price">
+                                                        <span class="price">&#8377;{{ product.price }}</span>
+                                                    </div>
+                                                    {% endif %}
                                                     <!-- End product price -->
                                                     <!--Product Review-->
                                                     <div class="product-review"><i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star-o"></i></div>
@@ -770,7 +782,8 @@
 
 
             <!-- Including Jquery -->
-            
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js"></script>
+
 
             <script src="{% static 'assets/js/vendor/jquery-min.js' %}"></script>
             <script src="{% static 'assets/js/vendor/js.cookie.js' %}"></script>
@@ -805,12 +818,49 @@
                         
                         </script>
                         
-
-
-
-
-
-
+                        <script>
+                            var updateBtn = document.getElementsByClassName('update_wishlist');
+                            for (let i = 0; i < updateBtn.length; i++) {
+                                updateBtn[i].addEventListener("click", function() {
+                                    let productId = this.dataset.product;
+                                    let action = this.dataset.action;
+                                    console.log("productId:", productId, "action:", action);
+                        
+                                    if (productId && action) {
+                                        updateUserWishlist(productId, action);
+                                    } else {
+                                        console.error("Missing productId or action!");
+                                    }
+                                });
+                            }
+                        
+                            function updateUserWishlist(productId, action) {
+                                fetch("/update_wishlist/", {
+                                    method: "POST",
+                                    headers: {
+                                        "Content-Type": "application/json",
+                                        "X-CSRFToken": csrftoken,
+                                    },
+                                    body: JSON.stringify({ productId: productId, action: action }),
+                                })
+                                .then((response) => {
+                                    if (!response.ok) {
+                                        return response.text().then((text) => {
+                                            throw new Error(text);
+                                        });
+                                    }
+                                    return response.json();
+                                })
+                                .then((data) => {
+                                    console.log("data:", data);
+                                    location.reload();
+                                })
+                                .catch((error) => {
+                                    console.error("Error:", error);
+                                });
+                            }
+                        </script>
+                        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         </div>
         <!--End Page Wrapper-->
     </body>

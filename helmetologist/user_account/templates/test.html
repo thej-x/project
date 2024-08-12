@@ -1,0 +1,51 @@
+
+    <!-- Categories -->
+   
+        
+                    
+                   
+    <div class="sidebar_widget filterBox filter-widget size-swacthes price-range">
+        <div class="widget-title"><h2 class="mb-0">Price</h2></div>
+        <div class="filterDD">
+            <ul class="clearfix">
+                <li>
+                    <input type="checkbox" value="500-1000" id="price1" name="price_ranges">
+                    <label for="price1"><span></span>500 to 1000</label>
+                </li>
+                <li>
+                    <input type="checkbox" value="1000-2000" id="price2" name="price_ranges">
+                    <label for="price2"><span></span>1000 to 2000</label>
+                </li>
+                <li>
+                    <input type="checkbox" value="2000-3000" id="price3" name="price_ranges">
+                    <label for="price3"><span></span>2000 to 3000</label>
+                </li>
+                <li>
+                    <input type="checkbox" value="3000-4000" id="price4" name="price_ranges">
+                    <label for="price4"><span></span>3000 to 4000</label>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <!-- End Price Filter -->
+    
+    <!-- Availability -->
+    <div class="sidebar_widget filterBox filter-widget size-swacthes availability">
+        <div class="widget-title"><h2 class="mb-0">Availability</h2></div>
+        <div class="filterDD">
+            <ul class="clearfix">
+                <li><input type="checkbox" value="instock" id="instock" name="availability"><label for="instock"><span></span>In stock</label></li>
+                <li><input type="checkbox" value="outofstock" id="outofstock" name="availability"><label for="outofstock"><span></span>Out of stock</label></li>
+            </ul>
+        </div>
+    </div>
+    <!-- End Availability -->
+    
+    <!-- Banner -->
+    <div class="sidebar_widget static-banner">
+        <a href="shop-fullwidth.html"><img src="{% static 'assets/images/shop-banner.PNG' %}" alt="image"></a>
+    </div>
+    <!-- End Banner -->
+    
+    <button type="submit" class="btn btn-filter">Apply Filters</button>
+</form>

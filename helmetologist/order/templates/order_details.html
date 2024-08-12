@@ -99,16 +99,33 @@
                                <!-- Orders tracking -->
                                <div id="orderstracking" class="order-tracking tab-pane fade show active">
                                 <h3>Orders tracking</h3>
+                                {% if order_product.status != 'Cancelled' and order_product.status != 'Delivered' and order_product.status != 'Returned' %}
                                 <form class="orderstracking-from mt-3">
-                                    <p class="mb-3">To Cancel your order please press "Cancel" button. This was given to you on your receipt and in the confirmation email you should have received.</p>
+                                    <p class="mb-3">To cancel your order, please press the "Cancel" button. This was given to you on your receipt and in the confirmation email you should have received.</p>
                                     <div class="row align-items-center">
-                                      <div class="form-group col-md-2 col-lg-2">
-                                        <button type="button" class="btn rounded w-100 h-100" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
-                                          <span>Cancel</span> <span>Order</span>
-                                        </button>
-                                      </div>
+                                        <div class="form-group col-md-2 col-lg-2">
+                                            <button type="button" class="btn rounded w-100 h-100" data-bs-toggle="modal" data-bs-target="#cancelOrderModal">
+                                                <span>Cancel</span> <span>Order</span>
+                                            </button>
+                                        </div>
                                     </div>
-                                  </form>
+                                </form>
+                                
+                            {% endif %}
+                            <a href="{% url 'return_product' order_product.id %}" class="btn btn-danger">Return Product</a>
+
+                                        {% if messages %}
+                                        {% for message in messages %}
+                                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                                                <use xlink:href="#exclamation-triangle-fill"/>
+                                            </svg>
+                                            <div>
+                                                {{ message }}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        {% endif %}
                                 <div class="row mt-2">
                                     <div class="col-sm-12">
                                         <h3>Status for order id: {{order_product.order.orderid}}</h3>
@@ -116,10 +133,11 @@
                                         <div class="row mt-3">
                                             <div class="col-lg-2 col-md-3 col-sm-4">
                                                 <div class="product-img mb-3 mb-sm-0">
-                                                    <img class="blur-up lazyload" data-src="{% static 'assets/images/products/product-1.jpg' %}" src="{% static 'assets/images/products/product-1.jpg' %}" alt="product" title="">
+                                                    <img class="blur-up lazyload" data-src="{{order_product.product.thumbnail.url}}" src="{{order_product.product.thumbnail.url}}" alt="product" title="">
                                                 </div>
                                             </div>
                                             <div class="col-lg-6 col-md-9 col-sm-8">
+
                                                 <div class="tracking-detail d-flex-center">
                                                     <ul>
                                                         <li>

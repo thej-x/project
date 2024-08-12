@@ -377,14 +377,22 @@
                                     <!-- Product Price -->
                                     <div class="product-single__price pb-0 mb-0">
                                         <span class="visually-hidden">Regular price</span>
+                                        
+
+                                        {% if product.is_offer_applied %}
+                                        <span class="product-price__sale--single">
+                                            <span class="product-price-old-price">{{product.price}}</span><span class="product-price__price product-price__sale">&#8377;{{product.discounted_price}}</span>   
+                                            <span class="discount-badge"><span class="devider me-2">|</span><span>Save: </span><span class="product-single__save-amount"><span class="money">&#8377;{{save_amount}}</span></span><span class="off ms-1">(<span>{{product.discount_percentage}}</span>%)</span></span> 
+                                        </span>
+                                        {% else %}
                                         <span class="product-price__sale--single">
                                             <span class="product-price-old-price d-none"></span><span class="product-price__price product-price__sale-d">{{product.price}}</span>   
                                             <span class="discount-badge d-none"><span class="devider me-2">|</span><span>Save: </span><span class="product-single__save-amount"><span class="money">$99.00</span></span><span class="off ms-1">(<span>25</span>%)</span></span> 
                                         </span>
-
+                                        {% endif %}
                                     </div>
                                     <!-- End Product Price -->
-                                </div>
+                                </div>  
                                 <!-- End Product Info -->
                                 <div class="product-single__description rte">
                                     <p class="mb-2">{{product.description}}</p>

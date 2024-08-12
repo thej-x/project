@@ -64,14 +64,14 @@
                             <div class="closeFilter d-block d-lg-none"><i class="icon icon an an-times-r"></i></div>
                             <div class="sidebar_tags">
 
-                               
+                                <form method="get" action="{% url 'shop' %}" class="filter-form">
                                 <!--Categories-->
                                 <div class="sidebar_widget categories filterBox filter-widget">
                                     <div class="widget-title"><h2 class="mb-0">Categories</h2></div>
                                     <div class="widget-content filterDD">
                                         {% for category in categories %}
                                             <div class="category-item">
-                                                <input type="checkbox" id="category-item-{{ forloop.counter }}" name="{{category.id}}" value="{{ category.id }}" class="category-checkbox checker">
+                                                <input type="checkbox" id="category-item-{{ forloop.counter }}" name="category_ids" value="{{ category.id }}" class="category-checkbox checker">
                                                 <label for="category-item-{{ forloop.counter }}" class="site-nav category-label">
                                                     {{ category.cat_name }} <span>({{ category.products_set.all.count }})</span>
                                                 </label>
@@ -81,21 +81,31 @@
                                 </div> 
                                 <!--Categories-->
                                 <!-- Price Filter -->
-                                <div class="sidebar_widget filterBox filter-widget">
+                                <div class="sidebar_widget filterBox filter-widget size-swacthes price-range">
                                     <div class="widget-title"><h2 class="mb-0">Price</h2></div>
-                                    <form action="#" method="post" class="price-filter filterDD">
-                                         {% csrf_token %}  
-                                        <div id="slider-range" class="mt-2"></div>
-                                        <div class="row">
-                                            <div class="col-6">
-                                                <p class="no-margin"><input id="amount" type="text" readonly></p>
-                                            </div>
-                                            <div class="col-6 text-right margin-25px-top">
-                                                <button class="btn btn--small rounded">Filter</button>
-                                            </div>
-                                        </div>
-                                    </form>
+                                    <div class="filterDD">
+                                        <ul class="clearfix">
+                                            <li>
+                                                <input type="checkbox" value="500-1000" id="price1" name="price_ranges">
+                                                <label for="price1"><span></span>500 to 1000</label>
+                                            </li>
+                                            <li>
+                                                <input type="checkbox" value="1000-2000" id="price2" name="price_ranges">
+                                                <label for="price2"><span></span>1000 to 2000</label>
+                                            </li>
+                                            <li>
+                                                <input type="checkbox" value="2000-3000" id="price3" name="price_ranges">
+                                                <label for="price3"><span></span>2000 to 3000</label>
+                                            </li>
+                                            <li>
+                                                <input type="checkbox" value="3000-4000" id="price4" name="price_ranges">
+                                                <label for="price4"><span></span>3000 to 4000</label>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                    
                                 </div>
+                                
                                 <!-- End Price Filter -->
                                 
                               
@@ -106,87 +116,14 @@
                                     <div class="widget-title"><h2 class="mb-0">Availability</h2></div>
                                     <div class="filterDD">
                                         <ul class="clearfix">
-                                            <li><input type="checkbox" value="instock" id="instock"><label for="instock"><span></span>In stock</label></li>
-                                            <li><input type="checkbox" value="outofstock" id="outofstock"><label for="outofstock"><span></span>Out of stock</label></li>
+                                            <li><input type="checkbox" value="instock" id="instock" name="availability"><label for="instock"><span></span>In stock</label></li>
+                                            <li><input type="checkbox" value="outofstock" id="outofstock" name="availability" ><label for="outofstock"><span></span>Out of stock</label></li>
                                         </ul>
                                     </div>
                                 </div>
                                 <!--End Availability-->
                                 
-                                <!--Popular Products-->
-                                <div class="sidebar_widget sidePro">
-                                    <div class="widget-title"><h2>Popular Products</h2></div>
-                                    <div class="widget-content">
-                                        <div class="sideProSlider grid-products">
-                                            <div class="col-12 item">
-                                                <!--Start Product Image-->
-                                                <div class="product-image">
-                                                    <!--Start Product Image-->
-                                                    <a href="product-layout1.html" class="product-img">
-                                                        <!-- image -->
-                                                        <img class="primary blur-up lazyload" data-src="assets/images/products/product-1.jpg" src="assets/images/products/product-1.jpg" alt="image" title="">
-                                                        <!-- End image -->
-                                                        <!-- Hover image -->
-                                                        <img class="hover blur-up lazyload" data-src="assets/images/products/product-1-1.jpg" src="assets/images/products/product-1-1.jpg" alt="image" title="">
-                                                        <!-- End hover image -->
-                                                    </a>
-                                                    <!--End Product Image-->
-
-                                                    <!--Countdown Timer-->
-                                                    <div class="saleTime" data-countdown="2029/03/01"></div>
-                                                    <!--End Countdown Timer-->
-
-                                                    <!--Product Button-->
-                                                    <div class="button-set style0 d-none d-md-block">
-                                                        <ul>
-                                                            <!--Cart Button-->
-                                                            <li><a class="btn-icon btn cartIcon pro-addtocart-popup" href="#pro-addtocart-popup"><i class="icon an an-cart-l"></i> <span class="tooltip-label top">Add to Cart</span></a></li>
-                                                            <!--End Cart Button-->
-                                                            
-                                                            <!--Wishlist Button-->
-                                                            <li><a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html"><i class="icon an an-heart-l"></i> <span class="tooltip-label top">Add To Wishlist</span></a></li>
-                                                            <!--End Wishlist Button-->
-                                                           
-                                                        </ul>
-                                                    </div>
-                                                    <!--End Product Button-->  
-                                                </div>
-                                                <!--End Product Image-->
-                                                <!--Start Product Details-->
-                                                <div class="product-details text-center">
-                                                    <!--Product Name-->
-                                                    <div class="product-name text-uppercase">
-                                                        <a href="product-layout1.html">Floral Crop Top</a>
-                                                    </div>
-                                                    <!--End Product Name-->
-                                                    <!--Product Price-->
-                                                    <div class="product-price">
-                                                        <span class="old-price">$199.00</span>
-                                                        <span class="price">$219.00</span>
-                                                    </div>
-                                                    <!--End Product Price-->
-                                                    <!--Product Review-->
-                                                    <div class="product-review d-flex align-items-center justify-content-center">
-                                                        <i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i><i class="an an-star"></i><i class="an an-star-o"></i>
-                                                        <span class="caption hidden ms-2">3 reviews</span>
-                                                    </div>
-                                                    <!--End Product Review-->
-                                                    <!--Color Variant -->
-                                                    <ul class="image-swatches swatches mb-0">
-                                                        <li class="radius blue medium"><span class="swacth-btn"></span><span class="tooltip-label">Blue</span></li>
-                                                        <li class="radius pink medium"><span class="swacth-btn"></span><span class="tooltip-label">Pink</span></li>
-                                                        <li class="radius red medium"><span class="swacth-btn"></span><span class="tooltip-label">Red</span></li>
-                                                        <li class="radius yellow medium"><span class="swacth-btn"></span><span class="tooltip-label">Yellow</span></li>
-                                                    </ul>
-                                                    <!--End Color Variant-->
-                                                </div>
-                                                <!--End Product Details-->
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-                                <!--End Popular Products-->
+                                
                                 <!--Banner-->
                                 <div class="sidebar_widget static-banner">
                                     <a href="shop-fullwidth.html"><img src="{% static 'assets/images/shop-banner.PNG' %}" alt="image"></a>
@@ -199,13 +136,6 @@
                         <!--Main Content-->
                         <div class="col-12 col-sm-12 col-md-12 col-lg-9 main-col">
                             <div class="page-title"><h1>Helmets</h1></div>
-                            <!--Active Filters-->
-                            <!-- <ul class="active-filters d-flex flex-wrap align-items-center m-0 list-unstyled">
-                                <li><a href="#">Clear all</a></li>
-                                <li><a href="#">Men <i class="an an-times-l"></i></a></li>
-                                <li><a href="#">Accessories <i class="an an-times-l"></i></a></li>
-                            </ul> -->
-                            <!--End Active Filters-->
                             <!--Toolbar-->
                             <div class="toolbar">
                                 <div class="filters-toolbar-wrapper">
@@ -234,14 +164,16 @@
                                                     <option value="title-descending">Alphabetically, Z-A</option>
                                                     <option value="price-ascending">Price, low to high</option>
                                                     <option value="price-descending">Price, high to low</option>
-                                                    <option value="created-ascending">Date, old to new</option>
-                                                    <option value="created-descending">Date, new to old</option>
+
                                                 </select>
                                             </div>
                                         </li>
                                     </ul>
+                                    <button type="submit" class="btn btn-filter">Apply Filters</button>
+                                </form>
                                 </div>
                             </div>
+
                             <!--End Toolbar-->
 
                             <!--Product Grid-->
@@ -292,10 +224,10 @@
                                                     </li>
                                                    <li>
                                                         <!--Wishlist Button-->
-                                                        <a class="btn-icon wishlist add-to-wishlist" href="my-wishlist.html">
+                                                        <button data-product="{{ product.id }}" data-action="add" class="btn-icon wishlist add-to-wishlist pro-addtowishlist-popup update_wishlist">
                                                             <i class="icon an an-heart-l"></i>
                                                             <span class="tooltip-label">Add To Wishlist</span>
-                                                        </a>
+                                                        </button>
                                                         <!--End Wishlist Button-->
                                                     </li>
                                                 </ul>
@@ -310,10 +242,16 @@
                                                 <a href="product-layout1.html">{{product.name|truncatechars:50}}</a>
                                             </div>
                                             <!--End Product Name-->
-                                            <!--Product Price-->
+                                            {% if product.is_offer_applied %}
                                             <div class="product-price">
-                                                <span class="price">{{product.price}}</span>
+                                                <span class="old-price">&#8377;{{ product.price }}</span>
+                                                <span class="price">&#8377;{{ product.discounted_price }}</span>
                                             </div>
+                                            {% else %}
+                                            <div class="product-price">
+                                                <span class="price">&#8377;{{ product.price }}</span>
+                                            </div>
+                                            {% endif %}
                                             <!--End Product Price-->
                                             <!--Product Review-->
                                             <div class="product-review d-flex align-items-center justify-content-center">
@@ -355,14 +293,24 @@
                             <hr class="clear">
                             <div class="pagination">
                                 <ul>
-                                    <li class="prev"><a href="#"><i class="icon align-middle an an-caret-left" aria-hidden="true"></i></a></li>
-                                    <li class="active"><a href="#">1</a></li>
-                                    <li><a href="#">2</a></li>
-                                    <li><a href="#">...</a></li>
-                                    <li><a href="#">5</a></li>
-                                    <li class="next"><a href="#"><i class="icon align-middle an an-caret-right" aria-hidden="true"></i></a></li>
+                                    {% if products.has_previous %}
+                                    <li class="prev"><a href="?{% if current_filters %}{{ current_filters.urlencode }}&{% endif %}page={{ products.previous_page_number }}"><i class="icon align-middle an an-caret-left" aria-hidden="true"></i></a></li>
+                                    {% endif %}
+                            
+                                    {% for num in products.paginator.page_range %}
+                                        {% if products.number == num %}
+                                        <li class="active"><a href="#">{{ num }}</a></li>
+                                        {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                                        <li><a href="?{% if current_filters %}{{ current_filters.urlencode }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+                                        {% endif %}
+                                    {% endfor %}
+                            
+                                    {% if products.has_next %}
+                                    <li class="next"><a href="?{% if current_filters %}{{ current_filters.urlencode }}&{% endif %}page={{ products.next_page_number }}"><i class="icon align-middle an an-caret-right" aria-hidden="true"></i></a></li>
+                                    {% endif %}
                                 </ul>
                             </div>
+                            
                             <!--End Pagination Classic-->
 
                           
@@ -396,130 +344,69 @@
                     }
                     return cookieValue;
                 }
-                
-                const csrftoken = getCookie('csrftoken');
-                
-                
+                const csrftoken = getCookie('csrftoken')
                 </script>
-
-
-                <script>
-                    
-                    function price_slider() {
-                        $("#slider-range").slider({
-                            range: true,
-                            min: 1000,
-                            max: 10000,
-                            values: [1000, 10000],
-                            slide: function(event, ui) {
-                                $("#amount").val(ui.values[0] + " - " + ui.values[1]);
-                            }
-                        });
-                        $("#amount").val($("#slider-range").slider("values", 0) + 
-                                         " - " + $("#slider-range").slider("values", 1));
-                    }
-                
-                    $(document).ready(function() {
-                        price_slider();
-                
-                        $(".price-filter button").on("click", function(e) {
-                            e.preventDefault();
-                            let minPrice = $("#slider-range").slider("values", 0);
-                            let maxPrice = $("#slider-range").slider("values", 1);
-                
-                            $.ajax({
-                                url: '/filter_price/',  // URL to your filter endpoint
-                                type: 'POST',
-                                data: JSON.stringify({ min_price: minPrice, max_price: maxPrice }),
-                                contentType: 'application/json',
-                                success: function(response) {
-                                    if (response.status === 'success') {
-                                        $("#product-list").html(response.data);  // Update your product list container
-                                    } else {
-                                        console.error('Error filtering products');
-                                    }
-                                },
-                                error: function() {
-                                    console.error('Failed to send filter request');
-                                }
-                            });
-                        });
-                    });
-                </script>
-
-
                 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
-
-
-
-
-
-
                 <script>
-                    var slider = document.getElementById('slider-range');
-                    noUiSlider.create(slider, {
-                        start: [1000, 10000], // Initial values for the slider handle positions
-                        connect: true, // Indicates whether the bar between the handles should be colored
-                        range: {
-                            'min': 1000, // Minimum value of the slider
-                            'max': 10000 // Maximum value of the slider
-                        },
-                        step: 1, // Increment steps for the slider values
-                        format: {
-                            to: function (value) {
-                                return value.toFixed(0); // Ensures the value is formatted as a fixed number
-                            },
-                            from: function (value) {
-                                return Number(value); // Ensures the value is parsed back to a number
+                    document.addEventListener('DOMContentLoaded', () => {
+                        const form = document.querySelector('.filter-form');
+                        const url = new URL(window.location.href);
+                        const urlParams = new URLSearchParams(url.search);
+                
+                        // Restore the checkbox states from URL parameters
+                        form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                            const paramName = checkbox.name;
+                            const paramValue = checkbox.value;
+                            console.log(paramName, paramValue);
+                            // Check if the URL parameters contain the checkbox value
+                            if (urlParams.has(paramName) && urlParams.getAll(paramName).includes(paramValue)) {
+                                checkbox.checked = true;
                             }
-                        }
-                    });
-                    
-                    slider.noUiSlider.on('update', function (values, handle) {
-                        document.getElementById('amount').value = values.join(' - '); // Join the two values and display them in the input field
-                    });
-                    
-                    let priceFilterUrl = "{% url 'filter_price' %}";
-                    
-                    let procurePriceData = async (min_price, max_price) => {
-                        let res = await fetch(priceFilterUrl, {
-                            method: 'POST',
-                            headers: {
-                                'Content-type': 'application/json',
-                                'X-CSRFToken': '{{csrf_token}}',
-                            },
-                            body: JSON.stringify({
-                                min_price: min_price,
-                                max_price: max_price,
-                            }),
                         });
-                        return await res.json();
-                    }
-                    
-                    let container = document.getElementById('product-container');
-                    let filterButton = document.querySelector('.price-filter button');
-                    
-                    filterButton.addEventListener('click', async (event) => {
-                        event.preventDefault();
-                        let minPrice = parseFloat(document.getElementById('slider-range').noUiSlider.get()[0]);
-                        let maxPrice = parseFloat(document.getElementById('slider-range').noUiSlider.get()[1]);
-                        let data = await procurePriceData(minPrice, maxPrice); // Send the price range to the server
-                        console.log(minPrice, maxPrice);
-                        console.log(data);
-                        container.innerHTML = data.data; // Update the product container with the filtered products
+                
+                        // Restore the select option from URL parameters
+                        const sortBySelect = document.querySelector('select[name="SortBy"]');
+                        const sortByValue = urlParams.get('SortBy');
+                        if (sortByValue) {
+                            sortBySelect.value = sortByValue;
+                        }
+                
+                        // Handle form changes
+                        form.addEventListener('change', function() {
+                            const formData = new FormData(form);
+                            const params = new URLSearchParams();
+                            console.log(params, formData);
+                
+                            // Gather new parameters
+                            for (const [key, value] of formData.entries()) {
+                                if (value) {
+                                    if (Array.isArray(value)) {
+                                        value.forEach(val => params.append(key, val));
+                                    } else {
+                                        params.append(key, value);
+                                    }
+                                }
+                            }
+                
+                            // Update URL with new parameters
+                            url.search = params.toString();
+                            window.history.replaceState({}, '', url.toString());
+                        });
+                
+                        // Handle select change directly for SortBy
+                        sortBySelect.addEventListener('change', function() {
+                            const selectedValue = sortBySelect.value;
+                            urlParams.set('SortBy', selectedValue);
+                            url.search = urlParams.toString();
+                            window.history.replaceState({}, '', url.toString());
+                        });
                     });
                 </script>
                 
-
-
-
-
-
-
-                <script>
-                    let url = "{% url 'filter_category' %}"
+                <!-- <script>
+                    let url = ""
                     let procuredata = async (category_id) => {
                         let res = await fetch(url,{
                             method : 'POST',
@@ -546,9 +433,51 @@
                         })
                     })
 
-
-
                 </script>
+
+
+                <script>
+                    var updateBtn = document.getElementsByClassName('update_wishlist');
+                    for (let i = 0; i < updateBtn.length; i++) {
+                        updateBtn[i].addEventListener("click", function() {
+                            let productId = this.dataset.product;
+                            let action = this.dataset.action;
+                            console.log("productId:", productId, "action:", action);
+                
+                            if (productId && action) {
+                                updateUserWishlist(productId, action);
+                            } else {
+                                console.error("Missing productId or action!");
+                            }
+                        });
+                    }
+                
+                    function updateUserWishlist(productId, action) {
+                        fetch("/update_wishlist/", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRFToken": csrftoken,
+                            },
+                            body: JSON.stringify({ productId: productId, action: action }),
+                        })
+                        .then((response) => {
+                            if (!response.ok) {
+                                return response.text().then((text) => {
+                                    throw new Error(text);
+                                });
+                            }
+                            return response.json();
+                        })
+                        .then((data) => {
+                            console.log("data:", data);
+                            location.reload();
+                        })
+                        .catch((error) => {
+                            console.error("Error:", error);
+                        });
+                    }
+                </script>  -->
 
             {% endblock %}
 

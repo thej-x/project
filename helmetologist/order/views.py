@@ -81,12 +81,26 @@ def view_order(request,order_product_id):
 
 
 def cancel_order_request(request, order_product_id):
+    user = request.user
+
     order_product = get_object_or_404(OrderProduct, id=order_product_id)
-    
+
+    wallet,created = Wallet.objects.get_or_create(user=user)
     if request.method == 'POST':
         cancellation_reason = request.POST.get('cancellation_reason')
+        total_amount = order_product.totel_price
+        wallet.balance += total_amount
+        wallet.save()
+        
+        # Create a Transaction record for the credit
+        Transaction.objects.create(
+            wallet=wallet,
+            amount=total_amount,
+            transaction_type='credit',
+        )
         
         order_product.status = 'Cancelled'
+        
         order_product.cancellation_reason = cancellation_reason
         order_product.product.quantity += order_product.quantity
         order_product.product.save()
@@ -97,3 +111,81 @@ def cancel_order_request(request, order_product_id):
     
     return render(request, 'view_order.html', {'order_product': order_product})
     
+    
+def wallet(request):
+    user = request.user
+    wallet = Wallet.objects.get(user=user)
+    transactions = wallet.transaction_set.all().order_by('-date')  # Get all transactions, ordered by most recent
+
+    context = {
+        'wallet': wallet,
+        'transactions': transactions,
+    }
+
+    return render(request, 'wallet.html', context)
+from cart.models import Coupon
+from .models import *
+from django.db import transaction
+
+def return_product(request, order_product_id):
+    # Get the order product and associated order
+    order_product = get_object_or_404(OrderProduct, id=order_product_id)
+    order = order_product.order
+
+    # Check if the order is delivered
+    if order_product.status != "Delivered":
+        messages.error(request, "The order is not delivered yet")
+        return redirect('view_order', order_product_id)
+
+    # Calculate discount amount based on applied coupon and product-specific discount
+    discount_percentage = 0
+    discount_amount = 0
+
+    # Total order amount before any discounts
+    total_order_amount = sum(op.totel_price for op in order.order.all())
+
+    # Check if a coupon was applied to the order
+    if order.coupon_id:
+        try:
+            applied_coupon = Coupon.objects.get(id=order.coupon_id, active=True)
+            if applied_coupon:
+                discount_percentage = applied_coupon.discount_percentage
+        except Coupon.DoesNotExist:
+            applied_coupon = None
+
+    # Calculate the proportion of the coupon discount for this product
+    if discount_percentage > 0:
+        product_coupon_discount = (order_product.totel_price / total_order_amount) * discount_percentage
+        discount_amount += (order_product.totel_price * product_coupon_discount) / 100
+
+    # Add product-specific discount percentage
+    if order_product.discount_percentage:
+        discount_amount += (order_product.totel_price * order_product.discount_percentage) / 100
+
+    # Calculate the refund amount
+    refund_amount = order_product.totel_price - discount_amount
+
+    # Process the return
+    order_product.status = "Returned"
+    order_product.save()
+
+    # Handle wallet crediting
+    try:
+        with transaction.atomic():
+            wallet, created = Wallet.objects.get_or_create(user=order.user)
+            wallet.balance += refund_amount
+            wallet.save()
+            
+            # Create a credit transaction
+            Transaction.objects.create(
+                wallet=wallet,
+                amount=refund_amount,
+                transaction_type='credit'
+            )
+
+        messages.success(request, "Product return processed successfully. Credit amount added to wallet.")
+        return redirect('view_order', order_product_id)
+
+    except Exception as e:
+        messages.error(request, f"An error occurred: {e}")
+        return redirect('view_order', order_product_id)

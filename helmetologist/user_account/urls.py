@@ -26,9 +26,9 @@ urlpatterns = [
     path("user_details/<int:user_id>", user_details, name='user_details'),
     path("change_password/", change_password, name='change_password'),
     path('shop/',shop,name ='shop'),
-    
-    path('filter_category/', filter_category,name='filter_category'),
-    path('filter_price/', filter_price,name='filter_price'),
+    # path('shop_view/',shop_view,name='shop_view'),
+    # path('filter_category/', filter_category,name='filter_category'),
+    # path('filter_price/', filter_price,name='filter_price'),
     path("UserLogout/", logout, name='userlogout'),
     path('base/', base, name='base'),
 

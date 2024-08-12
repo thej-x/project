@@ -5,6 +5,33 @@ from user_account.models import *
 from django.utils import timezone
 
 # Create your models here.
+
+class Wallet(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    balance = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    updated_date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Wallet"
+
+class Transaction(models.Model):
+    TRANSACTION_TYPES = (
+        ('credit', 'Credit'),
+        ('debit', 'Debit'),
+    )
+
+    wallet = models.ForeignKey(Wallet, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    transaction_type = models.CharField(max_length=6, choices=TRANSACTION_TYPES)
+    date = models.DateTimeField(auto_now_add=True)
+    
+
+    def __str__(self):
+        return f"{self.transaction_type.title()} of {self.amount} on {self.date}"
+
+
+
+
 class Payment(models.Model):
     PAYMENT_METHOD_CHOICES = [
         ("COD", "Cash on Delivery"),
@@ -66,8 +93,9 @@ class OrderProduct(models.Model):
     delivery_date = models.DateTimeField(null=True, blank=True)
     cancellation_reason = models.TextField(blank=True, null=True)
     trackig_id = models.CharField(max_length=20, unique=True, default=None, null=True)
-    request_status = models.CharField(max_length=30, default="None", null=True)
-    
+    return_status = models.CharField(max_length=30, default=False, null=True)
+    discount_percentage = models.IntegerField(null=True, blank=True)  # Add this line
+
     
 
     def set_expected_delivery_date(self):
@@ -85,5 +113,10 @@ class OrderProduct(models.Model):
         
     @property
     def totel_price(self):
+        
         amount=self.quantity * self.price
         return amount
+    
+    
+    
+    

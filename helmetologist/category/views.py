@@ -86,6 +86,8 @@ def unlist_category(request, category_id):
     
     return render(request, 'admincategory.html', {'category': category})
 
+@login_required(login_url='/adminlogin/')
+@user_passes_test(is_superuser)    
 def edit_category(request,category_id):
     try:
         data = Category.objects.get(pk=category_id)
@@ -113,7 +115,7 @@ def edit_category(request,category_id):
                 return render(request, "editcategory.html", {"data": data})
             data.cat_name = name
             data.save()
-            
+            messages.success(request, "Category updated successfully.")
             return redirect("admincategory")
         return render(request,"editcategory.html", {"data": data})
 
@@ -121,6 +123,8 @@ def edit_category(request,category_id):
     except Exception:
         return redirect("admincategory")
     
+@login_required(login_url='/adminlogin/')
+@user_passes_test(is_superuser)        
 def apply_or_notapply_offer(request,category_id):
     
     if request.method == 'POST':
@@ -138,9 +142,11 @@ def apply_or_notapply_offer(request,category_id):
                 category.save()
                 products = Products.objects.filter(category=category)
                 for product in products:
-                    if product.is_offer_applied == False:
+                    if product.is_offer_applied == False and product.is_listed :
                         product.discount_percentage = category.discount_percentage
                         product.is_offer_applied = True
+                        product.validate_offerdate = offer.end_date
+                        product.offer_id = offer_id
                         product.save()
                     else:
                         product.save()
@@ -153,6 +159,8 @@ def apply_or_notapply_offer(request,category_id):
             products = Products.objects.filter(category=category)
             for product in products:
                 product.is_offer_applied = False
+                product.validate_offerdate = None
+                product.offer_id = None
                 product.discount_percentage = 0
                 product.save()
     return redirect(reverse('admincategory'))

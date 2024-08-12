@@ -60,6 +60,7 @@ class Cart(models.Model):
   
     @property
     def cart_sub_total(self):
+
         cart_items = self.cartproducts_set.all() 
         total = sum([item.sub_total for item in cart_items])
         return total
@@ -75,6 +76,7 @@ class Cart(models.Model):
     
     @property
     def cart_sub_count(self):
+        
         cart_items = self.cartproducts_set.all() 
         total = sum([item.quantity for item in cart_items])
         return total
@@ -88,12 +90,25 @@ class CartProducts(models.Model):
     quantity = models.PositiveIntegerField(default=1)  
     updated_at = models.DateTimeField(auto_now=True)    
     
+    
+    @property
+    def discount(self):
+
+        if self.products and self.products.is_offer_applied:
+            return self.products.discounted_price
+        else:
+            return self.products.price 
+    
     @property
     def sub_total(self):
-        return self.products.price * self.quantity
-    
+
+        if self.products and self.products.is_offer_applied:
+            return self.products.discounted_price * self.quantity
+        else:
+            return self.products.price * self.quantity
+        
     def __str__(self) -> str:
-        return f"{Cart} = {self.products.name }"
+        return f"{Cart} = {self.products }"
 
 
 

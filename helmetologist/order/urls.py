@@ -9,4 +9,6 @@ urlpatterns = [
     path('update_order_product_status/<str:id>/<int:order_product_id>/', update_order_product_status, name='update_order_product_status'),
     path('cancel_order_request/<int:order_product_id>/', cancel_order_request, name='cancel_order_request'),
     path('view_order/<int:order_product_id>/', view_order, name='view_order'),
+    path('return-product/<int:order_product_id>/', return_product, name='return_product'),
+    path('wallet/',wallet,name='wallet')
     ]

@@ -66,6 +66,17 @@
                                     {% endfor %}
                                 </select>
                             </div>
+                            <div class="form-group">
+                                <label for="category">Offer</label>
+                                <select class="form-control" id="offer_id" name="offer_id" required>
+                                    {% for offer in offers %}
+                                        {{offer}}
+                                    {% if offer.offer_type == 'product' and offer.is_valid %}
+                                    <option value="{{ offer.id }}">{{ offer.name }} ({{ offer.discount_percentage }}%)</option>
+                                    {% endif %}
+                                    {% endfor %}
+                                </select>
+                            </div>
                         
                             <div class="form-group">
                               <label for="quantity">Quantity</label>
