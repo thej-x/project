@@ -18,7 +18,10 @@ from decimal import Decimal
 from django.views.decorators.http import require_POST
 import razorpay
 from django.conf import settings
+from django.views.decorators.cache import never_cache
+
 from datetime import date
+from django.db.models import Q
 from urllib.parse import parse_qs
 # Create your views here.
 
@@ -27,6 +30,7 @@ date_now = (timezone.now()).date()
 
 
 
+@login_required(login_url="login")
 def cart_show(request):
     user = request.user
     if user.is_authenticated:
@@ -60,7 +64,8 @@ def cart_show(request):
     
     return render(request, 'cart.html', context)
     
-    
+
+@login_required(login_url="login")    
 def add_to_cart(request,product_id):
     
     product = get_object_or_404(Products,id = product_id)
@@ -107,8 +112,8 @@ def add_to_cart(request,product_id):
             
         )
     return redirect('product',product_slug = product.slug,product_id=product_id )
-    
 
+@login_required(login_url="login")
 def updateItem(request):
     user = request.user
     
@@ -150,6 +155,8 @@ def updateItem(request):
     
     return JsonResponse('Invalid request', status=400)
 
+
+@login_required(login_url="login")
 def updateWishlist(request):
     user = request.user
     
@@ -173,8 +180,8 @@ def updateWishlist(request):
         return JsonResponse({'message': 'Item added to wishlist'}, safe=False)
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
-        
 
+@login_required(login_url="login")
 def updateCartItem(request):
     user = request.user
     
@@ -243,6 +250,7 @@ def updateCartItem(request):
     
     
 
+@login_required(login_url="login")
 def delete_from_cart(request, product_id):
     user = request.user
     print(product_id, 'hi') 
@@ -284,6 +292,8 @@ def delete_from_cart(request, product_id):
 
 client = razorpay.Client(auth =(settings.RAZORPAY_KEY,settings.RAZORPAY_SECRET))
 
+
+@login_required(login_url="login")
 def checkout_view(request):
     if request.user.is_authenticated:
         print('111')
@@ -292,12 +302,23 @@ def checkout_view(request):
         cart_items = cart.cartproducts_set.all()
         addresses = Address.objects.filter(user=user, is_delete=False)
         cart_total = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
+        
+        
+        coupons = Coupon.objects.filter(
+        
+            Q(min_amount__lte=cart.cart_sub_total) | Q(min_amount__isnull=True)
+        ).exclude(active = False)
+
+        
+        
+        
 
         context = {
             'addresses': addresses,
             'cart': cart,
             'cart_items': cart_items,
             'cart_total': cart_total,
+            'coupons' : coupons,
         }
         return render(request, 'checkout.html', context)
     else:
@@ -313,7 +334,8 @@ def checkout_view(request):
         }
         return render(request, 'checkout.html', context)
     
-#place order
+
+@login_required(login_url="login")
 def cash_on_delivery(request):
     if request.user.is_authenticated:
         user = request.user
@@ -332,7 +354,9 @@ def cash_on_delivery(request):
                 if not coupon:
                     messages.error( request, 'Invalid coupon')
                     return redirect('checkout_view')
-    
+                
+                if cart.cart_sub_total >=50000:
+                    cart.coupon_applied_cart_sub_total = cart.cart_sub_total - coupon.max_amount
 
                 if cart.coupon:
                      messages.success(request, 'Coupon already applied')
@@ -389,7 +413,7 @@ def cash_on_delivery(request):
                         user=user,
                         method=payment_method,
                         amount=order_amount,
-                        status="pending"
+                        status="completed"
                     )
 
                     order = Order.objects.create(
@@ -398,33 +422,35 @@ def cash_on_delivery(request):
                         billing_address=billing_address,
                         total_amount=order_amount,
                         payment_method=payment_method,
-                        orderid=str(uuid.uuid4())[:8]
+                        orderid=str(uuid.uuid4())[:8],
+                        coupon_applied = True if  cart.coupon else False
                     )
 
                     for item in cart_items:
                         original_price = item.products.price
 
                         if item.products.discounted_price:
-                                        discount_price = item.products.discounted_price
-                                        discount_percentage = item.products.discount_percentage
+                            discount_price = item.products.discounted_price
+                            discount_percentage = item.products.discount_percentage
                         elif item.products.discount_percentage:
-                                        # Calculate the discount based on percentage
-                                        discount_amount = (original_price * item.products.discount_percentage) / 100
-                                        discount_price = original_price - discount_amount
-                                        discount_percentage = item.products.discount_percentage
+                            # Calculate the discount based on percentage
+                            discount_amount = (original_price * item.products.discount_percentage) / 100
+                            discount_price = original_price - discount_amount
+                            discount_percentage = item.products.discount_percentage
                         else:
-                                        discount_price = original_price
-                                        discount_percentage = None
+                            discount_price = original_price
+                            discount_percentage = None
 
                                     # Create the OrderProduct instance with the appropriate price and discount percentage
                         OrderProduct.objects.create(
-                                        order=order,
-                                        product=item.products,
-                                        price=discount_price,
-                                        quantity=item.quantity,
-                                        user=user,
-                                        discount_percentage=discount_percentage,
-                                    )
+                                order=order,
+                                status="Processing",
+                                product=item.products,
+                                price=discount_price,
+                                quantity=item.quantity,
+                                user=user,
+                                discount_percentage=discount_percentage,
+                                )
 
                     cart.cartproducts_set.all().delete()
                     cart.coupon = None
@@ -438,7 +464,8 @@ def cash_on_delivery(request):
                     })
     
     return JsonResponse({'success': False, 'message': "User not authenticated."})
-    
+
+@login_required(login_url="login")    
 def create_razorpay_order(request):
     try:
      if request.method == 'POST': 
@@ -473,6 +500,7 @@ def create_razorpay_order(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
+@login_required(login_url="login")
 def verify_razorpay_payment(request):
     try:
         data = json.loads(request.body)
@@ -499,7 +527,7 @@ def verify_razorpay_payment(request):
                         user=user,
                         method=payment_method,
                         amount=order_amount,
-                        status="pending"
+                         status="completed"
                     )
         order = Order.objects.create(
                         user=user,
@@ -510,12 +538,13 @@ def verify_razorpay_payment(request):
                         orderid=str(uuid.uuid4())[:8],
                         razorpay_order_id =order_id,
                         razorpay_payment_id =payment_id ,
-                        razorpay_payment_signature=signature
+                        razorpay_payment_signature=signature,
+                        coupon_applied = True if  cart.coupon else False
                     )
         for item in cart_items:
             original_price = item.products.price
 
-# Calculate the discount price
+            # Calculate the discount price
             if item.products.discounted_price:
                             discount_price = item.products.discounted_price
                             discount_percentage = item.products.discount_percentage
@@ -531,6 +560,7 @@ def verify_razorpay_payment(request):
                         # Create the OrderProduct instance with the appropriate price and discount percentage
             OrderProduct.objects.create(
                             order=order,
+                            status="Processing",
                             product=item.products,
                             price=discount_price,
                             quantity=item.quantity,
@@ -555,6 +585,98 @@ def verify_razorpay_payment(request):
     
 
     
+def process_wallet_payment(request):
+    if request.method == 'POST':
+        try:
+           
+            data = json.loads(request.body)
+            order_data = data.get("orderData", "")
+            parsed_data = parse_qs(order_data)
+            billing_address_id = parsed_data.get("billing_address", [""])[0]
+            payment_method = parsed_data.get("payment_method", [""])[0]
+            user = request.user
+            
+            # Fetch the user's wallet
+            wallet = get_object_or_404(Wallet, user=user)
+            
+            cart = get_object_or_404(Cart, user=user)
+            cart_items = cart.cartproducts_set.all()
+            
+            if not billing_address_id or not payment_method:
+                return JsonResponse({'success': False, 'error': "Please select a billing address and payment method."})
+       
+            billing_address = get_object_or_404(Address, id=billing_address_id, user=user)
+            order_amount = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
+            
+            # Check if wallet balance is sufficient
+            if wallet.balance < order_amount:
+                return JsonResponse({'success': False, 'error': "Insufficient wallet balance."})
+            
+            # Deduct the order amount from the wallet balance
+            wallet.balance -= order_amount
+            wallet.save()
+            print("wall")
+            # Record the transaction
+            Transaction.objects.create(
+                wallet=wallet,
+                amount=order_amount,
+                transaction_type='debit'
+            )
+            
+            # Create the payment record
+            payment = Payment.objects.create(
+                user=user,
+                method=payment_method,
+                amount=order_amount,
+                status="completed"
+            )
+            
+            # Create the order record
+            order = Order.objects.create(
+                user=user,
+                payment=payment,
+                billing_address=billing_address,
+                total_amount=order_amount,
+                payment_method=payment_method,
+                orderid=str(uuid.uuid4())[:8],
+                coupon_applied=True if cart.coupon else False
+            )
+            
+            # Create order products and handle discounts
+            for item in cart_items:
+                original_price = item.products.price
+                discount_price = original_price
+                discount_percentage = None
+
+                if item.products.discounted_price:
+                    discount_price = item.products.discounted_price
+                    discount_percentage = item.products.discount_percentage
+                elif item.products.discount_percentage:
+                    discount_amount = (original_price * item.products.discount_percentage) / 100
+                    discount_price = original_price - discount_amount
+                    discount_percentage = item.products.discount_percentage
+
+                OrderProduct.objects.create(
+                    order=order,
+                    status="Processing",
+                    product=item.products,
+                    price=discount_price,
+                    quantity=item.quantity,
+                    user=user,
+                    discount_percentage=discount_percentage,
+                )
+
+            # Clear the cart after order is placed
+            cart.cartproducts_set.all().delete()
+            cart.coupon = None
+            cart.save()
+
+            return JsonResponse({'success': True, 'order_id': order.id})
+        
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=400)
+    else:
+        return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
 
 
 
@@ -562,7 +684,9 @@ def verify_razorpay_payment(request):
 
 
 
-@never_cache    
+
+@login_required(login_url="login/")
+@never_cache
 def checkout_success(request, order_id):
     
     user = request.user
@@ -592,6 +716,7 @@ def checkout_success(request, order_id):
     return render(request, 'checkout_success.html', context)
 
 
+@login_required(login_url="login")
 def wishlist(request):
     user = request.user
     if user.is_authenticated:
@@ -625,6 +750,8 @@ def wishlist(request):
     
     return render(request, 'wishlist.html', context)
 
+
+@login_required(login_url="login")
 def remove_from_wishlist(request,product_id):
     user = request.user 
     product = get_object_or_404(Products, id=product_id)
@@ -635,6 +762,8 @@ def remove_from_wishlist(request,product_id):
     
     return redirect('wishlist')
 
+
+@login_required(login_url="login")
 def wishlist_to_cart(request, product_id):
     user = request.user
     product = get_object_or_404(Products, id=product_id)
@@ -672,6 +801,7 @@ def wishlist_to_cart(request, product_id):
     return redirect('wishlist')
 
 
+@login_required(login_url="login/")
 def add_to_wishlist(request, product_id):
     product = get_object_or_404(Products, id=product_id)
     user = request.user
@@ -718,6 +848,9 @@ def admincoupon(request):
     return render(request,'admincoupon.html',context)
 
 
+
+@login_required(login_url='/adminlogin/')
+@user_passes_test(is_superuser)
 def add_coupon(request):
     
     errors = []
@@ -782,6 +915,10 @@ def add_coupon(request):
     
     return render(request, 'add_coupon.html', {'messages': errors})
 
+
+
+@login_required(login_url='/adminlogin/')
+@user_passes_test(is_superuser)
 def edit_coupon(request, coupon_id):
     coupon = get_object_or_404(Coupon, id=coupon_id)
     errors = []
@@ -840,8 +977,96 @@ def validate_coupon(title, coupon_code, discount_percentage, start_date, end_dat
         errors.append("Discount percentage must be a number between 1 and 50.")
 
     return errors
+
+def handle_payment_failure(request):
+    try:
+        # Parse the JSON request body
+        data = json.loads(request.body)
+        order_data = data.get("orderData", "")
+        parsed_data = parse_qs(order_data)
+        
+        # Extract required fields from the parsed data
+        billing_address_id = parsed_data.get("billing_address", [""])[0]
+        payment_method = parsed_data.get("payment_method", [""])[0]
+        user = request.user
+
+        # Retrieve or create the cart
+        cart, created = Cart.objects.get_or_create(user=user)
+        cart_items = cart.cartproducts_set.all()
+
+        # Get the billing address
+        billing_address = Address.objects.get(id=billing_address_id, user=user)
+        
+        # Calculate the order amount
+        order_amount = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
+        
+        # Create a pending payment entry
+        payment = Payment.objects.create(
+            user=user,
+            method=payment_method,
+            amount=order_amount,
+            status="pending"
+        )
+
+        # Create an order entry
+        order = Order.objects.create(
+            user=user,
+            payment=payment,
+            billing_address=billing_address,
+            total_amount=order_amount,
+            payment_method=payment_method,
+            orderid=str(uuid.uuid4())[:8],
+            coupon_applied=True if cart.coupon else False
+        )
+
+        # Add items to the order
+        for item in cart_items:
+            original_price = item.products.price
+
+            # Calculate the discount price
+            if item.products.discounted_price:
+                discount_price = item.products.discounted_price
+                discount_percentage = item.products.discount_percentage
+            elif item.products.discount_percentage:
+                # Calculate the discount based on percentage
+                discount_amount = (original_price * item.products.discount_percentage) / 100
+                discount_price = original_price - discount_amount
+                discount_percentage = item.products.discount_percentage
+            else:
+                discount_price = original_price
+                discount_percentage = None
+
+            # Create the OrderProduct instance with the appropriate price and discount percentage
+            OrderProduct.objects.create(
+                order=order,
+                product=item.products,
+                price=discount_price,
+                quantity=item.quantity,
+                user=user,
+                discount_percentage=discount_percentage,
+            )
+
+        # Clear the cart
+        cart.cartproducts_set.all().delete()
+        cart.coupon = None
+        cart.save()
+
+        # Return user_id and order_id in the response
+        return JsonResponse({
+            'success': True, 
+            'order_id': order.id, 
+            'user_id': user.id  # Include user_id in response
+        })
+
+    except Address.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Billing address not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
         
 
+
+@login_required(login_url='/adminlogin/')
+@user_passes_test(is_superuser)
 @require_POST
 def coupon_inactive(request, coupon_id):
     coupon = get_object_or_404(Coupon, id=coupon_id)

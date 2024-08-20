@@ -34,6 +34,10 @@ from cart.models import *
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q
 from datetime import date
+from order.models import *
+from cart.models import *
+from django.conf import settings
+import razorpay
 
 # Create your views here.
 
@@ -536,11 +540,23 @@ def edit_address(request, address_id):
 @never_cache
 @login_required(login_url="login")
 def useraccount(request,user_id):
+    
     user = User.objects.get(id = user_id )
-    address = Address.objects.filter(user=user)
+    
+    wallet, created = Wallet.objects.get_or_create(user=user)
+    
+    orders = Order.objects.filter(user = user)
+    order_count = orders.count()
+    pending_orders = Order.objects.filter(user=user, payment__status='pending')
+    delivered_orders = OrderProduct.objects.filter(user=user,status= 'Delivered').count() 
     context = {
         'user':user,
-        'Addresses':address,
+        'order_count':order_count,
+        'wallet': wallet,
+        'delivered_orders' : delivered_orders,
+        'orders': orders,
+        'pending_orders': pending_orders,
+        
     }
      
     return render(request, 'useraccount.html',context)
@@ -551,7 +567,8 @@ def useraccount(request,user_id):
 def order(request, user_id):
     
     user = User.objects.get(id=user_id)
-    orders = Order.objects.filter(user=user)
+    orders = Order.objects.filter(user=user).exclude(payment__status='pending').order_by('-id')
+
     user_cart, created = Cart.objects.get_or_create(user=user)
     cart_items = user_cart.cartproducts_set.count() 
     wishlist_items = Wishlist.objects.filter(user=user).count()
@@ -577,7 +594,7 @@ def order_tracking(request,user_id):
     return render(request, 'orders.html',context)
 
 @never_cache
-@login_required(login_url="login")
+@login_required(login_url="login/")
 def user_details(request, user_id):
     user = User.objects.get(id=user_id)
     
@@ -725,4 +742,62 @@ def shop(request):
 
     return render(request, 'shop.html', context)
 
+def get_razorpay_order_data(request, order_id):
+    try:
+        orderDta = Order.objects.get(id=order_id)
+        if not orderDta.payment or orderDta.payment.status != 'pending':
+            return JsonResponse({'success': False, 'error': 'Invalid order or payment status'}, status=400)
+        
+         # Mock amount and other details as needed
+        client = razorpay.Client(auth =(settings.RAZORPAY_KEY,settings.RAZORPAY_SECRET))
+
+        amount = orderDta.total_amount * 100  # Razorpay expects amount in paise
+        order = client.order.create({
+                'amount': int(amount),
+                'currency': 'INR',
+                'payment_capture': '1'  # Automatic payment capture
+            })
+        return JsonResponse({
+            'success': True,
+            'order_id':  order['id'],
+            'amount': amount
+        })
+    except Order.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Order not found'}, status=404)
+
+
+def verify_razorpay_payment(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        razorpay_payment_id = data.get('razorpay_payment_id')
+        razorpay_order_id = data.get('razorpay_order_id')
+        razorpay_signature = data.get('razorpay_signature')
+        order_id = data.get('order_id')
+
+        try:
+            order = Order.objects.get(id=order_id)
+            if not order.payment or order.payment.status != 'pending':
+                return JsonResponse({'success': False, 'error': 'Invalid order or payment status'}, status=400)
+            client = razorpay.Client(auth =(settings.RAZORPAY_KEY,settings.RAZORPAY_SECRET)) 
+            # Verify the payment signature
+            # This is where you should add your Razorpay signature verification logic
+            # If verification succeeds:
+            data = {
+            'razorpay_order_id': razorpay_order_id,
+            'razorpay_payment_id': razorpay_payment_id,
+            'razorpay_signature': razorpay_signature
+        }
+            client.utility.verify_payment_signature(data)
+            order.payment.status = 'completed'
+            order.razorpay_order_id=razorpay_order_id
+            order.razorpay_payment_id =razorpay_payment_id
+            order.razorpay_payment_signature=razorpay_signature
+            order.payment.save()
+            OrderProduct.objects.filter(order=order).update(status='Processing')
+
+            return JsonResponse({'success': True, 'order_id': order_id})
+        except Order.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Order not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=400)
 

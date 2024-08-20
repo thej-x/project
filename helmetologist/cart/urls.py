@@ -27,6 +27,9 @@ urlpatterns = [
 #  razorpay
     path('create_razorpay_order/', create_razorpay_order, name='create_razorpay_order'),
     path('verify_razorpay_payment/', verify_razorpay_payment, name='verify_razorpay_payment'),
+    path('handle_payment_failure/', handle_payment_failure, name='handle_payment_failure'),
+    
+    path('process-wallet-payment/', process_wallet_payment, name='process_wallet_payment'),
    
 
     # path('clear_cart/<int:cart_id>',clear_cart,name='clear_cart'),

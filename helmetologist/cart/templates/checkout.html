@@ -4,7 +4,31 @@
 {% load static %}
 
 {% block extra_styles %}
-<!-- Add any additional styles here -->
+<style>
+    .coupon {
+        border-radius: 12px;
+        box-shadow: 5px 8px 10px #d6d5d533;
+        border: 1px solid #ccc; /* Added border to the coupon */
+    }
+    .code:hover {
+        background: green;
+        color: #fff;
+        cursor: pointer;
+    }
+    .off {
+        align-items: center;
+    }
+    .btn-link {
+        color: #ffffff;
+        text-decoration: none;
+        font-weight: bold;
+        padding: 0;
+    }
+    .btn-link:hover {
+        color: #ffffff;
+        text-decoration: underline;
+    }
+</style>
 {% endblock %}
 
 {% block nav_links %}
@@ -107,7 +131,42 @@
                             </div>
                         </div>
                     </div>
+                
+                    <!-- Dropdown for Coupon Section -->
+                    <div class="mt-4">
+                        <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#couponSection" aria-expanded="false" aria-controls="couponSection">
+                            <i class="fas fa-ticket-alt"></i> Show Coupons Available
+                        </button>
+
+                        {% for coupon in coupons %}
+                        <div id="couponSection" class="collapse mt-2">
+                            <div class="coupon p-3 bg-white">
+                                <div class="row no-gutters">
+                                    <div class="col-md-4 border-right">
+                                        <div class="d-flex flex-column align-items-center">
+                                            <img src="https://i.imgur.com/XwBlVpS.png" alt="Coupon Logo">
+                                            <span class="d-block">Copy the coupon code</span>
+                                            <span class="text-black-50">{{coupon.title}}</span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-8">
+                                        <div>
+                                            <div class="d-flex flex-row justify-content-end off">
+                                                <h1>{{coupon.discount_percentage}}%</h1><span>OFF</span>
+                                            </div>
+                                            <div class="d-flex flex-row justify-content-between off px-3 p-2">
+                                                <span>Coupon code:</span>
+                                                <span class="border border-success px-3 rounded code">{{coupon.code}}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
                 </div>
+                
 
                 <div class="col-md-12 col-lg-4 mt-2 mt-lg-0">
                     <h2 class="title fs-6">ORDER SUMMARY</h2>
@@ -131,9 +190,13 @@
                                     <td class="text-start">
                                         <a href="">{{ item.products.name }}</a>
                                     </td>
-                                    <td>{{ item.products.price }}</td>
+                                    {% if item.products.is_offer_applied %}
+                                    <td>&#8377; {{ item.products.discounted_price }}</td>
+                                    {% else %}
+                                    <td>&#8377; {{ item.products.price }}</td>
+                                    {% endif %}
                                     <td>{{ item.quantity }}</td>
-                                    <td class="fw-500">{{ item.sub_total }}</td>
+                                    <td class="fw-500">&#8377; {{ item.sub_total }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -149,7 +212,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-end fw-bolder">Total</td>
-                                    <td class="fw-bolder">{{ cart_total }}</td>
+                                    <td class="fw-bolder">&#8377; {{ cart_total }}</td>
                                 </tr>
                                 {% else %}
                                 <tr>
@@ -158,7 +221,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-end fw-bolder">Total</td>
-                                    <td class="fw-bolder">{{ cart_total }}</td>
+                                    <td class="fw-bolder">&#8377; {{ cart_total }}</td>
                                 </tr>
                                 {% endif %}
                             </tfoot>
@@ -219,14 +282,14 @@
     
         placeOrderButton.addEventListener('click', function(e) {
             e.preventDefault(); // Prevent form submission
-    
+        
             const paymentMethod = document.querySelector('input[name="payment_method"]:checked').value;
             const orderData = new URLSearchParams(new FormData(checkoutForm)).toString(); // Serialize form data
-    
+        
             if (paymentMethod === 'COD') {
                 // Handle COD submission
                 const csrftoken = getCookie('csrftoken');
-                
+        
                 fetch('{% url "checkout" %}', {
                     method: 'POST',
                     headers: {
@@ -249,20 +312,19 @@
                     console.error('Error:', error);
                     alert('An error occurred. Please try again.');
                 });
-            } else if(paymentMethod === "Razorpay") {
+            } else if (paymentMethod === "Razorpay") {
                 // Handle Razorpay payment
-                
+        
                 fetch('/create_razorpay_order/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',
                         'X-CSRFToken': '{{ csrf_token }}'
                     },
-                    body:orderData
+                    body: orderData
                 })
                 .then(response => response.json())
                 .then(data => {
-
                     if (data.success) {
                         var options = {
                             "key": 'rzp_test_2wLrPtyZnsH5TO',
@@ -288,7 +350,6 @@
                                 .then(response => response.json())
                                 .then(data => {
                                     if (data.success) {
-                                       
                                         window.location.href = `/checkout_success/${data.order_id}/`;
                                     } else {
                                         alert(data.error);
@@ -304,7 +365,41 @@
                                 "color": "#F37254"
                             }
                         };
+                        
                         var rzp1 = new Razorpay(options);
+        
+                        // Corrected event listener for payment failure
+                        rzp1.on('payment.failed', function(response) {
+                            fetch('/handle_payment_failure/', {  // Backend URL to handle failure
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRFToken': '{{ csrf_token }}'
+                                },
+                                body: JSON.stringify({
+                                   
+                                    orderData: orderData
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                alert('Payment failed. You can retry payment by clicking OK.');
+                                if (data.success) {
+                                    const user_id = data.user_id;  // Assuming `user_id` is part of the JSON response
+                                    window.location.href = `/useraccount/${user_id}`;  // Redirect to the user account page
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error handling payment failure:', error);
+                                alert('An error occurred while processing the payment failure. Please try again.');
+                            });
+        
+                            rzp1.close();
+                        });
+                            
+                          
+                       
+        
                         rzp1.open();
                     } else {
                         alert(data.error ? data.error : 'Order creation failed.');
@@ -314,7 +409,32 @@
                     console.error('Error:', error);
                 });
             }
+        else if(paymentMethod === 'Wallet'){
+            fetch('/process-wallet-payment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'  // Add CSRF token for security
+                },
+                body: JSON.stringify({ orderData: orderData }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.error)
+                if (data.success) {
+                    // Redirect to the success page or handle the success case
+                    window.location.href = `/checkout_success/${data.order_id}/`;
+                } else {
+                    // Handle the error case
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }    
         });
+        
     
         function getCookie(name) {
             let cookieValue = null;

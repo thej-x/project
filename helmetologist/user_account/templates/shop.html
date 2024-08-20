@@ -200,9 +200,11 @@
                                                 <img class="hover blur-up lazyload" data-src="{{hover_image.image.url}}" src="{{hover_image.image.url}}" alt="image" title="">
                                                 <!-- End hover image -->
                                                 {% endwith %}
+                                                {% if product.is_offer_applied %}
                                                 <!-- product label -->
-                                                <!-- <div class="product-labels"><span class="lbl on-sale rounded">Sale</span></div> -->
+                                                <div class="product-labels"><span class="lbl on-sale">{{product.discount_percentage}}% Off</span></div>
                                                 <!-- End product label -->
+                                                 {% endif %}
                                             </a>
                                             <!--End Product Image-->
 

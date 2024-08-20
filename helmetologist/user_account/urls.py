@@ -31,5 +31,7 @@ urlpatterns = [
     # path('filter_price/', filter_price,name='filter_price'),
     path("UserLogout/", logout, name='userlogout'),
     path('base/', base, name='base'),
+    path('get_razorpay_order_data/<int:order_id>/',get_razorpay_order_data, name='get_razorpay_order_data'),
+    path('verify_razorpay_payment/',verify_razorpay_payment, name='verify_razorpay_payment'),
 
 ]

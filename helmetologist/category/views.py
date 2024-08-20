@@ -70,7 +70,8 @@ def add_category(request):
          
     return render(request, 'addcategory.html')
 
-
+@login_required(login_url='/adminlogin/')
+@user_passes_test(is_superuser)
 def unlist_category(request, category_id):
     category = get_object_or_404(Category, pk=category_id)
     products = Products.objects.filter(category=category)

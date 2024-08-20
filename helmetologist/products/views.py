@@ -348,7 +348,7 @@ def product_view(request,product_slug,product_id):
         wishlist_items = Wishlist.objects.filter(user=user).count()
     else:
         cart_items = 0
-        
+        wishlist_items = 0
     context = {
         'product': product,
         'images': images,

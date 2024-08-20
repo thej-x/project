@@ -1,0 +1,252 @@
+{% extends "adminbase.html" %}
+
+{% block title %} Sales Details {% endblock %}
+
+
+<!-- this block coustome styles eg : -->
+{% block extra_styles %}
+
+
+
+{% endblock %}
+<!-- end styles -->
+
+{% block nav_links %}
+
+
+{% endblock %}
+
+<!-- main content start -->
+
+
+
+
+{% block content %}
+{% load static %}   
+<!-- Main Content -->
+<div class="row">
+    <div class="col-xl-3 col-lg-6">
+        <div class="card">
+            <div class="card-body card-type-3">
+                <div class="row">
+                    <div class="col">
+                        <h6 class="text-muted mb-0">Total Orders</h6>
+                        <span class="font-weight-bold mb-0">{{ total_order_count }}</span>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-circle l-bg-orange text-white">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6">
+        <div class="card">
+            <div class="card-body card-type-3">
+                <div class="row">
+                    <div class="col">
+                        <h6 class="text-muted mb-0">Total Sales Amount</h6>
+                        <span class="font-weight-bold mb-0">&#8377; {{ total_sales_amount |floatformat:2 }}</span>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-circle l-bg-cyan text-white">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6">
+        <div class="card">
+            <div class="card-body card-type-3">
+                <div class="row">
+                    <div class="col">
+                        <h6 class="text-muted mb-0">Discounted Amount</h6>
+                        <span class="font-weight-bold mb-0">&#8377; {{ total_discount_amount |floatformat:2 }}</span>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-circle l-bg-green text-white">
+                            <i class="fas fa-phone"></i>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-lg-6">
+        <div class="card">
+            <div class="card-body card-type-3">
+                <div class="row">
+                    <div class="col">
+                        <h6 class="text-muted mb-0">Earnings</h6>
+                        <span class="font-weight-bold mb-0">&#8377; {{ earnings |floatformat:2 }}</span>
+                    </div>
+                    <div class="col-auto">
+                        <div class="card-circle l-bg-purple text-white">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+  </div>
+  
+  <form method="GET" class="row mb-4">
+    <div class="col-md-3">
+      <label for="reportType" class="form-label">Report Type</label>
+      <select id="reportType" name="report_type" class="form-control" onchange="showDateInputs()">
+          <option value="day" {% if request.GET.report_type == 'day' %}selected{% endif %}>Day</option>
+          <option value="week" {% if request.GET.report_type == 'week' %}selected{% endif %}>Week</option>
+          <option value="month" {% if request.GET.report_type == 'month' %}selected{% endif %}>Month</option>
+          <option value="year" {% if request.GET.report_type == 'year' %}selected{% endif %}>Year</option>
+          <option value="custom" {% if request.GET.report_type == 'custom' %}selected{% endif %}>Custom Date Range</option>
+      </select>
+    </div>
+    
+    <!-- Custom Date Range Inputs -->
+    <div class="col-md-3" id="customDateRangeInput" style="display: none;">
+      <label for="startDate" class="form-label">Start Date</label>
+      <input type="date" id="startDate" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+    </div>
+    <div class="col-md-3" id="customDateRangeInputEnd" style="display: none;">
+      <label for="endDate" class="form-label">End Date</label>
+      <input type="date" id="endDate" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+    </div>
+    
+    <div class="col-md-3 d-flex align-items-end">
+      <button type="submit" class="btn btn-primary">Generate Report</button>
+    </div>
+  </form>
+
+          
+
+
+
+            
+  <div class="card-body">
+    <div class="table-responsive">
+        <table class="table table-striped table-hover" id="tableExport" style="width:100%;">
+            <thead>
+                <tr>
+                    <th>Order ID</th>
+                    <th>User Name</th>
+                    <th>Payment Mode</th>
+                    <th>Product</th>
+                    <th>Product QTY</th>
+                    <th>Total Amount</th>
+                    <th>Discount Amount</th>
+                    <th>Final Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for order_data in orders %}
+                    {% for product in order_data.products %}
+                    <tr>
+                        <td>{{ order_data.order.id }}</td>
+                        <td>{{ order_data.order.user.username }}</td>
+                        <td>{{ order_data.order.payment.method }}</td>
+                        <td>{{ product.product.name }}</td>
+                        <td>{{ product.quantity }}</td>
+                        <td>{{ product.product_total_amount|floatformat:2 }}</td>
+                        <td>{{ product.product_discount_amount|floatformat:2 }}</td>
+                        <td>{{ product.product_final_total|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                   
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <th colspan="5">Grand Total</th>
+                    <th>{{ total_sales_amount|floatformat:2 }}</th>
+                    <th>{{ total_discount_amount|floatformat:2 }}</th>
+                    <th>{{ total_final_total|floatformat:2 }}</th>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
+                    
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section> 
+
+{% endblock %}
+
+ 
+
+{% block scripts %}
+
+<script src="{% static 'adminassets/js/app.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/datatables/datatables.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/datatables/DataTables-1.10.16/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/jquery-ui/jquery-ui.min.js' %}"></script>
+<script src="{% static 'adminassets/js/page/datatables.js' %}"></script>
+<script src="{% static 'adminassets/js/scripts.js' %}"></script>
+<script src="{% static 'adminassets/js/custom.js' %}"></script>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- JS Libraries -->
+<script src="{% static 'adminassets/bundles/cleave-js/dist/cleave.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/cleave-js/dist/addons/cleave-phone.us.js' %}"></script>
+<script src="{% static 'adminassets/bundles/jquery-pwstrength/jquery.pwstrength.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/bootstrap-daterangepicker/daterangepicker.js' %}"></script>
+<script src="{% static 'adminassets/bundles/bootstrap-colorpicker/dist/js/bootstrap-colorpicker.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/bootstrap-timepicker/js/bootstrap-timepicker.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/bootstrap-tagsinput/dist/bootstrap-tagsinput.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/select2/dist/js/select2.full.min.js' %}"></script>
+<script src="{% static 'adminassets/bundles/jquery-selectric/jquery.selectric.min.js' %}"></script>
+<!-- Page Specific JS File -->
+<script src="{% static 'adminassets/js/page/forms-advanced-forms.js' %}"></script>
+<!-- Template JS File -->
+<script src="{% static 'adminassets/js/scripts.js' %}"></script>
+<!-- Custom JS File -->
+<script src="{% static 'adminassets/js/custom.js' %}"></script>
+<!-- Page Specific JS File -->
+
+
+
+<script>
+  function showDateInputs() {
+      const reportType = document.getElementById('reportType').value;
+      document.getElementById('dayInput').style.display = reportType === 'day' ? 'block' : 'none';
+      document.getElementById('weekInput').style.display = reportType === 'week' ? 'block' : 'none';
+      document.getElementById('monthInput').style.display = reportType === 'month' ? 'block' : 'none';
+      document.getElementById('yearInput').style.display = reportType === 'year' ? 'block' : 'none';
+  }
+  
+  // Initial call to show correct input based on selected report type
+  showDateInputs();
+  </script>   
+  
+    <script>
+        function showDateInputs() {
+          const reportType = document.getElementById('reportType').value;
+          const customDateRangeInput = document.getElementById('customDateRangeInput');
+          const customDateRangeInputEnd = document.getElementById('customDateRangeInputEnd');
+          if (reportType === 'custom') {
+              customDateRangeInput.style.display = 'block';
+              customDateRangeInputEnd.style.display = 'block';
+          } else {
+              customDateRangeInput.style.display = 'none';
+              customDateRangeInputEnd.style.display = 'none';
+          }
+        }
+        
+        // Ensure the date inputs are shown if custom range is selected
+        document.addEventListener('DOMContentLoaded', () => {
+          showDateInputs();
+        });
+      </script>
+{% endblock %}
+

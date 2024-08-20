@@ -58,7 +58,7 @@ class Order(models.Model):
     razorpay_order_id = models.CharField(max_length=100,blank=True,null=True)
     razorpay_payment_id = models.CharField(max_length=100,blank=True,null=True)
     razorpay_payment_signature = models.CharField(max_length=100,blank=True,null=True)
-    
+    coupon_applied = models.BooleanField(default=False)
     
     
     payment_method = models.CharField(
@@ -78,13 +78,14 @@ class OrderProduct(models.Model):
         ("Processing", "Processing"),
         ("Shipped", "Shipped"),
         ("Delivered", "Delivered"),
+        ("Payment_failed", "Payment_failed"),
         ("Cancelled", "Cancelled"),
         ("Returned", "Returned"),
         ]
 
     order = models.ForeignKey(Order, related_name="order", on_delete=models.CASCADE)
     product = models.ForeignKey(Products, on_delete=models.CASCADE)
-    price=models.DecimalField(max_digits=10, decimal_places=2, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, null=True)
     quantity = models.PositiveIntegerField(default=1)
     status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default="Pending", null=True)
     review = models.TextField( blank=True, null=True)
@@ -94,7 +95,7 @@ class OrderProduct(models.Model):
     cancellation_reason = models.TextField(blank=True, null=True)
     trackig_id = models.CharField(max_length=20, unique=True, default=None, null=True)
     return_status = models.CharField(max_length=30, default=False, null=True)
-    discount_percentage = models.IntegerField(null=True, blank=True)  # Add this line
+    discount_percentage = models.IntegerField(null=True, blank=True)  
 
     
 

@@ -60,9 +60,25 @@
                 <label for="status">Order Status:</label>
                 <select id="status" name="status" class="form-control">
                     {% if order_product.status not in "Delivered Returned Cancelled" %}
-                        {% for choice in status_choices %}
-                            <option value="{{ choice.0 }}" {% if choice.0 == order_product.status %}selected{% endif %}>{{ choice.1 }}</option>
-                        {% endfor %}
+                        {% if order_product.status == "Pending" %}
+                            {% for choice in status_choices %}
+                                {% if choice.0 == "Pending" or choice.0 == "Processing" %}
+                                    <option value="{{ choice.0 }}" {% if choice.0 == order_product.status %}selected{% endif %}>{{ choice.1 }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% elif order_product.status == "Processing" %}
+                            {% for choice in status_choices %}
+                                {% if choice.0 == "Processing" or choice.0 == "Shipped" %}
+                                    <option value="{{ choice.0 }}" {% if choice.0 == order_product.status %}selected{% endif %}>{{ choice.1 }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% elif order_product.status == "Shipped" %}
+                            {% for choice in status_choices %}
+                                {% if choice.0 == "Shipped" or choice.0 == "Delivered" %}
+                                    <option value="{{ choice.0 }}" {% if choice.0 == order_product.status %}selected{% endif %}>{{ choice.1 }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
                     {% else %}
                         <option value="{{ order_product.status }}" selected>{{ order_product.get_status_display }}</option>
                     {% endif %}
@@ -73,6 +89,7 @@
             {% endif %}
             <a href="{% url 'adminorders' %}" class="btn btn-warning btn-back">Back to Orders</a>
         </form>
+        
 
         <!-- Alert Messages -->
         {% if messages %}
