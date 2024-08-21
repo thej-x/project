@@ -23,7 +23,7 @@
                         <div class="collection-hero__image"></div>
                         <div class="collection-hero__title-wrapper container">
                             <h1 class="collection-hero__title">My Account</h1>
-                            <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="index.html" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">My Account</span></div>
+                            <div class="breadcrumbs text-uppercase mt-1 mt-lg-2"><a href="{% url 'index' %}" title="Back to the home page">Home</a><span>|</span><span class="fw-bold">My Account</span></div>
                         </div>
                     </div>
                 </div>
@@ -104,7 +104,7 @@
                                                     All Orders
                                                 </li>
                                                 <li>
-                                                    <h3 class="mb-1">02</h3>
+                                                    <h3 class="mb-1">{{pending_orders_count}}</h3>
                                                     Awaiting Payments
                                                 </li>
                                                 <li>
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             "description": "Order Payment",
                             "order_id": data.order_id,
                             "handler": function (response) {
-                                fetch('/verify_razorpay_payment/', {
+                                fetch('/verify_razorpay/', {
                                     method: 'POST',
                                     headers: {
                                         'Content-Type': 'application/json',

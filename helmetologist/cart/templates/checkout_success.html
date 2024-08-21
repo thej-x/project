@@ -155,8 +155,8 @@
                         <a href="{% url 'index' %}" class="d-inline-flex align-items-center btn btn-outline-primary rounded me-2 mb-2 me-sm-3">
                             <i class="me-2 icon an an-angle-left-r"></i>Continue Shopping
                         </a>
-                        <button type="button" class="d-inline-flex align-items-center btn rounded me-2 mb-2 me-sm-3" onclick="window.print();">
-                            <i class="me-2 icon an an-print"></i>Print Order
+                        <button type="button" class="d-inline-flex align-items-center btn rounded me-2 mb-2 me-sm-3" onclick="generatePDF();">
+                            <i class="me-2 icon an an-print"></i>View invoice
                         </button>
                         <button type="button" class="d-inline-flex align-items-center btn rounded me-2 mb-2 me-sm-3">
                             <i class="me-2 icon an an-sync-ar"></i>Re-Order
@@ -175,5 +175,48 @@
 
          
             {% block scripts %}
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+            <script>
+                function generatePDF() {
+                    const { jsPDF } = window.jspdf;
+                    
+                    // Create a new jsPDF instance
+                    const doc = new jsPDF('p', 'pt', 'a4');
+                    
+                    // Get the table element
+                    const element = document.querySelector('.table');
+                    
+                    // Use html2canvas to render the element
+                    html2canvas(element).then((canvas) => {
+                        const imgData = canvas.toDataURL('image/png');
                         
+                        // Calculate the width and height of the image
+                        const imgWidth = doc.internal.pageSize.getWidth() - 40; // page width minus margins
+                        const pageHeight = doc.internal.pageSize.getHeight();
+                        const imgHeight = canvas.height * imgWidth / canvas.width;
+                        let heightLeft = imgHeight;
+                        let position = 20; // top margin
+                        
+                        // Add image to the PDF
+                        doc.addImage(imgData, 'PNG', 20, position, imgWidth, imgHeight);
+                        heightLeft -= pageHeight;
+                        
+                        // Add new pages if the content exceeds one page
+                        while (heightLeft >= 0) {
+                            position = heightLeft - imgHeight;
+                            doc.addPage();
+                            doc.addImage(imgData, 'PNG', 20, position, imgWidth, imgHeight);
+                            heightLeft -= pageHeight;
+                        }
+                        
+                        // Save the PDF
+                        doc.save('order_details.pdf');
+                    });
+                }
+                </script>
+
+
+
+
             {% endblock %}

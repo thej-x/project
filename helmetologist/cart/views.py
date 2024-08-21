@@ -500,8 +500,9 @@ def create_razorpay_order(request):
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
-@login_required(login_url="login")
+
 def verify_razorpay_payment(request):
+    
     try:
         data = json.loads(request.body)
         payment_id = data.get('razorpay_payment_id')
@@ -529,6 +530,7 @@ def verify_razorpay_payment(request):
                         amount=order_amount,
                          status="completed"
                     )
+       
         order = Order.objects.create(
                         user=user,
                         payment=payment,
@@ -579,12 +581,13 @@ def verify_razorpay_payment(request):
     except razorpay.errors.SignatureVerificationError:
         return JsonResponse({'success': False, 'message': 'Payment signature verification failed'}, status=400)
     except Order.DoesNotExist:
+        print('hello')
         return JsonResponse({'success': False, 'message': 'Order not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)  
     
 
-    
+  
 def process_wallet_payment(request):
     if request.method == 'POST':
         try:

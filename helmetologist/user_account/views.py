@@ -548,6 +548,7 @@ def useraccount(request,user_id):
     orders = Order.objects.filter(user = user)
     order_count = orders.count()
     pending_orders = Order.objects.filter(user=user, payment__status='pending')
+    pending_orders_count = pending_orders.count()
     delivered_orders = OrderProduct.objects.filter(user=user,status= 'Delivered').count() 
     context = {
         'user':user,
@@ -556,6 +557,7 @@ def useraccount(request,user_id):
         'delivered_orders' : delivered_orders,
         'orders': orders,
         'pending_orders': pending_orders,
+        'pending_orders_count':pending_orders_count,
         
     }
      

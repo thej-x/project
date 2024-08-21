@@ -191,12 +191,12 @@
                                         <a href="">{{ item.products.name }}</a>
                                     </td>
                                     {% if item.products.is_offer_applied %}
-                                    <td>&#8377; {{ item.products.discounted_price }}</td>
+                                    <td>&#8377; {{ item.products.discounted_price |floatformat:2 }}</td>
                                     {% else %}
-                                    <td>&#8377; {{ item.products.price }}</td>
+                                    <td>&#8377;{{ item.products.price |floatformat:2 }}</td>
                                     {% endif %}
                                     <td>{{ item.quantity }}</td>
-                                    <td class="fw-500">&#8377; {{ item.sub_total }}</td>
+                                    <td class="fw-500">&#8377; {{ item.sub_total | floatformat:2 }}</td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
@@ -212,7 +212,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-end fw-bolder">Total</td>
-                                    <td class="fw-bolder">&#8377; {{ cart_total }}</td>
+                                    <td class="fw-bolder">&#8377; {{ cart_total |floatformat:2 }}</td>
                                 </tr>
                                 {% else %}
                                 <tr>
@@ -221,7 +221,7 @@
                                 </tr>
                                 <tr>
                                     <td colspan="4" class="text-end fw-bolder">Total</td>
-                                    <td class="fw-bolder">&#8377; {{ cart_total }}</td>
+                                    <td class="fw-bolder">&#8377; {{ cart_total |floatformat:2 }}</td>
                                 </tr>
                                 {% endif %}
                             </tfoot>
@@ -325,6 +325,7 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data)
                     if (data.success) {
                         var options = {
                             "key": 'rzp_test_2wLrPtyZnsH5TO',
@@ -349,6 +350,7 @@
                                 })
                                 .then(response => response.json())
                                 .then(data => {
+                                    console.log(data)
                                     if (data.success) {
                                         window.location.href = `/checkout_success/${data.order_id}/`;
                                     } else {
