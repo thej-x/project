@@ -25,7 +25,7 @@ def adminorders(request):
     order_products = OrderProduct.objects.select_related('product')
     orders = Order.objects.all().prefetch_related(
         Prefetch('order', queryset=order_products)
-    ).order_by('-id')
+    ).order_by('-created_at')
     
     context = {
         'orders': orders,

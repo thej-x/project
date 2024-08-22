@@ -440,18 +440,18 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        {% if messages %}
-                                        {% for message in messages %}
-                                        <div class="alert alert-danger d-flex align-items-center" role="alert">
-                                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
-                                                <use xlink:href="#exclamation-triangle-fill"/>
-                                            </svg>
-                                            <div>
-                                                {{ message }}
+                                         {% if messages %}
+                                            {% for message in messages %}
+                                            <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                                <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                                                    <use xlink:href="#exclamation-triangle-fill"/>
+                                                </svg>
+                                                <div>
+                                                    {{ message }}
+                                                </div>
                                             </div>
-                                        </div>
-                                        {% endfor %}
-                                        {% endif %}
+                                            {% endfor %}
+                                            {% endif %}
                                         <div class="agree-check customCheckbox clearfix d-none">
                                             <input id="prTearm" name="tearm" type="checkbox" value="tearm" required />
                                             <label for="prTearm">I agree with the terms and conditions</label>

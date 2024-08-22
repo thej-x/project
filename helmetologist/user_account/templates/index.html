@@ -80,11 +80,9 @@
                         <!--End Main Navigation Desktop-->
                         <!--Right Action-->
                         <div class="col-6 col-sm-6 col-md-6 col-lg-3 align-self-center icons-col text-right d-flex justify-content-end">
-                            <!--Search-->
-                            <div class="site-search iconset"><i class="icon an an-search-l"></i><span class="tooltip-label">Search</span></div>
-                            <!--End Search-->
+                            
                             <!--Wishlist-->
-                            <div class="wishlist-link iconset"><a href="{% url 'wishlist' %}"><i class="icon an an-heart-l"></i><span class="wishlist-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{wishlist_items}}</span><span class="tooltip-label">Wishlist</span></a></div>
+                            <div class="wishlist-link iconset"><a href="{% url 'wishlist' %}"><i class="icon an an-heart-l"></i><span id="wishlist-count" class="wishlist-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{wishlist_items}}</span><span class="tooltip-label">Wishlist</span></a></div>
                             <!--End Wishlist-->
                              <!--Setting Dropdown-->
                              <div class="user-link iconset"><i class="icon an an-user-2"></i><span class="tooltip-label">Account</span></div>
@@ -104,7 +102,7 @@
                             <!--Minicart Drawer-->
                             <div class="header-cart iconset">
                                 <a href="{% url 'cart_show' %}" class="site-header__cart btn-minicart"  >
-                                    <i class="icon an an-cart-l"><span class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{cart_count}}</span><span class="tooltip-label">Cart</span></i>
+                                    <i class="icon an an-cart-l"><span id="cart-count" class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{cart_count}}</span><span class="tooltip-label">Cart</span></i>
                                 </a>
                             </div>
                             <!--End Minicart Drawer-->
@@ -113,39 +111,8 @@
                         <!--End Right Action-->
                     </div>
                 </div>
-                <!--Search Popup-->
-                <div id="search-popup" class="search-drawer">
-                    <div class="container">
-                        <span class="closeSearch an an-times-l"></span>
-                        <form class="form minisearch" id="header-search" action="#" method="get">
-                            <label class="label"><span>Search</span></label>
-                            <div class="control">
-                                <div class="searchField">
-                                    <div class="search-category">
-                                        <select id="rgsearch-category" name="rgsearch[category]" data-default="All Categories">
-                                            <option value="00" label="All Categories" selected="selected">All Categories</option>
-                                            <optgroup id="rgsearch-shop" label="Shop">
-                                                <option value="0">- All</option>
-                                                <option value="1">- Men</option>
-                                                <option value="2">- Women</option>
-                                                <option value="3">- Shoes</option>
-                                                <option value="4">- Blouses</option>
-                                                <option value="5">- Pullovers</option>
-                                                <option value="6">- Bags</option>
-                                                <option value="7">- Accessories</option>
-                                            </optgroup>
-                                        </select>
-                                    </div>
-                                    <div class="input-box">
-                                        <button type="submit" title="Search" class="action search" disabled=""><i class="icon an an-search-l"></i></button>
-                                        <input type="text" name="q" value="" placeholder="Search by keyword or #" class="input-text">
-                                    </div>
-                                </div>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-                <!--End Search Popup-->
+                
+    
             </header>
             <!--End Header-->
             <!--Mobile Menu-->
@@ -786,7 +753,7 @@
             <!-- Including Javascript -->
             <script src="{% static 'assets/js/plugins.js' %}"></script>
             <script src="{% static 'assets/js/main.js' %}"></script>
-            <script  src="{% static 'adminassets/js/cart.js' %}" ></script>
+            <script  src="{% static 'adminassets/js/carts.js' %}" ></script>
 
             
                 
@@ -821,39 +788,79 @@
                                     let productId = this.dataset.product;
                                     let action = this.dataset.action;
                                     console.log("productId:", productId, "action:", action);
-                        
+
                                     if (productId && action) {
-                                        updateUserWishlist(productId, action);
+                                        updateUserWishlist(productId, action, this);
                                     } else {
                                         console.error("Missing productId or action!");
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Error',
+                                            text: 'Missing product information!',
+                                            confirmButtonText: 'OK'
+                                        });
                                     }
                                 });
                             }
-                        
-                            function updateUserWishlist(productId, action) {
-                                fetch("/update_wishlist/", {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json",
-                                        "X-CSRFToken": csrftoken,
-                                    },
-                                    body: JSON.stringify({ productId: productId, action: action }),
-                                })
-                                .then((response) => {
+
+                            async function updateUserWishlist(productId, action, btn) {
+                                btn.disabled = true;
+                                try {
+                                    let response = await fetch("/update_wishlist/", {
+                                        method: "POST",
+                                        headers: {
+                                            "Content-Type": "application/json",
+                                            "X-CSRFToken": csrftoken,
+                                        },
+                                        body: JSON.stringify({ productId: productId, action: action }),
+                                    });
+
                                     if (!response.ok) {
-                                        return response.text().then((text) => {
-                                            throw new Error(text);
-                                        });
+                                        let errorData = await response.json();
+                                        throw new Error(errorData.error || 'An unknown error occurred');
                                     }
-                                    return response.json();
-                                })
-                                .then((data) => {
+
+                                    let data = await response.json();
                                     console.log("data:", data);
-                                    location.reload();
-                                })
-                                .catch((error) => {
+
+                                    // Update cart and wishlist counts
+                                    updateCartWishlistCounts(data.cart_items, data.wishlist_items);
+
+                                    // Show success message
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Success',
+                                        text: data.message,
+                                        confirmButtonText: 'OK'
+                                    });
+
+                                   
+
+                                } catch (error) {
                                     console.error("Error:", error);
-                                });
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: error.message,
+                                        confirmButtonText: 'OK'
+                                    });
+                                } finally {
+                                    btn.disabled = false;
+                                }
+                            }
+
+                            function updateCartWishlistCounts(cartItems, wishlistItems) {
+                                // Update cart count
+                                const cartCountElement = document.getElementById('cart-count');
+                                if (cartCountElement) {
+                                    cartCountElement.textContent = cartItems;
+                                }
+
+                                // Update wishlist count
+                                const wishlistCountElement = document.getElementById('wishlist-count');
+                                if (wishlistCountElement) {
+                                    wishlistCountElement.textContent = wishlistItems;
+                                }
                             }
                         </script>
                         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

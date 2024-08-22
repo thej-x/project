@@ -4,7 +4,7 @@ from cart.models import *
 from django.utils import timezone
 from .models import Cart
 from django.http import JsonResponse
-import json
+import json,re
 from products.views import product_view
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
@@ -117,45 +117,47 @@ def add_to_cart(request,product_id):
 @login_required(login_url="login")
 def updateItem(request):
     user = request.user
-    
+
     if request.method == 'POST':
         data = json.loads(request.body)
         productId = data['productId']
         action = data['action']
-        
-        
+
         cart = get_object_or_404(Cart, user=user)
         product = get_object_or_404(Products, id=productId)
-        
+
         if product.quantity == 0:
             return JsonResponse({'error': 'Product is out of stock'}, status=400)
-            
-        cart_product, created = CartProducts.objects.get_or_create(cart=cart, products=product)
-        
-         
 
-        
+        cart_product, created = CartProducts.objects.get_or_create(cart=cart, products=product)
+
         if action == 'add':
-            if created :
+            if created:
                 cart_product.quantity = 1
                 product.quantity -= 1
                 product.save()
             else:
-                return JsonResponse({'error': 'Not enough stock available'}, status=400)
-            
-        
+                return JsonResponse({'error': 'Product already added in cart'}, status=400)
         else:
-            return JsonResponse('Invalid action', status=400)
-        
+            return JsonResponse({'error': 'Invalid action'}, status=400)
+
         cart_product.save()
-        
+
+        # If the quantity is 0 or less, remove the cart product
         if cart_product.quantity <= 0:
             cart_product.delete()
-        
-        return JsonResponse('Item added', safe=False)
-    
-    return JsonResponse('Invalid request', status=400)
 
+        # Get updated counts
+        cart_items = cart.cartproducts_set.count()
+        wishlist_items = Wishlist.objects.filter(user=user).count()
+
+        return JsonResponse({
+            'message': 'Item added',
+            'cart_items': cart_items,
+            'wishlist_items': wishlist_items
+        })
+
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 @login_required(login_url="login")
 def updateWishlist(request):
@@ -171,14 +173,23 @@ def updateWishlist(request):
         
         if action == 'add':
             if created:
-                
                 pass
             else:
                 return JsonResponse({'error': 'Item already in wishlist'}, status=400)
+        elif action == 'remove':
+            wishlist.delete()
         else:
             return JsonResponse({'error': 'Invalid action'}, status=400)
         
-        return JsonResponse({'message': 'Item added to wishlist'}, safe=False)
+        # Get updated counts
+        cart_items = Cart.objects.get(user=user).cartproducts_set.count()
+        wishlist_items = Wishlist.objects.filter(user=user).count()
+        
+        return JsonResponse({
+            'message': 'Wishlist updated successfully',
+            'cart_items': cart_items,
+            'wishlist_items': wishlist_items
+        })
     
     return JsonResponse({'error': 'Invalid request'}, status=400)
 
@@ -188,10 +199,10 @@ def updateCartItem(request):
     
     if request.method == 'POST':
         data = json.loads(request.body)
-        print(data)
+        
         productId = data['productId']
         
-        print(productId,'hiiiii')
+        
         action = data['action']
         
         cart = get_object_or_404(Cart, user=user)
@@ -254,7 +265,7 @@ def updateCartItem(request):
 @login_required(login_url="login")
 def delete_from_cart(request, product_id):
     user = request.user
-    print(product_id, 'hi') 
+    
     try:
        
         user_cart = get_object_or_404(Cart, user=user)
@@ -294,24 +305,20 @@ def delete_from_cart(request, product_id):
 client = razorpay.Client(auth =(settings.RAZORPAY_KEY,settings.RAZORPAY_SECRET))
 
 
+@never_cache
 @login_required(login_url="login")
 def checkout_view(request):
     if request.user.is_authenticated:
-        print('111')
         user = request.user
         cart, created = Cart.objects.get_or_create(user=user)
         cart_items = cart.cartproducts_set.all()
         addresses = Address.objects.filter(user=user, is_delete=False)
         cart_total = cart.coupon_applied_cart_sub_total if cart.coupon else cart.cart_sub_total
         
-        
         coupons = Coupon.objects.filter(
-        
             Q(min_amount__lte=cart.cart_sub_total) | Q(min_amount__isnull=True)
-        ).exclude(active = False)
+        ).exclude(active=False)
 
-        
-        
         
 
         context = {
@@ -319,11 +326,10 @@ def checkout_view(request):
             'cart': cart,
             'cart_items': cart_items,
             'cart_total': cart_total,
-            'coupons' : coupons,
+            'coupons': coupons,
         }
         return render(request, 'checkout.html', context)
     else:
-        print('121')
         cart_items = []
         cart = {'cart_sub_total': 0, 'cart_sub_count': 0}
         addresses = []
@@ -336,10 +342,119 @@ def checkout_view(request):
         return render(request, 'checkout.html', context)
     
 
+
+def checkout_add_address(request):
+    
+    user = request.user
+    if request.method == "POST":
+        
+        name = request.POST.get("firstname", "").strip()
+        email = request.POST.get("email", "").strip()
+        phone = request.POST.get("phone", "").strip()
+        house_no = request.POST.get("house_no", "").strip()
+        city = request.POST.get("city", "").strip()
+        state = request.POST.get("state", "").strip()
+        country = request.POST.get("country", "").strip()
+        pincode = request.POST.get("pincode", "").strip()
+        
+        if not all([name, phone, email, house_no, city, state, country, pincode]):
+            messages.error(request, "Please provide all fields.")
+            return redirect('checkout_view')
+        # indian_states =[
+            
+        # ]
+      
+        # if state.casefold() not in [state_name.casefold() for state_name in indian_state]:
+        #     messages.error(request, "Please provide a valid state.")
+        #     return redirect('checkout_view')
+            
+        if not re.match(r'^[1-9][0-9]{5}$', pincode):
+            messages.error(request, "Invalid pincode format. Please enter a valid Indian pincode.")
+            return redirect('checkout_view')
+        
+        if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
+            messages.error(request, "Invalid email format.")
+            return redirect('checkout_view')
+        
+        if not re.match(r'^\d{10}$', phone):
+            messages.error(request, "Invalid phone number. Please enter a 10-digit phone number.")
+            return redirect('checkout_view')
+
+        
+        address_obj = Address.objects.create(
+            user=user,
+            name=name,
+            phone=phone,
+            email=email,
+            house_no=house_no,
+            city=city,
+            state=state,
+            country=country,
+            pincode=pincode,
+        )
+        address_obj.save()
+        messages.success(request, "Address added successfully")
+        return redirect('checkout_view')
+    
+    if request.method == "POST":
+            # Handle address addition
+            name = request.POST.get("firstname", "").strip()
+            email = request.POST.get("email", "").strip()
+            phone = request.POST.get("phone", "").strip()
+            house_no = request.POST.get("house_no", "").strip()
+            city = request.POST.get("city", "").strip()
+            state = request.POST.get("state", "").strip()
+            country = request.POST.get("country", "").strip()
+            pincode = request.POST.get("pincode", "").strip()
+            
+            if not all([name, phone, email, house_no, city, state, country, pincode]):
+                messages.error(request, "Please provide all fields.")
+                return redirect('checkout_view')
+            
+            indian_states = [
+                # ... (list of Indian states)
+            ]
+            if state.casefold() not in [state_name.casefold() for state_name in indian_states]:
+                messages.error(request, "Please provide a valid state.")
+                return redirect('checkout_view')
+                
+            if not re.match(r'^[1-9][0-9]{5}$', pincode):
+                messages.error(request, "Invalid pincode format. Please enter a valid Indian pincode.")
+                return redirect('checkout_view')
+            
+            if not re.match(r'^[^@]+@[^@]+\.[^@]+$', email):
+                messages.error(request, "Invalid email format.")
+                return redirect('checkout_view')
+            
+            if not re.match(r'^\d{10}$', phone):
+                messages.error(request, "Invalid phone number. Please enter a 10-digit phone number.")
+                return redirect('checkout_view')
+
+            address_obj = Address.objects.create(
+                user=user,
+                name=name,
+                phone=phone,
+                email=email,
+                house_no=house_no,
+                city=city,
+                state=state,
+                country=country,
+                pincode=pincode,
+            )
+            address_obj.save()
+            messages.success(request, "Address added successfully")
+            return redirect('checkout_view')
+
+    return render(request, 'checkout.html')   
+
 @login_required(login_url="login")
 def cash_on_delivery(request):
+   
     if request.user.is_authenticated:
+       
         user = request.user
+        print(user,'hii')
+       
         cart, created = Cart.objects.get_or_create(user=user)
         cart_items = cart.cartproducts_set.all()
         addresses = Address.objects.filter(user=user, is_delete=False)
@@ -394,6 +509,7 @@ def cash_on_delivery(request):
                     return JsonResponse({'success': False, 'message': "Your cart is empty. Add any product."})
 
                 billing_address_id = request.POST.get('billing_address')
+                
                 payment_method = request.POST.get('payment_method')
                 if payment_method == 'COD':
                     if not billing_address_id or not payment_method:

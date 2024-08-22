@@ -71,11 +71,9 @@
                                 <!--Search-->
                                 <div class="site-search iconset"><i class="icon an an-search-l"></i><span class="tooltip-label">Search</span></div>
                                 <!--End Search-->
-                                <!--Wishlist-->
-                                <div class="wishlist-link iconset">
-                                    <a href="{% url 'wishlist' %}"><i class="icon an an-heart-l"></i><span class="wishlist-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{wishlist_items}}</span><span class="tooltip-label">Wishlist</span></a>
-                                </div>
-                                <!--End Wishlist-->
+                                 <!--Wishlist-->
+                            <div class="wishlist-link iconset"><a href="{% url 'wishlist' %}"><i class="icon an an-heart-l"></i><span id="wishlist-count" class="wishlist-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{wishlist_items}}</span><span class="tooltip-label">Wishlist</span></a></div>
+                            <!--End Wishlist-->
                                 <!--Setting Dropdown-->
                                 <div class="user-link iconset"><i class="icon an an-user-2"></i><span class="tooltip-label">Account</span></div>
                                 <div id="userLinks">
@@ -94,7 +92,7 @@
                                 <!--Minicart Drawer-->
                                 <div class="header-cart iconset">
                                     <a href="{% url 'cart_show' %}" class="site-header__cart btn-minicart"  >
-                                        <i class="icon an an-cart-l"><span class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{cart_count}}</span><span class="tooltip-label">Cart</span></i>
+                                        <i class="icon an an-cart-l"><span id="cart-count" class="site-cart-count counter d-flex-center justify-content-center position-absolute translate-middle rounded-circle">{{cart_count}}</span><span class="tooltip-label">Cart</span></i>
                                     </a>
                                 </div>
                                 <!--End Minicart Drawer-->
@@ -490,7 +488,7 @@
             <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
             <!-- Include jQuery -->
             <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-            <script  src="{% static 'adminassets/js/cart.js' %}" ></script>
+            <!-- <script  src="{% static 'adminassets/js/cart.js' %}" ></script> -->
             <script  src="{% static 'adminassets/js/shop.js' %}" ></script>
             <!-- Add fade-out effect to alerts -->
             <script>

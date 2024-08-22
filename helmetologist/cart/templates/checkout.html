@@ -65,8 +65,8 @@
 
     <!--Main Content-->
     <div class="container">
-        <form class="checkout-form" id="checkout-form">
-            <input type="hidden" name="action" value="place_order">
+        
+            
 
             <div class="row">
                 <div class="col-md-6 col-lg-4">
@@ -79,7 +79,68 @@
                                 <label for="formcheckoutCheckbox2">The same as shipping address</label>
                                 <a href="{% url 'view_address' %}">Add address/Edit address Click here!</a>
                             </div>
-
+                            <div class="accordion add-address mt-3" id="address1">
+                                <button class="collapsed btn btn--small rounded" type="button" data-bs-toggle="collapse" data-bs-target="#shipping" aria-expanded="false" aria-controls="shipping">Add Address</button>
+                                <div id="shipping" class="accordion-collapse collapse" data-bs-parent="#address">
+                                    <form class="address-from mt-3" method="post" action="{% url 'checkout_add_address' %}">
+                                    {% csrf_token %}
+                                    <fieldset>
+                                        <h2 class="login-title mb-3">Shipping details</h2>
+                                        <div class="row">
+                                            <div class="form-group col-md-6 col-lg-12 col-xl-12">
+                                                <label for="input-firstname1" class="d-none"> Name <span class="required-f">*</span></label>
+                                                <input name="firstname" placeholder=" Name" value="" id="input-firstname1" type="text">
+                                            </div>
+                                        
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                <label for="input-email1" class="d-none">Email <span class="required-f">*</span></label>
+                                                <input name="email" placeholder="Email" value="" id="input-email1" type="email" required>
+                                            </div>
+                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                <label for="input-telephone1" class="d-none">Phone number <span class="required-f">*</span></label>
+                                                <input name="phone" placeholder="phone" value="" id="input-phone" type="tel">
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="input-house-no" class="d-none">House No. <span class="required-f">*</span></label>
+                                            <input name="house_no" placeholder="House No." value="" id="input-house-no" type="text">
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                <label for="input-city" class="d-none">City <span class="required-f">*</span></label>
+                                                <input name="city" placeholder="City" value="" id="input-city" type="text">
+                                            </div>
+                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                <label for="input-state" class="d-none">State <span class="required-f">*</span></label>
+                                                <input name="state" placeholder="State" value="" id="input-state" type="text">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                <label for="input-country" class="d-none">Country <span class="required-f">*</span></label>
+                                                <input name="country" placeholder="Country" value="" id="input-country" type="text">
+                                            </div>
+                                            <div class="form-group col-md-6 col-lg-6 col-xl-6">
+                                                <label for="input-pincode" class="d-none">Pincode <span class="required-f">*</span></label>
+                                                <input name="pincode" placeholder="Pincode" value="" id="input-pincode" type="text">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <button type="submit" class="btn rounded mb-3">Submit</button>
+                                        </div>
+                                        <br>
+               
+                                    </fieldset>
+                                </form>
+                               
+                                </div>
+                             
+                            </div>  
+                            <form class="checkout-form" id="checkout-form">
+                            <input type="hidden" name="action" value="place_order">
                             {% for address in addresses %}
                             <div class="card card--grey mt-2">
                                 <div class="card">

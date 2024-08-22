@@ -216,7 +216,8 @@
 
                                                         <!-- Custom Add to Cart Button -->
 
-                                                        <button data-product="{{ product.id }}" method="post" data-action="add" class="btn-icon btn btn-addto-cart pro-addtocart-popup update-cart">
+                                                       
+                                                        <button data-product="{{ product.id }}" data-quantity="{{ product.quantity }}" method="post" data-action="add" class="btn-icon btn btn-addto-cart pro-addtocart-popup update-cart">
                                                             <i class="icon an an-cart-l"></i>
                                                             <span class="tooltip-label">Add to Cart</span>
                                                         </button>
@@ -226,10 +227,12 @@
                                                     </li>
                                                    <li>
                                                         <!--Wishlist Button-->
-                                                        <button data-product="{{ product.id }}" data-action="add" class="btn-icon wishlist add-to-wishlist pro-addtowishlist-popup update_wishlist">
+                                                         
+                                                           <button data-product="{{ product.id }}" data-action="add" class="btn-icon wishlist add-to-wishlist pro-addtowishlist-popup update_wishlist">
                                                             <i class="icon an an-heart-l"></i>
                                                             <span class="tooltip-label">Add To Wishlist</span>
                                                         </button>
+                                                        
                                                         <!--End Wishlist Button-->
                                                     </li>
                                                 </ul>
@@ -329,7 +332,7 @@
 
             {% block scripts %}
             <script src="https://cdnjs.cloudflare.com/ajax/libs/noUiSlider/14.6.2/nouislider.min.js"></script>
-
+            <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script>
                 var user = "{{ request.user }}";
                 function getCookie(name) {
@@ -348,6 +351,114 @@
                 }
                 const csrftoken = getCookie('csrftoken')
                 </script>
+                <script>
+                    var updateBtns = document.getElementsByClassName("update-cart");
+                
+                    for (var i = 0; i < updateBtns.length; i++) {
+                      updateBtns[i].addEventListener("click", function () {
+                        var productId = this.dataset.product;
+                        var action = this.dataset.action;
+                        var productQuantity = parseInt(this.dataset.quantity, 10);
+                        console.log("productId:", productId, "action:", action, "quantity:", productQuantity);
+                    
+                        if (productId && action) {
+                          if (productQuantity > 0) {
+                            this.disabled = true;
+                    
+                            updateUserOrder(productId, action, this);
+                          } else {
+                            console.error("Product is out of stock!");
+                            Swal.fire({
+                              icon: 'error',
+                              title: 'Out of Stock',
+                              text: 'This product is out of stock and cannot be added to the cart.',
+                              confirmButtonText: 'OK'
+                            });
+                          }
+                        } else {
+                          console.error("Missing productId or action!");
+                          Swal.fire({
+                            icon: 'error',
+                            title: 'Invalid Input',
+                            text: 'Missing productId or action!',
+                            confirmButtonText: 'OK'
+                          });
+                        }
+                      });
+                    }
+                    
+                    async function updateUserOrder(productId, action, btn) {
+                      console.log("User is logged in, sending data");
+                      var url = "/update_item/";
+                      
+                      try {
+                        let response = await fetch(url, {
+                          method: "POST",
+                          headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": csrftoken,
+                          },
+                          body: JSON.stringify({ productId: productId, action: action }),
+                        });
+                    
+                        if (!response.ok) {
+                         
+                          let errorData = await response.json();
+                          
+                         
+                          Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errorData.error || 'An unknown error occurred',
+                            confirmButtonText: 'OK'
+                          });
+                    
+                          throw new Error(errorData.error || 'An unknown error occurred');
+                        }
+                    
+                        let data = await response.json();
+                        console.log("data:", data);
+                    
+                        // Update cart and wishlist counts
+                        updateCartWishlistCounts(data.cart_items, data.wishlist_items);
+                    
+                        // Show success message
+                        Swal.fire({
+                          icon: 'success',
+                          title: 'Success',
+                          text: 'Item added to cart',
+                          confirmButtonText: 'OK'
+                        });
+                        
+                      } catch (error) {
+                        console.error("Error:", error);
+                    
+                      
+                        Swal.fire({
+                          icon: 'error',
+                          title: 'Error',
+                          text: error.message,
+                          confirmButtonText: 'OK'
+                        });
+                      } finally {
+                        btn.disabled = false;
+                      }
+                    }
+                    
+                    function updateCartWishlistCounts(cartItems, wishlistItems) {
+                      // Update cart count
+                      const cartCountElement = document.getElementById('cart-count');
+                      if (cartCountElement) {
+                        cartCountElement.textContent = cartItems;
+                      }
+                    
+                      // Update wishlist count
+                      const wishlistCountElement = document.getElementById('wishlist-count');
+                      if (wishlistCountElement) {
+                        wishlistCountElement.textContent = wishlistItems;
+                      }
+                    }
+                    </script>
                 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
                 <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
@@ -480,7 +591,92 @@
                         });
                     }
                 </script>  -->
+                
+    
 
+    
+    <script>
+        var updateBtn = document.getElementsByClassName('update_wishlist');
+        for (let i = 0; i < updateBtn.length; i++) {
+            updateBtn[i].addEventListener("click", function() {
+                let productId = this.dataset.product;
+                let action = this.dataset.action;
+                console.log("productId:", productId, "action:", action);
+
+                if (productId && action) {
+                    updateUserWishlist(productId, action, this);
+                } else {
+                    console.error("Missing productId or action!");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Missing product information!',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            });
+        }
+
+        async function updateUserWishlist(productId, action, btn) {
+            btn.disabled = true;
+            try {
+                let response = await fetch("/update_wishlist/", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                    },
+                    body: JSON.stringify({ productId: productId, action: action }),
+                });
+
+                if (!response.ok) {
+                    let errorData = await response.json();
+                    throw new Error(errorData.error || 'An unknown error occurred');
+                }
+
+                let data = await response.json();
+                console.log("data:", data);
+
+                // Update cart and wishlist counts
+                updateCartWishlistCounts(data.cart_items, data.wishlist_items);
+
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: data.message,
+                    confirmButtonText: 'OK'
+                });
+
+               
+
+            } catch (error) {
+                console.error("Error:", error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: error.message,
+                    confirmButtonText: 'OK'
+                });
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function updateCartWishlistCounts(cartItems, wishlistItems) {
+            // Update cart count
+            const cartCountElement = document.getElementById('cart-count');
+            if (cartCountElement) {
+                cartCountElement.textContent = cartItems;
+            }
+
+            // Update wishlist count
+            const wishlistCountElement = document.getElementById('wishlist-count');
+            if (wishlistCountElement) {
+                wishlistCountElement.textContent = wishlistItems;
+            }
+        }
+    </script>
             {% endblock %}
 
 

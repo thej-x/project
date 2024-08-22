@@ -22,6 +22,7 @@ urlpatterns = [
     path('admincoupon/', admincoupon, name='admincoupon'),
     path('coupon_inactive/<int:coupon_id>',coupon_inactive,name='coupon_inactive'),
     path('add_coupon/', add_coupon, name='add_coupon'),
+    path('checkout_add_address/',checkout_add_address,name='checkout_add_address'),
     path('edit_coupon/<int:coupon_id>',edit_coupon, name='edit_coupon'),
     
 #  razorpay

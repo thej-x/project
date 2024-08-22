@@ -65,7 +65,17 @@ async function updateUserOrder(productId, action, btn) {
     let data = await response.json();
     console.log("data:", data);
 
-    location.reload();
+    // Update cart and wishlist counts
+    updateCartWishlistCounts(data.cart_items, data.wishlist_items);
+
+    // Show success message
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: 'Item added to cart',
+      confirmButtonText: 'OK'
+    });
+    
   } catch (error) {
     console.error("Error:", error);
 
@@ -78,5 +88,19 @@ async function updateUserOrder(productId, action, btn) {
     });
   } finally {
     btn.disabled = false;
+  }
+}
+
+function updateCartWishlistCounts(cartItems, wishlistItems) {
+  // Update cart count
+  const cartCountElement = document.getElementById('cart-count');
+  if (cartCountElement) {
+    cartCountElement.textContent = cartItems;
+  }
+
+  // Update wishlist count
+  const wishlistCountElement = document.getElementById('wishlist-count');
+  if (wishlistCountElement) {
+    wishlistCountElement.textContent = wishlistItems;
   }
 }
