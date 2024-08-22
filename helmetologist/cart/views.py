@@ -77,6 +77,7 @@ def add_to_cart(request,product_id):
     print(f"Product ID: {product_id}, Cart ID: {cart.id}")
     
     quantity_str = request.GET.get('numbers', '1')
+    messages.success(request,'Product added to cart')
     print(quantity_str)
     try:
         quantity = int(quantity_str)
@@ -810,6 +811,7 @@ def add_to_wishlist(request, product_id):
     user = request.user
     wishlist, created = Wishlist.objects.get_or_create(user=user, product=product) 
     quantity_str = request.GET.get('numbers', '1')
+    
     try:
         quantity = int(quantity_str)
     except ValueError:
@@ -821,14 +823,7 @@ def add_to_wishlist(request, product_id):
 
     
 
-    if not created:
-        
-        wishlist.quantity += quantity
-        wishlist.save()
-    else:
-       
-        wishlist.quantity = quantity
-        wishlist.save()
+  
 
     messages.success(request, 'Product added to wishlist')
     return redirect('product', product_slug=product.slug, product_id=product_id)

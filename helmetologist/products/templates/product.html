@@ -412,6 +412,7 @@
                                                 <input type="text" name="quantity" value="1" class="product-form__input qty rounded-0">
                                                 <a class="qtyBtn plus" href="javascript:void(0);"><i class="icon an an-plus-r" aria-hidden="true"></i></a>
                                             </div> -->
+                                           
                                             <div class="pro-stockLbl ms-3">
                                                 {% if product.quantity > 10 %}
                                                 <span class="d-flex-center stockLbl instock"><i class="icon an an-check-cil"></i><span> In stock</span></span>
@@ -439,6 +440,18 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        {% if messages %}
+                                        {% for message in messages %}
+                                        <div class="alert alert-danger d-flex align-items-center" role="alert">
+                                            <svg class="bi flex-shrink-0 me-2" width="24" height="24" role="img" aria-label="Danger:">
+                                                <use xlink:href="#exclamation-triangle-fill"/>
+                                            </svg>
+                                            <div>
+                                                {{ message }}
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                        {% endif %}
                                         <div class="agree-check customCheckbox clearfix d-none">
                                             <input id="prTearm" name="tearm" type="checkbox" value="tearm" required />
                                             <label for="prTearm">I agree with the terms and conditions</label>
@@ -1246,6 +1259,14 @@
             </div>
             <!--End Page Wrapper-->
     </body>
-
+    <script>
+        $(document).ready(function() {
+            setTimeout(function() {
+                $(".alert").fadeOut("slow", function() {
+                    $(this).remove();
+                });
+            }, 3000); // 3000 milliseconds = 3 seconds
+        });
+    </script>
 <!-- Mirrored from 3.37.186.116/product-standard.html by HTTrack Website Copier/3.x [XR&CO'2014], Tue, 21 May 2024 15:38:56 GMT -->
 </html>

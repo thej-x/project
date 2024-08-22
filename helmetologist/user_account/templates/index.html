@@ -338,7 +338,7 @@
                             {% for category in Categories %}
                             {% if category.is_listed %}
                             <div class="collection-item">
-                                <a href="{% url 'shop' category.cat_slug %}" class="collection-grid-link">
+                                <!-- <a href="{% url 'shop' category.cat_slug %}" class="collection-grid-link"> -->
                                     <div class="img">
                                         <img class="blur-up lazyload" src="{{category.cat_thumbnail.url}}" alt="{{category.cat_name}}"/>
                                     </div>
