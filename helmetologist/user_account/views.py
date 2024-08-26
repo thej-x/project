@@ -38,9 +38,21 @@ from order.models import *
 from cart.models import *
 from django.conf import settings
 import razorpay
+from django.contrib.auth.decorators import user_passes_test
 
 # Create your views here.
 
+def non_admin_required(view_func):
+    def check_admin(user):
+        return not user.is_superuser
+    
+    decorated_view_func = user_passes_test(check_admin, login_url='adminlogin')(view_func)
+    return decorated_view_func
+
+    
+
+
+@non_admin_required
 def index(request):
     categories = Category.objects.all()
     products = Products.objects.all()[:8]
@@ -680,7 +692,10 @@ def shop(request):
             product.is_offer_applied = False
             product.validate_offerdate = None
             product.save(update_fields=['discount_percentage', 'is_offer_applied', 'validate_offerdate'])
-    
+    # Handle search
+    query = request.GET.get('q')
+    if query:
+        products = products.filter(Q(name__icontains=query))
     # Filter by category
     category_ids = request.GET.getlist('category_ids')
     if category_ids:
@@ -740,6 +755,7 @@ def shop(request):
         'cart_count': cart_items,
         'wishlist_items': wishlist_items,
         'current_filters': request.GET,  # Pass the current filters to the context
+        'query': query,
     }
 
     return render(request, 'shop.html', context)

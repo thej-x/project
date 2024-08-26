@@ -740,7 +740,8 @@ def process_wallet_payment(request):
             Transaction.objects.create(
                 wallet=wallet,
                 amount=order_amount,
-                transaction_type='debit'
+                transaction_type='debit',
+                status='approved'
             )
             
             # Create the payment record

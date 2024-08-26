@@ -52,7 +52,37 @@
             <p><strong>Total:</strong> {{ order_product.totel_price }}</p>
         </div>
 
-        
+         <!-- Pending Transactions Section -->
+         {% if pending_transactions %}
+         <h3>Pending Wallet Transactions</h3>
+         <table class="table">
+             <thead>
+                 <tr>
+                     <th>Amount</th>
+                     <th>Type</th>
+                     <th>Action</th>
+                 </tr>
+             </thead>
+             <tbody>
+                 {% for transaction in pending_transactions %}
+                 <tr>
+                     <td>{{ transaction.amount }}</td>
+                     <td>{{ transaction.transaction_type }}</td>
+                     <td>
+                         <form method="post" action="{% url 'update_wallet_status' order.orderid order_product.id %}">
+                             {% csrf_token %}
+                             <input type="hidden" name="transaction_id" value="{{ transaction.id }}">
+                             <button type="submit" name="action" value="approve" class="btn btn-success">Approve</button>
+                             <button type="submit" name="action" value="reject" class="btn btn-danger">Reject</button>
+                         </form>
+                     </td>
+                 </tr>
+                 {% endfor %}
+             </tbody>
+         </table>
+         {% else %}
+         <p>No pending transactions.</p>
+         {% endif %}
          <!-- Change Status Form -->
          <form method="post" action="{% url 'update_order_product_status' order.orderid order_product.id %}">
             {% csrf_token %}

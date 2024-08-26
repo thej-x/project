@@ -5,8 +5,9 @@ from django.contrib.auth.views import LogoutView
 
 urlpatterns = [       
     path('adminorders/',adminorders , name='adminorders'),
-    path('order_products/<str:id>/',order_products , name='order_products'),
+    path('order_products/<int:order_id>/', order_products, name='order_products'),
     path('update_order_product_status/<str:id>/<int:order_product_id>/', update_order_product_status, name='update_order_product_status'),
+    path('update_wallet_status/<str:id>/<int:order_product_id>/', update_wallet_status, name='update_wallet_status'),
     path('cancel_order_request/<int:order_product_id>/', cancel_order_request, name='cancel_order_request'),
     path('view_order/<int:order_product_id>/', view_order, name='view_order'),
     path('return-product/<int:order_product_id>/', return_product, name='return_product'),
