@@ -334,7 +334,7 @@ def product_view(request,product_slug,product_id):
     images = ProductImage.objects.filter(product=product)
     realted_products = Products.objects.filter(category=category)
     save_amount = product.price - product.discounted_price if product.discounted_price else 0
-    print(realted_products)
+    
     if product.validate_offerdate and product.validate_offerdate < date.today():
         product.discount_percentage = None
         product.is_offer_applied = False

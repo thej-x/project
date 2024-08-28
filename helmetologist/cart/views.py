@@ -74,14 +74,14 @@ def add_to_cart(request,product_id):
        
     cart = get_object_or_404(Cart, user=request.user)
     
-    print(f"Product ID: {product_id}, Cart ID: {cart.id}")
+    
     
     quantity_str = request.GET.get('numbers', '1')
     messages.success(request,'Product added to cart')
-    print(quantity_str)
+   
     try:
         quantity = int(quantity_str)
-        print(quantity)
+        
     except ValueError:
         quantity = 1  
     
@@ -99,7 +99,7 @@ def add_to_cart(request,product_id):
             
     cart_products = CartProducts.objects.filter(cart=cart, products=product).first()
     if cart_products:
-        print('working')
+        
         cart_products.quantity += quantity
         
         cart_products.save()
@@ -206,10 +206,10 @@ def updateCartItem(request):
         action = data['action']
         
         cart = get_object_or_404(Cart, user=user)
-        print(cart)
+       
         
         product = get_object_or_404(Products, id=productId)
-        print(product,'kkkkk')
+        
         
         if product.is_offer_applied and product.discounted_price:
             price = product.discounted_price
@@ -269,11 +269,11 @@ def delete_from_cart(request, product_id):
     try:
        
         user_cart = get_object_or_404(Cart, user=user)
-        print(user_cart, 'user_cart')  
+         
         
         
         cart_product = get_object_or_404(CartProducts, cart=user_cart, products_id=product_id)
-        print(cart_product, 'cart_product')  
+       
         
         
         product = get_object_or_404(Products, id=product_id)
@@ -281,7 +281,7 @@ def delete_from_cart(request, product_id):
         
         
         product.quantity += cart_product.quantity
-        print(cart_product.quantity)  
+        
         product.save()
         
        
@@ -453,7 +453,7 @@ def cash_on_delivery(request):
     if request.user.is_authenticated:
        
         user = request.user
-        print(user,'hii')
+      
        
         cart, created = Cart.objects.get_or_create(user=user)
         cart_items = cart.cartproducts_set.all()
@@ -698,7 +698,7 @@ def verify_razorpay_payment(request):
     except razorpay.errors.SignatureVerificationError:
         return JsonResponse({'success': False, 'message': 'Payment signature verification failed'}, status=400)
     except Order.DoesNotExist:
-        print('hello')
+       
         return JsonResponse({'success': False, 'message': 'Order not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)  
@@ -735,7 +735,7 @@ def process_wallet_payment(request):
             # Deduct the order amount from the wallet balance
             wallet.balance -= order_amount
             wallet.save()
-            print("wall")
+            
             # Record the transaction
             Transaction.objects.create(
                 wallet=wallet,
@@ -818,7 +818,7 @@ def checkout_success(request, order_id):
         order_products = OrderProduct.objects.filter(order = order, user = user)
         for product in order_products:
             product_total_price = product.product.price * product.quantity
-        print(order_products)
+        
         order_date = order.created_at
         total_amount = order.total_amount
         billing_address = order.billing_address

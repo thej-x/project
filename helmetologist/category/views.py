@@ -133,7 +133,7 @@ def apply_or_notapply_offer(request,category_id):
         category = get_object_or_404(Category,id = category_id)
         offer_id = request.POST.get('offer_id')
         dissable_offer = request.POST.get('dissable')
-        print(dissable_offer)
+    
         
         if offer_id:
             offer = get_object_or_404(Offer,id=offer_id)
@@ -153,7 +153,7 @@ def apply_or_notapply_offer(request,category_id):
                         product.save()
                         
         elif dissable_offer:
-            print('working')
+           
             category.is_offer_applied =False
             category.discount_percentage = 0 
             category.save()

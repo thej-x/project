@@ -130,9 +130,9 @@ def update_wallet_status(request, id, order_product_id):
 @login_required(login_url="login/")
 def view_order(request,order_product_id):
     user=request.user
-    print(order_product_id,'id')
+    
     order_product = OrderProduct.objects.get(id=order_product_id, user=user)    
-    print(order_product,'working')
+    
     context ={
         'order_product':order_product,
     }
@@ -144,7 +144,7 @@ def cancel_order_request(request, order_product_id):
 
     order_product = get_object_or_404(OrderProduct, id=order_product_id)
     payment_method = order_product.order.payment.method
-    print(payment_method)
+    
     wallet,created = Wallet.objects.get_or_create(user=user)
     wallet.approvel = False
     wallet.save()

@@ -185,13 +185,13 @@ def otppage(request):
         user_id = request.session.get('otp_user_id')
 
         if not user_id:
-            print('Session expired, no user_id in session.')
+            
             return JsonResponse({'success': False, 'message': "Session expired. Please sign up again."}, status=400)
 
         try:
             user = User.objects.get(id=user_id)
         except User.DoesNotExist:
-            print('User not found for user_id:', user_id)
+            
             return JsonResponse({'success': False, 'message': "User not found. Please sign up again."}, status=400)
 
         if user.profile.otp == otp and (timezone.now() - user.profile.otp_created_at).seconds < 60:
@@ -211,13 +211,13 @@ def otppage(request):
 def resend_otp(request):
     user_id = request.session.get('otp_user_id')
     if not user_id:
-        print('Session expired, no user_id in session.')
+        
         return JsonResponse({'success': False, 'message': 'Session expired. Please sign up again.'}, status=400)
 
     try:
         user = User.objects.get(id=user_id)
     except User.DoesNotExist:
-        print('User not found for user_id:', user_id)
+        
         return JsonResponse({'success': False, 'message': 'User not found.'}, status=400)
 
     otp = pyotp.TOTP(pyotp.random_base32()).now()
@@ -246,7 +246,7 @@ def loginpage(request):
             messages.error(request, "Password field is required.")
         else:
             user = authenticate(request, username=username, password=password)
-            print (user,'user')
+            
             if user is not None:
                 login(request, user)
                 return redirect('index')  
