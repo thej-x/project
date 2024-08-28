@@ -194,14 +194,15 @@ def admindashboard(request):
     
     
 @never_cache
-@login_required(login_url='/adminlogin/')
+@login_required(login_url='adminlogin')
 @user_passes_test(is_superuser)
 def adminuser(request):
     
     if request.user.is_authenticated :
         users = User.objects.exclude(is_superuser=True)
         context = {'users': users}
-        return render(request, 'adminuser.html', context)       
+        return render(request, 'adminuser.html', context) 
+    
             
 @login_required(login_url='/adminlogin/')
 @user_passes_test(is_superuser)
@@ -317,7 +318,6 @@ def sales(request):
         return render(request, 'sales.html', context)
             
 
-   
 
 @never_cache 
 def adminlogout(request):
