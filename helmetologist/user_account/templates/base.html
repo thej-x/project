@@ -62,7 +62,7 @@
                                 <button type="button" class="btn--link site-header__menu js-mobile-nav-toggle mobile-nav--open me-3 d-lg-none"><i class="icon an an-times-l"></i><i class="icon an an-bars-l"></i></button>
                                 <!--End Mobile Toggle-->
                                 <!--Logo-->
-                                <div class="logo mx-lg-auto"><a href="index.html"><img class="logo-img" src="{% static 'assets/images/headerlogo.png' %}" alt="Optimal Multipurpose eCommerce Bootstrap 5 Html Template" title="Optimal Multipurpose eCommerce Bootstrap 5 Html Template" /><span class="logo-txt d-none">Helmetologist</span></a></div>
+                                <div class="logo mx-lg-auto"><a href="{% url 'index' %}"><img class="logo-img" src="{% static 'assets/images/headerlogo.png' %}" alt="Optimal Multipurpose eCommerce Bootstrap 5 Html Template" title="Optimal Multipurpose eCommerce Bootstrap 5 Html Template" /><span class="logo-txt d-none">Helmetologist</span></a></div>
                                 <!--End Logo-->
                             </div>
                             <!--End Logo / Menu Toggle-->
@@ -112,55 +112,12 @@
                                             <li class="lvl1 parent megamenu"><a href="{% url 'index' %}">Home <i class="an an-angle-down-l"></i></a></li>
 
                                           <li class="lvl1 parent megamenu"><a href="{% url 'shop' %}">Shop <i class="an an-angle-down-l"></i></a>
-                                                <!-- <div class="megamenu style4">
-                                                    <div class="row">
-                                                        <div class="lvl-1 col-md-3 col-lg-3"><a href="#" class="site-nav lvl-1 menu-title">Category Page</a>
-                                                            <ul class="subLinks">
-                                                                <li class="lvl-2"><a href="category-4columns.html" class="site-nav lvl-2">4 Columns with style3</a></li>        
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </div> -->
+                                                
                                             </li>
-                                            <!-- <li class="lvl1 parent megamenu"><a href="#;">Product <i class="an an-angle-down-l"></i></a>
-                                                <div class="megamenu style2">
-                                                    <div class="row">
-                                                        <div class="lvl-1 col-md-3 col-lg-3"><a href="#" class="site-nav lvl-1 menu-title">Product Types</a>
-                                                            <ul class="subLinks">
-                                                                <li class="lvl-2"><a href="product-standard.html" class="site-nav lvl-2">Simple Product</a></li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </li> -->
+                                            
 
-                                            <li class="lvl1 parent dropdown"><a href="#;">Pages <i class="site-nav"></i></a>
-                                                <ul class="dropdown">
-                                                    <li><a href="aboutus-style1.html" class="site-nav">About Us <i class="site-nav"></i></a> 
-                                                    </li>
-                                                    <li><a href="contact-style1.html" class="site-nav">Contact Us <i class="site-nav"></i></a>
-                                                    </li>
-                                                    <li><a href="lookbook-4columns.html" class="site-nav">Lookbook <i class="site-nav"></i></a>
-                
-                                                    </li>
-                                                    <!-- <li><a href="brands-style1.html" class="site-nav">Brands <i class="an an-angle-right-l"></i></a> -->
-                                                        
-                                                    </li>
-                                                    <li><a href="my-account.html" class="site-nav">My Account <i class="an an-angle-right-l"></i></a>
-                                                        <ul class="dropdown">
-                                                            <li><a href="my-account.html" class="site-nav">My Account</a></li>
-                                                            <li><a href="login-sliding-style.html" class="site-nav">Login Sliding Slideshow</a></li>
-                                                            <li><a href="login.html" class="site-nav">Login</a></li>
-                                                            <li><a href="register.html" class="site-nav">Register</a></li>
-                                                            <li><a href="forgot-password.html" class="site-nav">Forgot Password</a></li>
-                                                            <li><a href="change-password.html" class="site-nav last">Change Password</a></li>
-                                                        </ul>
-                                                    </li>
-                                                   
-                                                  
-                                                </ul>
-                                            </li>
-                                            <li class="lvl1 parent dropdown"><a href="contact-style1.html">Contact us<i class="site-nav"></i></a>
+                                            
+                                            <li class="lvl1 parent dropdown"><a href="{% url 'contactus' %}">Contact us<i class="site-nav"></i></a>
 
                                             </li>
                                         </ul>
@@ -305,17 +262,16 @@
                             <div class="col-12 col-sm-12 col-md-12 col-lg-12 text-center about-col mb-4">
                                 <img src="{% static 'assets/images/foooter.png' %}" alt="Optimal" class="mb-3"/>
                                 <p>55 Calicut, Kakkanjery steet, 23568 IN</p>
-                                <p class="mb-0 mb-md-3">Phone: <a href="tel:+011234567890">()</a> <span class="mx-1">|</span> Email: <a href="mailto:info@example.com">info@example.com</a></p>
+                                <p class="mb-0 mb-md-3">Phone: <a href="tel:+91-8301897207">()</a> <span class="mx-1">|</span> Email: <a href="mailto:info@example.com">helmetologist@gmail.com</a></p>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-12 col-sm-12 col-md-4 col-lg-3 footer-links">
                                 <h4 class="h4">Informations</h4>
                                 <ul>
-                                    <li><a href="my-account.html">My Account</a></li>
-                                    <li><a href="aboutus-style1.html">About us</a></li>
+                                    <li><a href="{% url 'useraccount' user.id %}">My Account</a></li>
+                                    <li><a href="#">About us</a></li>
                                     <li><a href="{% url 'login' %}">Login</a></li>
-                                    <li><a href="privacy-policy.html">Privacy policy</a></li>
                                     <li><a href="#">Terms &amp; condition</a></li>
                                 </ul>
                             </div>
@@ -330,9 +286,9 @@
                             <div class="col-12 col-sm-12 col-md-4 col-lg-3 footer-links">
                                 <h4 class="h4">Customer Services</h4>
                                 <ul>
-                                    <li><a href="#">Request Personal Data</a></li>
-                                    <li><a href="faqs-style1.html">FAQ's</a></li>
-                                    <li><a href="contact-style1.html">Contact Us</a></li>
+                                    <li><a href="{% url 'useraccount' user.id %}"> Personal Data</a></li>
+                                    
+                                    <li><a href="#">Contact Us</a></li>
                                     <li><a href="#">Orders and Returns</a></li>
                                     <li><a href="#">Support Center</a></li>
                                 </ul>
@@ -368,7 +324,7 @@
                     <div class="container">
                         <div class="d-flex-center flex-column justify-content-md-between flex-md-row-reverse">
                             <img src="{% static 'assets/images/payment.png' %}" alt="Paypal Visa Payments"/>
-                            <div class="copytext text-uppercase">&copy; 2023 Optimal. All Rights Reserved.</div>
+                            <div class="copytext text-uppercase">&copy; 2023 Helmetologist All Rights Reserved.</div>
                         </div>
                     </div>
                 </div>
@@ -379,85 +335,7 @@
             <span id="site-scroll"><i class="icon an an-chevron-up"></i></span>
             <!--End Scoll Top-->
 
-            <!--MiniCart Drawer-->
-            <div class="minicart-right-drawer modal right fade" id="minicart-drawer">
-                <div class="modal-dialog">
-                    <div class="modal-content">
-                        <div id="cart-drawer" class="block block-cart">
-                            <div class="minicart-header">
-                                <a href="javascript:void(0);" class="close-cart" data-bs-dismiss="modal" aria-label="Close"><i class="an an-times-r" aria-hidden="true" data-bs-toggle="tooltip" data-bs-placement="left" title="Close"></i></a>
-                                <h4 class="fs-6">Your cart (2 Items)</h4>
-                            </div>
-                            <div class="minicart-content">
-                                <ul class="clearfix">
-                                    <li class="item d-flex justify-content-center align-items-center">
-                                        <a class="product-image" href="product-layout1.html">
-                                            <img class="blur-up lazyload" src="{% static 'assets/images/products/cart-product-img1.jpg' %}" data-src="{% static 'assets/images/products/cart-product-img1.jpg' %}" alt="image" title="">
-                                        </a>
-                                        <div class="product-details">
-                                            <a class="product-title" href="product-layout1.html">Floral Crop Top</a>
-                                            <div class="variant-cart">Black / XL</div>
-                                            <div class="priceRow">
-                                                <div class="product-price">
-                                                    <span class="money">$59.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="qtyDetail text-center">
-                                            <div class="wrapQtyBtn">
-                                                <div class="qtyField">
-                                                    <a class="qtyBtn minus" href="javascript:void(0);"><i class="icon an an-minus-r" aria-hidden="true"></i></a>
-                                                    <input type="text" name="quantity" value="1" class="qty">
-                                                    <a class="qtyBtn plus" href="javascript:void(0);"><i class="icon an an-plus-l" aria-hidden="true"></i></a>
-                                                </div>
-                                            </div>
-                                            <a href="#" class="edit-i remove"><i class="icon an an-edit-l" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"></i></a>
-                                            <a href="#" class="remove"><i class="an an-times-r" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove"></i></a>
-                                        </div>
-                                    </li>
-                                    <li class="item d-flex justify-content-center align-items-center">
-                                        <a class="product-image" href="product-layout1.html">
-                                            <img class="blur-up lazyload" src="{% static 'assets/images/products/cart-product-img1.jpg' %}" data-src="{% static 'assets/images/products/cart-product-img1.jpg' %}" alt="image" title="">
-                                        </a>
-                                        <div class="product-details">
-                                            <a class="product-title" href="product-layout1.html">V Neck T-shirts</a>
-                                            <div class="variant-cart">Blue / XL</div>
-                                            <div class="priceRow">
-                                                <div class="product-price">
-                                                    <span class="money">$199.00</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="qtyDetail text-center">
-                                            <div class="wrapQtyBtn">
-                                                <div class="qtyField">
-                                                    <a class="qtyBtn minus" href="javascript:void(0);"><i class="icon an an-minus-r" aria-hidden="true"></i></a>
-                                                    <input type="text" name="quantity" value="1" class="qty">
-                                                    <a class="qtyBtn plus" href="javascript:void(0);"><i class="icon an an-plus-l" aria-hidden="true"></i></a>
-                                                </div>
-                                            </div>
-                                            <a href="#" class="edit-i remove"><i class="icon an an-edit-l" data-bs-toggle="tooltip" data-bs-placement="top" title="Edit"></i></a>
-                                            <a href="#" class="remove"><i class="an an-times-r" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove"></i></a>
-                                        </div>
-                                    </li>
-                                </ul>
-                            </div>
-                            <div class="minicart-bottom">
-                                <div class="shipinfo text-center mb-3 text-uppercase">
-                                    <p class="freeShipMsg"><i class="an an-truck fs-5 me-2 align-middle"></i>SPENT <b>$199.00</b> MORE FOR FREE SHIPPING</p>
-                                </div>
-                                <div class="subtotal">
-                                    <span>Total:</span>
-                                    <span class="product-price">$93.13</span>
-                                </div>
-                                <a href="checkout-style1.html" class="w-100 p-2 my-2 btn btn-outline-primary proceed-to-checkout rounded">Proceed to Checkout</a>
-                                <a href="cart-style1.html" class="w-100 btn-primary cart-btn rounded">View Cart</a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!--End MiniCart Drawer-->
+            
             <div class="modalOverly"></div>
 
 
@@ -496,13 +374,7 @@
             {% block scripts %}
 
 
-
-
-
             {% endblock %}
-
-
-
 
 
         </div>

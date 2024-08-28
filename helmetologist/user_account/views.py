@@ -819,3 +819,9 @@ def verify_razorpay_payment(request):
         except Exception as e:
             return JsonResponse({'success': False, 'error': str(e)}, status=400)
 
+def aboutus(request):
+
+    return render(request,'aboutus.html')
+def contactus(request):
+    
+    return render(request,'contactus.html')

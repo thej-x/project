@@ -67,9 +67,8 @@
                                         <ul id="siteNav" class="site-nav medium center hidearrow">
                                             <li class="lvl1 parent megamenu"><a href="{% url 'index' %}">Home <i class="an an-angle-down-l"></i></a> </li>
                                             <li class="lvl1 parent megamenu"><a href="{% url 'shop' %}">Shop <i class="an an-angle-down-l"></i></a> </li>
-                                            <li class="lvl1 parent megamenu"><a href="product.html">All Products <i class="an an-angle-down-l"></i></a> </li>
-                                            <li class="lvl1 parent megamenu"><a href="aboutus.html" class="site-nav">About Us</a> </li>
-                                            <li class="lvl1 parent megamenu"><a href="contact.html" class="site-nav">Contact Us</a> </li>
+                                            <li class="lvl1 parent megamenu"><a href="{% url 'aboutus' %}" class="site-nav">About Us</a> </li>
+                                            <li class="lvl1 parent megamenu"><a href="{% url 'contactus' %}" class="site-nav">Contact Us</a> </li>
                                         </ul>
                                     </nav>
                                     <!--End Desktop Menu-->
@@ -270,7 +269,7 @@
                                                     {% endif %}
                                                     <!-- End product price -->
                                                     <!--Product Review-->
-                                                    <div class="product-review"><i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star-o"></i></div>
+                                                    <!-- <div class="product-review"><i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star"></i> <i class="an an-star-o"></i></div> -->
                                                     <!--End Product Review-->
                                                 </div>
                                                 <!-- End product details -->
@@ -450,16 +449,16 @@
                         <div class="row">
                             <div class="col-12 col-sm-12 col-md-12 col-lg-4 footer-about mb-4 mb-lg-0">
                                 <img src="{% static 'assets/images/footer-logo.png' %}" alt="Optimal" class="mb-3"/>
-                                <p class="mb-1">Creative, flexible, Infinite Possibilities and High Performance Html template to make your business shine! Suitable for multipurpose stores.</p>
-                                <p>The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for those interested.</p>
+                                <p class="mb-1">Creative, flexible, Infinite Possibilities and High Performance helmets are available in the stores.</p>
+                                <p>this is a premium helmet store</p>
                             </div>
                             <div class="col-12 col-sm-12 col-md-4 col-lg-2 footer-links">
                                 <h4 class="h4">Informations</h4>
                                 <ul>
-                                    <li><a href="my-account.html">My Account</a></li>
+                                    <li><a href="{% url 'useraccount' user.id %}">My Account</a></li>
                                     <li><a href="aboutus-style1.html">About us</a></li>
-                                    <li><a href="{% url 'login' %}">Login</a></li>
-                                    <li><a href="privacy-policy.html">Privacy policy</a></li>
+                                    <!-- <li><a href="{% url 'login' %}">Login</a></li> -->
+                                    
                                     <li><a href="#">Terms &amp; condition</a></li>
                                 </ul>
                             </div>

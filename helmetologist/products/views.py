@@ -74,7 +74,7 @@ def add_products(request):
         description = request.POST.get('description')
         details = request.POST.get('details')
         category_id = request.POST.get('category')
-        offer_id = request.POST.get('offer_id')
+        # offer_id = request.POST.get('offer_id')
         thumbnail = request.FILES.get('thumbnail')
         quantity = request.POST.get('quantity')
 
@@ -121,20 +121,20 @@ def add_products(request):
             return redirect('add_products')
 
         # Offer validation
-        discount_percentage = None
-        is_offer_applied = False
-        if offer_id:
-            try:
-                offer = get_object_or_404(Offer, id=offer_id)
-                if offer.offer_type == 'product' and offer.is_valid:
-                    discount_percentage = offer.discount_percentage
-                    is_offer_applied = True
-                else:
-                    messages.error(request, "No valid offer available")
-                    return redirect('add_products')
-            except ValidationError:
-                messages.error(request, "Invalid offer selected")
-                return redirect('add_products')
+        # discount_percentage = None
+        # is_offer_applied = False
+        # if offer_id:
+        #     try:
+        #         offer = get_object_or_404(Offer, id=offer_id)
+        #         if offer.offer_type == 'product' and offer.is_valid:
+        #             discount_percentage = offer.discount_percentage
+        #             is_offer_applied = True
+        #         else:
+        #             messages.error(request, "No valid offer available")
+        #             return redirect('add_products')
+        #     except ValidationError:
+        #         messages.error(request, "Invalid offer selected")
+        #         return redirect('add_products')
 
         try:
             quantity = int(quantity)
@@ -151,8 +151,8 @@ def add_products(request):
             description=description,
             details=details,
             category=category,
-            discount_percentage=discount_percentage,
-            is_offer_applied=is_offer_applied,
+            # discount_percentage=discount_percentage,
+            # is_offer_applied=is_offer_applied,
             thumbnail=thumbnail,
             quantity=quantity,
         )
