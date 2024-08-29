@@ -1,3 +1,6 @@
 myenv
 .theju
-.settings.py
+helmetologist/helmetologist/settings.py
+
+*.pyc
+__pycache__/
